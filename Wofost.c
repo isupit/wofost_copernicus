@@ -97,7 +97,7 @@ int main() {
         
         memcpy(name, Grid->name, strlen(Grid->name)-4);
         snprintf(name, sizeof name, "%s%s%d%s", Grid->name, "-", Grid->file,".txt");
-        
+        printf("%20s\n",Grid->name);
         output[Grid->file] = fopen(name, "w");
         header(output[Grid->file]);
         Grid = Grid->next;
@@ -119,8 +119,9 @@ int main() {
         Site      = Grid->ste;
         Start     = Grid->start;
         Emergence = Grid->emergence;
+        printf("%20s\n",Grid->name);
         
-        for (Day = 1; Day < 13148; Day++)
+        for (Day = 1; Day < 11348; Day++)
         {        
             /* Go back to the beginning of the list */
             Grid = initial;
@@ -199,11 +200,11 @@ int main() {
     /* Return to the beginning of the list */
     Grid = initial;
     
-    free(output);
+    //free(output);
 
     /* Go back to the beginning of the list */
     Grid = initial;
-    Clean(Grid);
+    //Clean(Grid);
 
     return 1;
 }

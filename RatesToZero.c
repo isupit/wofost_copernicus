@@ -68,19 +68,33 @@ void RatesToZero()
     Crop->K_rt.Demand_so = 0.;
     
     /* Set the nutrient translocation rates */
-    Crop->N_rt.Transloc = 0.;
-    Crop->P_rt.Transloc = 0.;
-    Crop->K_rt.Transloc = 0.;
+    Crop->N_rt.Transloc    = 0.;
+    Crop->N_rt.Transloc_lv = 0.;
+    Crop->N_rt.Transloc_st = 0.;
+    Crop->N_rt.Transloc_ro = 0.;
+    
+    Crop->P_rt.Transloc    = 0.;
+    Crop->P_rt.Transloc_lv = 0.;
+    Crop->P_rt.Transloc_st = 0.;
+    Crop->P_rt.Transloc_ro = 0.;
+    
+    Crop->K_rt.Transloc    = 0.;
+    Crop->K_rt.Transloc_lv = 0.;
+    Crop->K_rt.Transloc_st = 0.;
+    Crop->K_rt.Transloc_ro = 0.;
     
     /* Set the nutrient uptake rates */
+    Crop->N_rt.Uptake    = 0.;
     Crop->N_rt.Uptake_lv = 0.;
     Crop->N_rt.Uptake_st = 0.;
     Crop->N_rt.Uptake_ro = 0.;
     
+    Crop->P_rt.Uptake    = 0.;
     Crop->P_rt.Uptake_lv = 0.;      
     Crop->P_rt.Uptake_st = 0.;      
     Crop->P_rt.Uptake_ro = 0.;  
     
+    Crop->K_rt.Uptake    = 0.;
     Crop->K_rt.Uptake_lv = 0.;
     Crop->K_rt.Uptake_st = 0.;
     Crop->K_rt.Uptake_ro = 0.; 

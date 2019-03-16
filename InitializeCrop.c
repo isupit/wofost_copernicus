@@ -77,5 +77,13 @@ void InitializeCrop()
     /* Emergence true */
     Crop->Emergence = 1;
     Crop->GrowthDay = 1;
+    
+    /* No dead material */
+    Crop->dst.leaves = 0.;
+    Crop->dst.stems =  0.;
+    Crop->dst.roots =  0.;
+    
+    /* No vernalization yet */
+    Crop->st.vernalization;
             
 }  

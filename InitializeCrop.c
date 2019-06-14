@@ -5,6 +5,8 @@
 #include "extern.h"
 
 
+
+
 /*---------------------------------------------------*/
 /* function EmergenceCrop                            */
 /* Purpose: determine if crop emergence has occurred */
@@ -17,13 +19,22 @@ int EmergenceCrop(int Emergence)
     /*  Emergence has not taken place yet*/
     if (!Emergence)
 	{
-            DeltaTempSum = limit(0, Crop->prm.TempEffMax - Crop->prm.TempBaseEmergence, 
-                Temp - Crop->prm.TempBaseEmergence);
-	    Crop->TSumEmergence += DeltaTempSum;
-	    if (Crop->TSumEmergence >= Crop->prm.TSumEmergence)
+            /* Start counting TSumEmergence one day after sowing */
+            if (!Crop->Sowing)
             {
-                Emergence = 1;
-	    }
+                Crop->Sowing = 1;
+            }
+            else
+            {
+                DeltaTempSum = limit(0, Crop->prm.TempEffMax - Crop->prm.TempBaseEmergence, 
+                Temp - Crop->prm.TempBaseEmergence);
+                Crop->TSumEmergence += DeltaTempSum;
+                if (Crop->TSumEmergence >= Crop->prm.TSumEmergence)
+                {
+                    Emergence = 1;
+                } 
+            }
+
 	}
     return Emergence;
 }
@@ -49,7 +60,7 @@ void InitializeCrop()
     InitialShootWeight = Crop->prm.InitialDryWeight * FractionShoots;
 
     Crop->st.roots     = Crop->prm.InitialDryWeight * FractionRoots;
-    Crop->st.RootDepth    = Crop->prm.InitRootingDepth;
+    Crop->st.RootDepth = Crop->prm.InitRootingDepth;
     Crop->st.stems     = InitialShootWeight * Afgen(Crop->prm.Stems, &(Crop->st.Development));                   
     Crop->st.leaves    = InitialShootWeight * Afgen(Crop->prm.Leaves, &(Crop->st.Development));
     Crop->st.storage   = InitialShootWeight * Afgen(Crop->prm.Storage, &(Crop->st.Development));
@@ -84,6 +95,6 @@ void InitializeCrop()
     Crop->dst.roots =  0.;
     
     /* No vernalization yet */
-    Crop->st.vernalization;
+    Crop->st.vernalization = 0.;
             
 }  

@@ -23,9 +23,11 @@ extern void header();
 /* Additional functions */
 extern int Astro();
 extern void CalcPenman();
+extern void CalcPenmanMonteith();
 extern void Clean();
 
 /* Crop growth */
+extern void Partioning();
 extern void HeatStress();
 extern void RateCalculationCrop();
 extern void Growth(float NewPlantMaterial);
@@ -34,10 +36,10 @@ extern void InitializeCrop();
 extern int EmergenceCrop(int Emergence);
 
 extern void DevelopmentRate();
+extern void LeaveGrowth();
 extern float DailyTotalAssimilation();
 extern float DyingLeaves();
 extern float InstantAssimilation(float KDiffuse, float EFF, float AssimMax, float SinB, float PARDiffuse, float PARDirect);
-extern float LeaveGrowth(float LAIExp, float Newleaves);
 extern float LeaveAreaIndex();
 extern float Correct(float GrossAssimilation);
 extern float RespirationRef(float TotalAssimilation);

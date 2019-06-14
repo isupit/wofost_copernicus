@@ -14,6 +14,8 @@
 #define NR_TABLES_MANAGEMENT    7
 #define NUMBER_OF_TABLES        31
 
+#define METEO_LENGTH           34334
+
 typedef struct TABLE {
 	float x;
 	float y;
@@ -213,6 +215,7 @@ typedef struct NUTRIENT_RATES {
         float Demand_st;
         float Demand_ro;
         float Demand_so;
+        float Supply;
         float Transloc;
         float Transloc_lv;
         float Transloc_st;
@@ -246,6 +249,11 @@ typedef struct NUTRIENT_STATES {
         float death_lv;
         float death_st;
         float death_ro;
+        float Avail;
+        float Avail_lv;
+        float Avail_st;
+        float Avail_ro;
+        
         } nutrient_states;
         
 
@@ -296,11 +304,16 @@ typedef struct GREEN {
 
 typedef struct PLANT {
         int Emergence;
+        int Sowing;
         int GrowthDay;       
         float NPK_Indx;
         float NutrientStress;
         float DaysOxygenStress;
         float TSumEmergence;
+        float fac_ro;
+        float fac_lv;
+        float fac_st;
+        float fac_so;
         
         Parameters prm;
         
@@ -326,6 +339,7 @@ typedef struct SOIL {
         float DaysSinceLastRain;
         float SoilMaxRootingDepth;
         float WaterStress;
+        float InfPreviousDay;
         
         /* Tables for Soil */
         AFGEN *VolumetricSoilMoisture;
@@ -394,14 +408,25 @@ typedef struct SIMUNIT {
         
 float CO2;
 
+typedef struct WEATHER {
+        char Name[100];
+        char Path[100];
+        char DateString[100];
+        int StartSimDay;
+        int NumberOfYears;
+        struct WEATHER *next;
+} Weather;
+
 /** Meteorological Variables  **/
-int Station;
+int Station, Year;
 float AngstA;
 float AngstB;
 float Longitude, Latitude, Altitude;
-float Tmin[13518], Tmax[13518], Radiation[13518], Rain[13518];
-float Windspeed[13518], Vapour[13518];
-int Year[13518];
+float Tmin[METEO_LENGTH], Tmax[METEO_LENGTH];
+float Radiation[METEO_LENGTH], Rain[METEO_LENGTH];
+float Windspeed[METEO_LENGTH], Vapour[METEO_LENGTH];
+float MeteoYear[METEO_LENGTH];
+float MeteoDay[METEO_LENGTH];
 
 /* Time step */
 float Step;

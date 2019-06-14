@@ -18,8 +18,9 @@ void NutrientLoss()
     Crop->P_rt.death_lv = Crop->prm.P_ResidualFrac_lv * Crop->drt.leaves;
     Crop->P_rt.death_st = Crop->prm.P_ResidualFrac_st * Crop->drt.stems;
     Crop->P_rt.death_ro = Crop->prm.P_ResidualFrac_ro * Crop->drt.roots;
-    
+        
     Crop->K_rt.death_lv = Crop->prm.K_ResidualFrac_lv * Crop->drt.leaves;
     Crop->K_rt.death_st = Crop->prm.K_ResidualFrac_st * Crop->drt.stems;
     Crop->K_rt.death_ro = Crop->prm.K_ResidualFrac_ro * Crop->drt.roots;
+    
 }  

@@ -22,6 +22,9 @@ void InitializeWatBal()
     /* Assume no water stress at initialization */
     WatBal->WaterStress = 1.;
     
+    /* Set the infiltration of the previous day to zero */
+    WatBal->InfPreviousDay = 0.;
+    
     /* Check initial soil moisture. It cannot be larger than the              */
     /* saturated soil moisture SoilMoistureSAT or smaller than SoilMoistureWP */
     if (Site->MaxInitSoilM < WatBal->ct.MoistureWP)  
@@ -70,6 +73,7 @@ void RateCalulationWatBal() {
     float Perc1, Perc2;
     float WaterEq;
     float WELOW;
+    float RINPRE; // Preliminary infiltration rate 
     
     /* If surface storage > 1 cm */
     if (WatBal->st.SurfaceStorage > 1.) 
@@ -78,8 +82,9 @@ void RateCalulationWatBal() {
     }
     else 
     {
-        if (WatBal->rt.Infiltration >= 1.) 
+        if (WatBal->InfPreviousDay >= 1.) 
         {
+            //If infiltration >= 1cm on previous day assume maximum soil evaporation
             WatBal->rt.EvapSoil = Evtra.MaxEvapSoil;
             WatBal->DaysSinceLastRain = 1.;
         }
@@ -89,7 +94,7 @@ void RateCalulationWatBal() {
             CMaxSoilEvap = Evtra.MaxEvapSoil*(sqrt(WatBal->DaysSinceLastRain) - 
                     sqrt(WatBal->DaysSinceLastRain - 1));
             WatBal->rt.EvapSoil = min(Evtra.MaxEvapSoil, CMaxSoilEvap + 
-                    WatBal->rt.Infiltration);
+                    WatBal->InfPreviousDay);
         }
     }
     
@@ -101,7 +106,7 @@ void RateCalulationWatBal() {
                (1. - Site->NotInfiltrating * Afgen(Site->NotInfTB, &Rain[Day])) * 
                Rain[Day] + WatBal->rt.Irrigation + WatBal->st.SurfaceStorage / Step;
         else
-            WatBal->rt.Infiltration = (1. - Site->NotInfiltrating) * Rain[Day] + 
+            RINPRE = (1. - Site->NotInfiltrating) * Rain[Day] + 
                 WatBal->rt.Irrigation + WatBal->st.SurfaceStorage / Step;
     }
     else 
@@ -111,7 +116,7 @@ void RateCalulationWatBal() {
         Available = WatBal->st.SurfaceStorage + (Rain[Day] * 
                 (1.-Site->NotInfiltrating) + WatBal->rt.Irrigation 
                  - WatBal->rt.EvapSoil) * Step;
-        WatBal->rt.Infiltration = min(WatBal->ct.MaxPercolRTZ * Step, 
+        RINPRE = min(WatBal->ct.MaxPercolRTZ * Step, 
                 Available) / Step;
     }
     
@@ -137,18 +142,22 @@ void RateCalulationWatBal() {
     /* Percolation not to exceed uptake capacity of subsoil */
     Perc2 = ((Crop->prm.MaxRootingDepth - Crop->st.RootDepth) * WatBal->ct.MoistureSAT - 
             WatBal->st.MoistureLOW) / Step + WatBal->rt.Loss;
+    
     WatBal->rt.Percolation = min(Perc1, Perc2);
+   
     
     /* Adjustment of the infiltration rate */
-    WatBal->rt.Infiltration = min(WatBal->rt.Infiltration,
+    WatBal->rt.Infiltration = max(0, min(RINPRE,
           (WatBal->ct.MoistureSAT - WatBal->st.Moisture) * Crop->st.RootDepth/Step + 
-          WatBal->rt.Transpiration + WatBal->rt.EvapSoil + WatBal->rt.Percolation);
+          WatBal->rt.Transpiration + WatBal->rt.EvapSoil + WatBal->rt.Percolation));
             
     /* Rates of change in amounts of moisture W and WLOW */
     WatBal->rt.RootZoneMoisture = -WatBal->rt.Transpiration - WatBal->rt.EvapSoil -  
             WatBal->rt.Percolation + WatBal->rt.Infiltration;
     WatBal->rt.MoistureLOW = WatBal->rt.Percolation - WatBal->rt.Loss;
-                  
+    
+
+             
 }
 
 
@@ -202,6 +211,9 @@ void IntegrationWatBal()
         WaterRootExt = WatBal->st.MoistureLOW *
                 (Crop->st.RootDepth - Crop->st.RootDepth_prev) / 
                 (Crop->prm.MaxRootingDepth - Crop->st.RootDepth_prev);
+        
+        WaterRootExt = min( WaterRootExt,WatBal->st.MoistureLOW);
+                
         WatBal->st.MoistureLOW -= WaterRootExt;
 
         /* Total water addition to root zone by root growth  */
@@ -213,5 +225,9 @@ void IntegrationWatBal()
 
     /* Mean soil moisture content in rooted zone */
     WatBal->st.Moisture = WatBal->st.RootZoneMoisture/Crop->st.RootDepth;
+    
+    /* Store the infiltration rate of the previous day */
+     WatBal->InfPreviousDay = WatBal->rt.Infiltration;
+     
   
 }

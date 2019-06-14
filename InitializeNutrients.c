@@ -80,9 +80,9 @@ void InitializeNutrients()
     day_fl = (float)Day;
     
      /* Set the soil nutrient states */
-    Site->st_N_tot = Afgen(Mng->N_Fert_table, &day_fl) * Afgen(Mng->N_Uptake_frac, &day_fl) + Mng->N_Mins;
-    Site->st_P_tot = Afgen(Mng->P_Fert_table, &day_fl) * Afgen(Mng->P_Uptake_frac, &day_fl) + Mng->P_Mins;
-    Site->st_K_tot = Afgen(Mng->K_Fert_table, &day_fl) * Afgen(Mng->K_Uptake_frac, &day_fl) + Mng->K_Mins;
+    Site->st_N_tot = Afgen(Mng->N_Fert_table, &day_fl) * Afgen(Mng->N_Uptake_frac, &day_fl);
+    Site->st_P_tot = Afgen(Mng->P_Fert_table, &day_fl) * Afgen(Mng->P_Uptake_frac, &day_fl);
+    Site->st_K_tot = Afgen(Mng->K_Fert_table, &day_fl) * Afgen(Mng->K_Uptake_frac, &day_fl);
 
     Site->st_N_mins = Mng->N_Mins;
     Site->st_P_mins = Mng->P_Mins;
@@ -97,5 +97,5 @@ void InitializeNutrients()
     /* Set the initial optimal leave concentrations to zero */
     Crop->N_st.Optimum_lv = 0;
     Crop->N_st.Optimum_st = 0;
-    
+        
 }     

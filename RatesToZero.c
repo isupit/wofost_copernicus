@@ -11,9 +11,13 @@ void RatesToZero()
     Crop->drt.roots = 0.;
     Crop->drt.leaves = 0.;
     Crop->drt.stems = 0.;
-    
+  
+    /* Set the development rate */
+    Crop->rt.Development = 0.;
     Crop->rt.vernalization = 0.;
-    Crop->rt.LAIExp  = 0.;	
+    
+    /* Set the rooting depth */
+    Crop->rt.RootDepth = 0.;	
     
     /* Set the crop growth rates */
     Crop->rt.roots   = 0.;
@@ -68,22 +72,12 @@ void RatesToZero()
     Crop->K_rt.Demand_so = 0.;
     
     /* Set the nutrient translocation rates */
-    Crop->N_rt.Transloc    = 0.;
-    Crop->N_rt.Transloc_lv = 0.;
-    Crop->N_rt.Transloc_st = 0.;
-    Crop->N_rt.Transloc_ro = 0.;
-    
-    Crop->P_rt.Transloc    = 0.;
-    Crop->P_rt.Transloc_lv = 0.;
-    Crop->P_rt.Transloc_st = 0.;
-    Crop->P_rt.Transloc_ro = 0.;
-    
-    Crop->K_rt.Transloc    = 0.;
-    Crop->K_rt.Transloc_lv = 0.;
-    Crop->K_rt.Transloc_st = 0.;
-    Crop->K_rt.Transloc_ro = 0.;
+    Crop->N_rt.Transloc = 0.;
+    Crop->P_rt.Transloc = 0.;
+    Crop->K_rt.Transloc = 0.;
     
     /* Set the nutrient uptake rates */
+    
     Crop->N_rt.Uptake    = 0.;
     Crop->N_rt.Uptake_lv = 0.;
     Crop->N_rt.Uptake_st = 0.;
@@ -121,6 +115,5 @@ void RatesToZero()
     WatBal->rt.Runoff            = 0.;
     WatBal->rt.WaterRootExt      = 0.;
     WatBal->rt.RootZoneMoisture  = 0.;
-    
 }
 

@@ -25,7 +25,6 @@ int Astro()
     float AOB;
     float DSinB;
     float FractionDiffuseRad;
-    float AngotRadiation;
     
     if (fabsf(Latitude) > 90.) return 0;  
 

@@ -2,6 +2,7 @@
 #define ASTRO_H
 
 float AtmosphTransm;
+float AngotRadiation;
 float Daylength;
 float PARDaylength;
 float SinLD;

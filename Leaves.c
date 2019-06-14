@@ -26,7 +26,7 @@ float DyingLeaves()
 
     /* Death rate increase due to nutrient shortage */
     Death += Crop->st.leaves * Crop->prm.DyingLeaves_NPK_Stress * (1. - Crop->NPK_Indx);
-
+    
     if (Death < tiny) Death = 0;
         
     DeathStress = Death;

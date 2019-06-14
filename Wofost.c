@@ -17,6 +17,7 @@ int main() {
     int Start;
     int CycleLength   = 300;
     int count;
+    int x;
     
     char path[100];
     char cropfile[100];
@@ -40,7 +41,7 @@ int main() {
     }
     
     count = 0;
-    while (fscanf(ifp,"%7s %11s %7s %12s %10s %10s %4s %d %d" ,
+    while (fscanf(ifp,"%7s %11s %7s %12s %10s %10s %2s %d %d" ,
             path, cf, sf, mf, site, dateString, place, &Start, &Emergence)
             != EOF) 
     {    
@@ -77,6 +78,10 @@ int main() {
         Grid->file  = count++;          // number of elements in Grid carousel
         strcpy(Grid->name,cf);          // Crop file name
         Grid->emergence = Emergence;    // Start the simulations at emergence (1) or at sowing (0)
+        
+        Grid->crp->Sowing = 0;
+        Grid->crp->Emergence = 0;
+        
         Grid->next = NULL;
 
     }
@@ -84,8 +89,19 @@ int main() {
     /* Close the input file */
     fclose(ifp);
     
+    ifp = fopen("meteolist.txt", "r");
+
+    if (ifp == NULL) 
+    {
+        fprintf(stderr, "Can't open input meteolist.txt\n");
+        exit(1);
+    }
+    
+    
     /* Set Grid back to the initial address */
     Grid = initial;   
+    
+ 
     
     /* Allocate memory for the file pointers */
     output = malloc(sizeof(**output) * --count);
@@ -97,43 +113,44 @@ int main() {
         
         memcpy(name, Grid->name, strlen(Grid->name)-4);
         snprintf(name, sizeof name, "%s%s%d%s", Grid->name, "-", Grid->file,".txt");
-        printf("%20s\n",Grid->name);
+        
         output[Grid->file] = fopen(name, "w");
         header(output[Grid->file]);
         Grid = Grid->next;
     }
     
-    /* Get the meteodata */
-    GetMeteoData(path, dateString, place);
     
-    /* Set Grid back to the initial address */
-    Grid = initial;       
-    
-    while (Grid)
+    while (Meteo)
     {
-        /* Get data, states and rates from the Grid structure and */
-        /* put them in the place holders */
-        Crop      = Grid->crp;
-        WatBal    = Grid->soil;
-        Mng       = Grid->mng;
-        Site      = Grid->ste;
-        Start     = Grid->start;
-        Emergence = Grid->emergence;
-        printf("%20s\n",Grid->name);
+        /* Get the meteodata */
+        GetMeteoData(path, dateString, Meteo->name);
+    }
+    
+    for (Day = 1; Day < 34333; Day++)
+    {        
+        /* Go back to the beginning of the list */
+        Grid = initial;
         
-        for (Day = 1; Day < 11348; Day++)
-        {        
-            /* Go back to the beginning of the list */
-            Grid = initial;
-
-            Temp = 0.5 * (Tmax[Day] + Tmin[Day]);
-            DayTemp = 0.5 * (Tmax[Day] + Temp);
-
-            Astro();
-            CalcPenman();
+        while (Grid)
+        {
+            /* Get data, states and rates from the Grid structure and */
+            /* put them in the place holders */
+            Crop      = Grid->crp;
+            WatBal    = Grid->soil;
+            Mng       = Grid->mng;
+            Site      = Grid->ste;
+            Start     = Grid->start;
+            Emergence = Grid->emergence;
             
-            if (Day >= Start && Crop->Emergence == 0)
+            if (MeteoDay[Day] >= Start && Crop->Emergence == 0 && MeteoYear[Day] <= EndYear)
             {
+                Temp = 0.5 * (Tmax[Day] + Tmin[Day]);
+                DayTemp = 0.5 * (Tmax[Day] + Temp);
+        
+                Astro();
+                CalcPenman();
+                CalcPenmanMonteith();
+                
                 if (EmergenceCrop(Emergence))
                 {                 
                     /* Initialize: set state variables */
@@ -143,9 +160,9 @@ int main() {
                 }
             }
             
-            if (Day >= Start && Crop->Emergence == 1)
+            if (MeteoDay[Day] >= Start && Crop->Emergence == 1 && MeteoYear[Day] <= EndYear)
             {   
-                if (Crop->st.Development <= Crop->prm.DevelopStageHarvest && Crop->GrowthDay < CycleLength) 
+                if (Crop->st.Development <= (Crop->prm.DevelopStageHarvest+0.05) && Crop->GrowthDay < CycleLength) 
                 {
                    /* Calculate the evapotranspiration */
                     EvapTra();
@@ -155,58 +172,56 @@ int main() {
                     
                      /* Rate calculations */
                     RateCalulationWatBal();
+                    Partioning();
                     RateCalcultionNutrients();
                     RateCalculationCrop();
                     
+                    
+                    /* Write to the output files */
+                    Output(output[Grid->file]);   
+                    
                     /* Calculate LAI */
-                    Crop->st.LAI = LeaveAreaIndex();         
+                    Crop->st.LAI = LeaveAreaIndex();             
                                         
                     /* State calculations */
+                    IntegrationCrop();
                     IntegrationWatBal();
                     IntegrationNutrients();
-                    IntegrationCrop();
                     
                     /* Update the number of days that the crop has grown*/
                     Crop->GrowthDay++;
                 }
-                /* Crop development finished or harvest occurred */
-                else
-                {
-                    /* Write to the output files */
-                    Output(output[Grid->file]); 
-                    
-                    /* Start the next year */
-                    Crop->Emergence = 0;
-                    Start += leap_year(Year[Day]);        
-                }
             }
-            /* Update time */
-            simTime.tm_mday++;
-            mktime(&simTime);
-          
-        } 
-        
-        /* Close the output files */
-        fclose(output[Grid->file]);
-           
-        /* Store the daily calculations in the Grid structure */
-        Grid->crp  = Crop;
-        Grid->soil = WatBal;
-        Grid->mng  = Mng;
-        Grid->ste  = Site;
-        Grid = Grid->next;
+
+            /* Store the daily calculations in the Grid structure */
+            Grid->crp  = Crop;
+            Grid->soil = WatBal;
+            Grid->mng  = Mng;
+            Grid->ste  = Site;
+            Grid = Grid->next;
+        }
+    
+        /* Update time */
+        simTime.tm_hour = 18;
+        simTime.tm_mday++;
+        mktime(&simTime);
     }    
     
     /* Return to the beginning of the list */
     Grid = initial;
     
-    //free(output);
+
+    /* Close the output files and free the allocated memory */
+    while(Grid)
+    {
+        fclose(output[Grid->file]);
+        Grid = Grid->next;
+    }
+    free(output);
 
     /* Go back to the beginning of the list */
     Grid = initial;
-    //Clean(Grid);
+    Clean(Grid);
 
     return 1;
 }
-
-

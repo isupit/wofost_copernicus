@@ -1,27 +1,11 @@
-** $Id: wwh102.cab 1.3 1997/09/25 14:07:03 LEM release $
-** File WWH102.CAB
-** CROP DATA FILE for use with WOFOST Version 5.4, June 1992
-**
-** WHEAT, WINTER 102
-** Regions: Ireland, central en southern UK (R72-R79), 
-**          Netherlands (not R47), northern Germany (R11-R14)
-** start date 1 January
-** mean date of flowering 10 Jun, mature 1-25 Aug
 
-** Derived from SUCROS87 data set for wheat.  
-** Calibrated for use in WOFOST model at the Centre for Agrobiological 
-** Research (CABO-DLO) for the simulation of crop growth and yield on the 
-** basis of daily weather data.
-** Purpose of application: Crop growth monitoring with agrometeorological 
-** model in the EC.
-** Developed in the framework of JRC Agriculture Project Action 3. 
 
-CRPNAM='Winter wheat 102, Ireland, N-U.K., Netherlands, N-Germany'
+CRPNAM='Winter wheat (generic) CSA practical'
 
 ** emergence
 TBASEM   = -10.0    ! lower threshold temp. for emergence [cel]
 TEFFMX   =  30.0    ! max. eff. temp. for emergence [cel]
-TSUMEM   =   0.     ! temperature sum from sowing to emergence [cel d]
+TSUMEM   =   60.     ! temperature sum from sowing to emergence [cel d]
 
 ** phenology
 IDSL     =   0      ! indicates whether pre-anthesis development depends
@@ -73,7 +57,8 @@ TMPFTB   =   0.00,    0.01,     ! reduction factor of AMAX
 
 TMNFTB   =   0.00,    0.00,     ! red. factor of gross assim. rate
              3.00,    1.00      ! as function of low min. temp. [cel; -]
-			 	 
+			 
+CO2 = 360.			 
 
 CO2AMAXTB       =  40., 0.00,      ! multiplication factor for AMAX 
              360.,  1.00,       ! to account for an increasing CO2 concentration

@@ -399,26 +399,29 @@ typedef struct SIMUNIT {
         Field *ste;
         Management *mng;
         Soil  *soil;
+        int season;
         int start;
         int emergence;
         int file;
         char name[100]; 
         struct SIMUNIT *next;
-        } SimUnit;
-        
-float CO2;
+        } SimUnit; 
+SimUnit *Grid;
 
 typedef struct WEATHER {
         char Name[100];
-        char Path[100];
-        char DateString[100];
+        int StartYear;
         int StartSimDay;
         int NumberOfYears;
+        float lat;
+        float lon;
         struct WEATHER *next;
-} Weather;
+        } Weather;
+Weather *Meteo; /* Place holder for the meteo filenames and lat/lon */
 
 /** Meteorological Variables  **/
 int Station, Year;
+float CO2;
 float AngstA;
 float AngstB;
 float Longitude, Latitude, Altitude;

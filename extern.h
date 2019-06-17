@@ -19,6 +19,8 @@ extern int leap_year(int year);
 extern void RatesToZero();
 extern void Output();
 extern void header();
+extern void GetSimInput();
+extern void GetMeteoInput();
 
 /* Additional functions */
 extern int Astro();

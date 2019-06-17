@@ -1,8 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "wofost.h"
+#include "extern.h"
 
 void GetMeteoInput()
 {
@@ -33,7 +33,7 @@ void GetMeteoInput()
             Meteo->next = malloc(sizeof(SimUnit));
             Meteo = Meteo->next;  
         }    
-        strcpy(Meteo->Name, filename);
+        strcpy(Meteo->file, filename);
         Meteo->lat = lat;
         Meteo->lon = lon;
     }

@@ -1,10 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "wofost.h"
+#include "extern.h"
 
-SimUnit GetSimInput()
+void GetSimInput()
 {
     FILE *ifp;
      
@@ -19,10 +19,6 @@ SimUnit GetSimInput()
     char soilfile[100];
     char sitefile[100];
     char management[100];
-    char dateString [100];
-    char place[15];
-    char name[100];
-      
     char cf[100], sf[100], mf[100], site[100];
   
     
@@ -35,8 +31,8 @@ SimUnit GetSimInput()
     }
     
     count = 0;
-    while (fscanf(ifp,"%7s %11s %7s %12s %10s %10s %2s %d %d" ,
-            path, cf, sf, mf, site, dateString, place, &Start, &Emergence)
+    while (fscanf(ifp,"%7s %11s %7s %12s %12s %d %d" ,
+            path, cf, sf, mf, site, &Start, &Emergence)
             != EOF) 
     {    
         strncpy(cropfile, path, 98);
@@ -69,10 +65,10 @@ SimUnit GetSimInput()
         GetSoilData(Grid->soil  = malloc(sizeof(Soil)), soilfile);
 
         Grid->start = Start;            // Start day (=day number)
-        Grid->file  = count++;          // number of elements in Grid carousel
-        strcpy(Grid->name,cf);          // Crop file name
+        Grid->file  = ++count;          // number of elements in Grid carousel
+        strcpy(Grid->name,sf);          // Set the soil filename as ouput file name
         Grid->emergence = Emergence;    // Start the simulations at emergence (1) or at sowing (0)
-        Grid->start = Start             // Starting day of the simulations     
+        Grid->start = Start;             // Starting day of the simulations     
         Grid->crp->Sowing = 0;
         Grid->crp->Emergence = 0;       // Crop emergence has not yet occurred
         
@@ -82,5 +78,6 @@ SimUnit GetSimInput()
     
     fclose(ifp);
     
-    return initial;
+    /* Set Grid back to initial address */
+    Grid = initial;
 }   

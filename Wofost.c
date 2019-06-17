@@ -20,14 +20,17 @@ int main() {
     
     char name[100];
     
-    /* Get the initial Grid address */
-    initial = GetSimInput();    
+    /* Fill the crop, soil, site and management place holders*/
+    GetSimInput();
+    
+    /* Set the initial Grid address */
+    initial = Grid;    
     
     /* Get the meteo filenames and put them in the placeholder */
     GetMeteoInput();
     
     /* Allocate memory for the file pointers */
-    output = malloc(sizeof(**output) * --count);
+    output = malloc(sizeof(**output) * --Grid->file);
     
     /* Go back to the beginning of the list */
     Grid = initial;
@@ -38,7 +41,7 @@ int main() {
         memset(name,0,100);
         
         memcpy(name, Grid->name, strlen(Grid->name)-4);
-        snprintf(name, sizeof name, "%s%s%d%s", Grid->name, "-", Grid->file,".txt");
+        snprintf(name, 2*sizeof (name), "%s%s%d%s", Grid->name, "-", Grid->file,".txt");
         
         output[Grid->file] = fopen(name, "w");
         header(output[Grid->file]);
@@ -55,7 +58,7 @@ int main() {
     while (Meteo)
     {
         /* Get the meteodata */
-        GetMeteoData(path, dateString, Meteo->Name);
+        GetMeteoData(Meteo->file);
     
         for (Day = 1; Day < 34333; Day++)
         {        
@@ -81,7 +84,7 @@ int main() {
                     Crop->Sowing = 0;
                 
                     /* Continue if the number of seasons has not been reached */
-                    if ((Grid->season - Meteo->StartYear) <= Meteo->NumberOfYears)
+                    if (Grid->season <= Meteo->EndYear)
                     {
                         Crop->Sowing = 1;
                     }
@@ -117,7 +120,7 @@ int main() {
                         RateCalculationCrop();
 
                         /* Write to the output files */
-                        Output(output[Grid->file]);   
+                        //Output(output[Grid->file]);   
 
                         /* Calculate LAI */
                         Crop->st.LAI = LeaveAreaIndex();             
@@ -132,6 +135,9 @@ int main() {
                     }
                     else
                     {
+                        /* Write to the output files */
+                        Output(output[Grid->file]);   
+
                         Grid->season++;
                         Emergence = 0;
                         Crop->Emergence = 0;

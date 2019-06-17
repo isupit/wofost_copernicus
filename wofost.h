@@ -13,7 +13,7 @@
 #define NR_VARIABLES_MANAGEMENT 6
 #define NR_TABLES_MANAGEMENT    7
 #define NUMBER_OF_TABLES        31
-
+#define MAX_STRING             2048
 #define METEO_LENGTH           34334
 
 typedef struct TABLE {
@@ -409,10 +409,9 @@ typedef struct SIMUNIT {
 SimUnit *Grid;
 
 typedef struct WEATHER {
-        char Name[100];
+        char file[100];
         int StartYear;
-        int StartSimDay;
-        int NumberOfYears;
+        int EndYear;
         float lat;
         float lon;
         struct WEATHER *next;

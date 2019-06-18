@@ -390,7 +390,7 @@ Field *Site; /* Place holder for the current site simulations */
 
 
 /* Simulation time */
-struct tm simTime;
+//struct tm simTime;
 
 
 /* Place holder for a simulation unit */
@@ -399,7 +399,6 @@ typedef struct SIMUNIT {
         Field *ste;
         Management *mng;
         Soil  *soil;
-        int season;
         int start;
         int emergence;
         int file;
@@ -420,15 +419,19 @@ Weather *Meteo; /* Place holder for the meteo filenames and lat/lon */
 
 /** Meteorological Variables  **/
 int Station, Year;
+int MeteoYear[METEO_LENGTH];
+int MeteoDay[METEO_LENGTH];
 float CO2;
 float AngstA;
 float AngstB;
 float Longitude, Latitude, Altitude;
-float Tmin[METEO_LENGTH], Tmax[METEO_LENGTH];
-float Radiation[METEO_LENGTH], Rain[METEO_LENGTH];
-float Windspeed[METEO_LENGTH], Vapour[METEO_LENGTH];
-float MeteoYear[METEO_LENGTH];
-float MeteoDay[METEO_LENGTH];
+float Tmin[METEO_LENGTH];
+float Tmax[METEO_LENGTH];
+float Radiation[METEO_LENGTH];
+float Rain[METEO_LENGTH];
+float Windspeed[METEO_LENGTH];
+float Vapour[METEO_LENGTH];
+
 
 /* Time step */
 float Step;

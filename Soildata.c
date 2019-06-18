@@ -16,7 +16,7 @@ void GetSoilData(Soil *SOIL, char *soilfile)
 
  if ((fq = fopen(soilfile, "rt")) == NULL)
  {
-     fprintf(stderr, "Cannot open input file.\n"); 
+     fprintf(stderr, "Cannot open the soil input file.\n"); 
      exit(0);
  }
 

@@ -10,6 +10,8 @@ void GetMeteoInput()
     
     Weather *initial = NULL;
     
+    int StartYear;
+    int EndYear;
     float lat;
     float lon;
     char filename[100];
@@ -22,7 +24,7 @@ void GetMeteoInput()
         exit(1);
     }
     
-    while (fscanf(ifp,"%100s %4.1f %4.1f" , filename, &lat, &lon) != EOF) 
+    while (fscanf(ifp,"%s %d %d %f %f" , filename, &StartYear, &EndYear, &lat, &lon) != EOF) 
     {
         if (initial == NULL) 
         {
@@ -34,6 +36,8 @@ void GetMeteoInput()
             Meteo = Meteo->next;  
         }    
         strcpy(Meteo->file, filename);
+        Meteo->StartYear = StartYear;
+        Meteo->EndYear = EndYear;
         Meteo->lat = lat;
         Meteo->lon = lon;
     }

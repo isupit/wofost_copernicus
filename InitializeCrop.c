@@ -20,9 +20,9 @@ int EmergenceCrop(int Emergence)
     if (!Emergence)
 	{
             /* Start counting TSumEmergence one day after sowing */
-            if (!Crop->Sowing)
+            if (Crop->Sowing == 1)
             {
-                Crop->Sowing = 1;
+                Crop->Sowing = 2;
             }
             else
             {

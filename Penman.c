@@ -30,10 +30,10 @@ void CalcPenman()
     float Pbar;
     float Gamma;
     float Ea;
-    float Eac;
+    //float Eac;
     float delta;
     float RB;
-    float Rnc;
+    //float Rnc;
     float Rnw; 
     float Rns; 
     float VapourP; 
@@ -42,7 +42,7 @@ void CalcPenman()
     float Psycon = 0.67;    // psychrometric instrument constant (mbar/Celsius-1)
     float Refcfw = 0.05;    // albedo for a water surface                        
     float Refcfs = 0.15;    // albedo for a soil surface                         
-    float Refcfc = 0.25;    // albedo for a  canopy                              
+    //float Refcfc = 0.25;    // albedo for a  canopy                              
     float Lhvap  = 2.45e6;  // latent heat of evaporation of water (J/kg=J/mm)  
     float Stbc   = 4.9e-3;  // Stefan Boltzmann constant (J/m2/d/K4) */
             
@@ -85,11 +85,11 @@ void CalcPenman()
     /* Net absorbed radiation, expressed in mm/d */
     Rnw = (Radiation[Day] * (1.-Refcfw)-RB)/Lhvap;
     Rns = (Radiation[Day] * (1.-Refcfs)-RB)/Lhvap;
-    Rnc = (Radiation[Day] * (1.-Refcfc)-RB)/Lhvap;
+    //Rnc = (Radiation[Day] * (1.-Refcfc)-RB)/Lhvap;
 
     /* Evaporative demand of the atmosphere (mm/d)  */
     Ea  = 0.26 * max (0.,(SaturatedVap-VapourP)) * (0.5+BU * Windspeed[Day]);
-    Eac = 0.26 * max (0.,(SaturatedVap-VapourP)) * (1.0+BU * Windspeed[Day]);
+    //Eac = 0.26 * max (0.,(SaturatedVap-VapourP)) * (1.0+BU * Windspeed[Day]);
    
     /* Penman formula (1948)                */
     /* Ensure reference evaporation >= 0.   */

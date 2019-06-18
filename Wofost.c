@@ -4,14 +4,14 @@
 #include <float.h>
 #include "wofost.h"
 #include "extern.h"
-#include <time.h>
+
 
 int main() {
     
     FILE **output;
     
     SimUnit *initial  = NULL;
-    Weather *Meteo = NULL;
+    //Weather *Meteo = NULL;
     Weather *head;
       
     int CycleLength   = 300;
@@ -19,6 +19,8 @@ int main() {
     int Emergence;
     
     char name[100];
+    
+    Step = 1.;
     
     /* Fill the crop, soil, site and management place holders*/
     GetSimInput();
@@ -51,9 +53,6 @@ int main() {
     /* Go back to the beginning of the list */
     Grid = initial;
     
-    /* Set the starting year to all grid members */
-    Grid->season = Meteo->StartYear;
-    Grid = Grid->next;
     
     while (Meteo)
     {
@@ -74,76 +73,85 @@ int main() {
                 Mng       = Grid->mng;
                 Site      = Grid->ste;
                 Start     = Grid->start;
-                Emergence = Grid->emergence;
+                Emergence = Grid->emergence; /* Start simulation at sowing or emergence */
                 
                 Temp = 0.5 * (Tmax[Day] + Tmin[Day]);
                 DayTemp = 0.5 * (Tmax[Day] + Temp);
-
-                if (MeteoDay[Day] >= Start &&  MeteoYear[Day] == Grid->season)
-                {
-                    Crop->Sowing = 0;
                 
-                    /* Continue if the number of seasons has not been reached */
-                    if (Grid->season <= Meteo->EndYear)
+                /* Only simulate between start and end year */
+                if ( MeteoYear[Day] >=  Meteo->StartYear && MeteoYear[Day] <= Meteo->EndYear + 1)
+                {                
+                    /* Determine if the sowing already has occurred */
+                    if (MeteoDay[Day] >= Start &&  Crop->Sowing == 0 )
                     {
-                        Crop->Sowing = 1;
+                        if (MeteoYear[Day] <= Meteo->EndYear)
+                        {
+                            Crop->Sowing = 1;
+                        }
+                        else
+                        {
+                            Crop->Sowing = 0;
+                        }
                     }
-                }
- 
-                if (EmergenceCrop(Emergence))
-                {                 
-                    /* Initialize: set state variables */
-                    InitializeCrop();
-                    InitializeWatBal();
-                    InitializeNutrients(); 
-                }
                 
-
-                if (MeteoDay[Day] >= Start && Crop->Emergence == 1)
-                {   
-                    if (Crop->st.Development <= (Crop->prm.DevelopStageHarvest+0.05) && Crop->GrowthDay < CycleLength) 
+                    /* If sowing gas occurred than determine the emergence */
+                    if (Crop->Sowing >= 1 && Crop->Emergence == 0)
                     {
-                        Astro();
-                        CalcPenman();
-                        CalcPenmanMonteith();
-                        
-                       /* Calculate the evapotranspiration */
-                        EvapTra();
-
-                        /* Set the rate variables to zero */
-                        RatesToZero();
-
-                         /* Rate calculations */
-                        RateCalulationWatBal();
-                        Partioning();
-                        RateCalcultionNutrients();
-                        RateCalculationCrop();
-
-                        /* Write to the output files */
-                        //Output(output[Grid->file]);   
-
-                        /* Calculate LAI */
-                        Crop->st.LAI = LeaveAreaIndex();             
-
-                        /* State calculations */
-                        IntegrationCrop();
-                        IntegrationWatBal();
-                        IntegrationNutrients();
-
-                        /* Update the number of days that the crop has grown*/
-                        Crop->GrowthDay++;
+                        if (EmergenceCrop(Emergence))
+                        {                 
+                            /* Initialize: set state variables */
+                            InitializeCrop();
+                            InitializeWatBal();
+                            InitializeNutrients(); 
+                        }  
                     }
-                    else
-                    {
-                        /* Write to the output files */
-                        Output(output[Grid->file]);   
 
-                        Grid->season++;
-                        Emergence = 0;
-                        Crop->Emergence = 0;
-                        Crop->Sowing    = 0;
+                    if (MeteoDay[Day] >= Start && Crop->Emergence == 1)
+                    {   
+                        if (Crop->st.Development <= (Crop->prm.DevelopStageHarvest+0.05) && Crop->GrowthDay < CycleLength) 
+                        {
+                            Astro();
+                            CalcPenman();
+                            CalcPenmanMonteith();
+
+                           /* Calculate the evapotranspiration */
+                            EvapTra();
+
+                            /* Set the rate variables to zero */
+                            RatesToZero();
+
+                             /* Rate calculations */
+                            RateCalulationWatBal();
+                            Partioning();
+                            RateCalcultionNutrients();
+                            RateCalculationCrop();
+
+                            /* Write to the output files */
+                            //Output(output[Grid->file]);   
+
+                            /* Calculate LAI */
+                            Crop->st.LAI = LeaveAreaIndex();             
+
+                            /* State calculations */
+                            IntegrationCrop();
+                            IntegrationWatBal();
+                            IntegrationNutrients();
+
+                            /* Update the number of days that the crop has grown*/
+                            Crop->GrowthDay++;
+                            printf("%7d %7d\n", Day, Crop->GrowthDay);
+                        }
+                        else
+                        {
+                            /* Write to the output files */
+                            Output(output[Grid->file]);   
+
+                            Emergence = 0;
+                            Crop->Emergence = 0;
+                            Crop->Sowing    = 0;
+                        }
                     }
-                }
+                }    
 
                 /* Store the daily calculations in the Grid structure */
                 Grid->crp  = Crop;
@@ -154,9 +162,9 @@ int main() {
             }
 
             /* Update time */
-            simTime.tm_hour = 18;
-            simTime.tm_mday++;
-            mktime(&simTime);
+            //simTime.tm_hour = 18;
+            //simTime.tm_mday++;
+            //mktime(&simTime);
         }   
     head = Meteo;
     Meteo = Meteo->next;

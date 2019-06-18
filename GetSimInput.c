@@ -31,7 +31,7 @@ void GetSimInput()
     }
     
     count = 0;
-    while (fscanf(ifp,"%7s %11s %7s %12s %12s %d %d" ,
+    while (fscanf(ifp,"%s %s %s %s %s %d %d" ,
             path, cf, sf, mf, site, &Start, &Emergence)
             != EOF) 
     {    

@@ -19,6 +19,7 @@ void GetSimInput()
     char soilfile[100];
     char sitefile[100];
     char management[100];
+    char output[100];
     char cf[100], sf[100], mf[100], site[100];
   
     
@@ -30,9 +31,9 @@ void GetSimInput()
         exit(1);
     }
     
-    count = 0;
-    while (fscanf(ifp,"%s %s %s %s %s %d %d" ,
-            path, cf, sf, mf, site, &Start, &Emergence)
+    count = 1;
+    while (fscanf(ifp,"%s %s %s %s %s %d %d %s" ,
+            path, cf, sf, mf, site, &Start, &Emergence, output)
             != EOF) 
     {    
         strncpy(cropfile, path, 98);
@@ -65,13 +66,13 @@ void GetSimInput()
         GetSoilData(Grid->soil  = malloc(sizeof(Soil)), soilfile);
 
         Grid->start = Start;            // Start day (=day number)
-        Grid->file  = ++count;          // number of elements in Grid carousel
+        Grid->file  = count++;          // number of elements in Grid carousel
         strcpy(Grid->name,sf);          // Set the soil filename as ouput file name
         Grid->emergence = Emergence;    // Start the simulations at emergence (1) or at sowing (0)
         Grid->start = Start;             // Starting day of the simulations     
         Grid->crp->Sowing = 0;
         Grid->crp->Emergence = 0;       // Crop emergence has not yet occurred
-        
+        strcpy(Grid->output, output);
         Grid->next = NULL;
 
     }

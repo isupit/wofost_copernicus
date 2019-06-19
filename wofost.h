@@ -402,7 +402,8 @@ typedef struct SIMUNIT {
         int start;
         int emergence;
         int file;
-        char name[100]; 
+        char name[100];
+        char output[100];
         struct SIMUNIT *next;
         } SimUnit; 
 SimUnit *Grid;

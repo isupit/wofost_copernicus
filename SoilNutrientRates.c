@@ -30,7 +30,7 @@ void SoilNutrientRates()
         Site->rt_K_mins = 0.;         
     }
     
-    day_fl = MeteoDay[Day];
+    day_fl = (float)MeteoDay[Day];
     
     /* NPK amount that comes available for the crop at day_fl through fertilizer applications */
     N_fert = Afgen(Mng->N_Fert_table, &day_fl) * Afgen(Mng->N_Uptake_frac, &day_fl);

@@ -32,7 +32,7 @@ int main() {
     GetMeteoInput();
     
     /* Allocate memory for the file pointers */
-    output = malloc(sizeof(**output) * --Grid->file);
+    output = malloc(sizeof(**output) * Grid->file);
     
     /* Go back to the beginning of the list */
     Grid = initial;
@@ -41,10 +41,8 @@ int main() {
     while (Grid)
     {   /* Make valgrind happy  */
         memset(name,0,100);
-        
-        memcpy(name, Grid->name, strlen(Grid->name)-4);
-        snprintf(name, 2*sizeof (name), "%s%s%d%s", Grid->name, "-", Grid->file,".txt");
-        
+        strcpy(name, Grid->output);
+           
         output[Grid->file] = fopen(name, "w");
         header(output[Grid->file]);
         Grid = Grid->next;
@@ -58,7 +56,7 @@ int main() {
     {
         /* Get the meteodata */
         GetMeteoData(Meteo->file);
-    
+        printf("%s\n", Meteo->file);
         for (Day = 1; Day < 34333; Day++)
         {        
             /* Go back to the beginning of the list */
@@ -106,7 +104,7 @@ int main() {
                         }  
                     }
 
-                    if (MeteoDay[Day] >= Start && Crop->Emergence == 1)
+                    if (Crop->Sowing >= 1 && Crop->Emergence == 1)
                     {   
                         if (Crop->st.Development <= (Crop->prm.DevelopStageHarvest+0.05) && Crop->GrowthDay < CycleLength) 
                         {
@@ -139,13 +137,13 @@ int main() {
 
                             /* Update the number of days that the crop has grown*/
                             Crop->GrowthDay++;
-                            printf("%7d %7d\n", Day, Crop->GrowthDay);
+                            
                         }
                         else
                         {
                             /* Write to the output files */
                             Output(output[Grid->file]);   
-
+                            //printf("%7d %7d\n", MeteoYear[Day], Crop->GrowthDay);
                             Emergence = 0;
                             Crop->Emergence = 0;
                             Crop->Sowing    = 0;

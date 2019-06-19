@@ -59,7 +59,7 @@ RTKMINS  =   0.025  ! fraction of soil mineral K coming available per day [day-1
 * irrigation water applied 
 IRRTAB   =   0., 0.0,  !  irrigation water applied per day [cm]
              164., 0.0, !  as function of day number
-             165., 2.0,
+             165., 0.0,
              166., 0.0,
              200., 0.0,
              201., 0.0,

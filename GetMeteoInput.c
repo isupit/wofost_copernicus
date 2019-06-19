@@ -40,6 +40,7 @@ void GetMeteoInput()
         Meteo->EndYear = EndYear;
         Meteo->lat = lat;
         Meteo->lon = lon;
+        Meteo->next = NULL;
     }
         
     Meteo = initial;

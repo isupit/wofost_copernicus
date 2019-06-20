@@ -6,7 +6,8 @@
 #include "extern.h"
 
 
-int main() {
+int main(int argc, char **argv)
+{
     
     FILE **output;
     
@@ -18,18 +19,28 @@ int main() {
     int Start;
     int Emergence;
     
-    char name[100];
+    char list[MAX_STRING];
+    char meteolist[MAX_STRING];
+    char name[MAX_STRING];
     
     Step = 1.;
     
+    
+    if (argc != 3) exit(0);
+    if (strlen(argv[1]) >= MAX_STRING) exit(0);
+    if (strlen(argv[2]) >= MAX_STRING) exit(0);
+    strncpy(list,argv[1],strlen(argv[1]));
+    strncpy(meteolist,argv[2],strlen(argv[2]));
+            
+    
     /* Fill the crop, soil, site and management place holders*/
-    GetSimInput();
+    GetSimInput(list);
     
     /* Set the initial Grid address */
     initial = Grid;    
     
     /* Get the meteo filenames and put them in the placeholder */
-    GetMeteoInput();
+    GetMeteoInput(meteolist);
     
     /* Allocate memory for the file pointers */
     output = malloc(sizeof(**output) * Grid->file);

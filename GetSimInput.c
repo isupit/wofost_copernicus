@@ -4,7 +4,7 @@
 #include "wofost.h"
 #include "extern.h"
 
-void GetSimInput()
+void GetSimInput(char *list)
 {
     FILE *ifp;
      
@@ -23,11 +23,11 @@ void GetSimInput()
     char cf[100], sf[100], mf[100], site[100];
   
     
-    ifp = fopen("list.txt", "r");
+    ifp = fopen(list, "r");
 
     if (ifp == NULL) 
     {
-        fprintf(stderr, "Can't open input list.txt\n");
+        fprintf(stderr, "Can't open input, %s\n", list);
         exit(1);
     }
     
@@ -65,13 +65,16 @@ void GetSimInput()
         GetManagement(Grid->mng = malloc(sizeof(Management)), management);
         GetSoilData(Grid->soil  = malloc(sizeof(Soil)), soilfile);
 
-        Grid->start = Start;            // Start day (=day number)
-        Grid->file  = count++;          // number of elements in Grid carousel
-        strcpy(Grid->name,sf);          // Set the soil filename as ouput file name
-        Grid->emergence = Emergence;    // Start the simulations at emergence (1) or at sowing (0)
-        Grid->start = Start;             // Starting day of the simulations     
+        //if (strlen(sf) >= MAX_STRING) exit(0);
+        //if (strlen(output) >= MAX_STRING) exit(0);    
+        
+        Grid->start = Start;              // Start day (=day number)
+        Grid->file  = count++;            // number of elements in Grid carousel
+        strcpy(Grid->name,sf);// Set the soil filename as ouput file name
+        Grid->emergence = Emergence;      // Start the simulations at emergence (1) or at sowing (0)
+        Grid->start = Start;              // Starting day of the simulations     
         Grid->crp->Sowing = 0;
-        Grid->crp->Emergence = 0;       // Crop emergence has not yet occurred
+        Grid->crp->Emergence = 0;         // Crop emergence has not yet occurred
         strcpy(Grid->output, output);
         Grid->next = NULL;
 

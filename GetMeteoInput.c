@@ -4,7 +4,7 @@
 #include "wofost.h"
 #include "extern.h"
 
-void GetMeteoInput()
+void GetMeteoInput(char *meteolist)
 {
     FILE *ifp;
     
@@ -16,11 +16,11 @@ void GetMeteoInput()
     float lon;
     char filename[100];
     
-    ifp = fopen("meteolist.txt", "r");
+    ifp = fopen(meteolist, "r");
 
     if (ifp == NULL) 
     {
-        fprintf(stderr, "Can't open input meteolist.txt\n");
+        fprintf(stderr, "Can't open %s\n", meteolist);
         exit(1);
     }
     
@@ -34,7 +34,10 @@ void GetMeteoInput()
         {
             Meteo->next = malloc(sizeof(SimUnit));
             Meteo = Meteo->next;  
-        }    
+        }  
+        
+        //if (strlen(filename) >= MAX_STRING) exit(0);
+        
         strcpy(Meteo->file, filename);
         Meteo->StartYear = StartYear;
         Meteo->EndYear = EndYear;

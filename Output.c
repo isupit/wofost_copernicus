@@ -4,7 +4,7 @@
 
 void header(FILE *fp)
 {
-    fprintf(fp,"Date         Date   DVS     WLV        WST          WSO         WRT         LAI     WSTRESS  SOILM    INF      Rain   NNI        PNI        KNI        NPKI  \n");
+    fprintf(fp,"                Date   Date   DVS       WLV        WST          WSO         WRT         LAI     WSTRESS  SOILM    INF      Rain   NNI        PNI        KNI        NPKI  \n");
 }
 
 void Output(FILE *fp)

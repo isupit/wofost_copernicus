@@ -32,7 +32,7 @@ void GetMeteoInput(char *meteolist)
         }
         else 
         {
-            Meteo->next = malloc(sizeof(SimUnit));
+            Meteo->next = malloc(sizeof(Weather));
             Meteo = Meteo->next;  
         }  
         

@@ -35,8 +35,8 @@ VERNRT   = -10., 0.,
            10., 1., 
            17., 0.,
            30., 0. 
-TSUM1    = 1350.     ! temperature sum from emergence to anthesis [cel d]
-TSUM2    = 1000.     ! temperature sum from anthesis to maturity [cel d]
+TSUM1    = 850.     ! temperature sum from emergence to anthesis [cel d]
+TSUM2    = 850.     ! temperature sum from anthesis to maturity [cel d]
 DTSMTB   =   0.00,    0.00,     ! daily increase in temp. sum 
             30.00,   30.00,     ! as function of av. temp. [cel; cel d]
             45.00,   30.00
@@ -44,7 +44,7 @@ DVSI = 0.           ! initial DVS
 DVSEND   =   2.00   ! development stage at harvest (= 2.0 at maturity [-])
 
 ** initial
-TDWI     = 210.00   ! initial total crop dry weight [kg ha-1]
+TDWI     = 210.   ! initial total crop dry weight [kg ha-1]
 LAIEM    =   0.1365 ! leaf area index at emergence [ha ha-1]
 RGRLAI   =   0.00817 ! maximum relative increase in LAI [ha ha-1 d-1] 
 
@@ -160,7 +160,7 @@ IAIRDU   =   0      ! air ducts in roots present (=1) or not (=0)
 ** rooting
 RDI      =  10.     ! initial rooting depth [cm]
 RRI      =   1.2    ! maximum daily increase in rooting depth [cm d-1]
-RDMCR    = 125.     ! maximum rooting depth [cm]
+RDMCR    = 250.     ! maximum rooting depth [cm]
 
 ** nutrient use
 RDRLV_NPK    = 0.05     ! max. relative death rate of leaves due to nutrient (N-P-K) stress

@@ -68,7 +68,7 @@ int main(int argc, char **argv)
         /* Get the meteodata */
         GetMeteoData(Meteo->file);
         printf("%s\n", Meteo->file);
-        for (Day = 1; Day < 34333; Day++)
+        for (Day = 1; Day < METEO_LENGTH; Day++)
         {        
             /* Go back to the beginning of the list */
             Grid = initial;
@@ -91,16 +91,9 @@ int main(int argc, char **argv)
                 if ( MeteoYear[Day] >=  Meteo->StartYear && MeteoYear[Day] <= Meteo->EndYear + 1)
                 {                
                     /* Determine if the sowing already has occurred */
-                    if (MeteoDay[Day] >= Start &&  Crop->Sowing == 0 )
+                    if (MeteoDay[Day] == Start &&  Crop->Sowing == 0 && MeteoYear[Day] <= Meteo->EndYear)
                     {
-                        if (MeteoYear[Day] <= Meteo->EndYear)
-                        {
-                            Crop->Sowing = 1;
-                        }
-                        else
-                        {
-                            Crop->Sowing = 0;
-                        }
+                        Crop->Sowing = 1;
                     }
                 
                     /* If sowing gas occurred than determine the emergence */
@@ -136,7 +129,7 @@ int main(int argc, char **argv)
                             RateCalculationCrop();
 
                             /* Write to the output files */
-                            //Output(output[Grid->file]);   
+                            Output(output[Grid->file]);   
 
                             /* Calculate LAI */
                             Crop->st.LAI = LeaveAreaIndex();             
@@ -153,7 +146,7 @@ int main(int argc, char **argv)
                         else
                         {
                             /* Write to the output files */
-                            Output(output[Grid->file]);   
+                            //Output(output[Grid->file]);   
                             //printf("%7d %7d\n", MeteoYear[Day], Crop->GrowthDay);
                             Emergence = 0;
                             Crop->Emergence = 0;

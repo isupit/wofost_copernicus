@@ -4,6 +4,13 @@
 #include "wofost.h"
 #include "extern.h"
 
+/* --------------------------------------------------------------------------*/
+/*  function GetMeteoInput()                                                 */
+/*  Purpose: Get the names of meteo files and the start and end year of the  */
+/*           of the simulations. Read the la and lon of the boxes. Store the */
+/*           information of each cell in the Meteo struct.                   */
+/* --------------------------------------------------------------------------*/
+
 void GetMeteoInput(char *meteolist)
 {
     FILE *ifp;
@@ -14,7 +21,7 @@ void GetMeteoInput(char *meteolist)
     int EndYear;
     float lat;
     float lon;
-    char filename[100];
+    char filename[MAX_STRING];
     
     ifp = fopen(meteolist, "r");
 
@@ -36,9 +43,11 @@ void GetMeteoInput(char *meteolist)
             Meteo = Meteo->next;  
         }  
         
-        //if (strlen(filename) >= MAX_STRING) exit(0);
+        if (strlen(filename) >= MAX_STRING) exit(0);
         
-        strcpy(Meteo->file, filename);
+        memset(Meteo->file,0,MAX_STRING);
+        strncpy(Meteo->file, filename, strlen(filename));
+        
         Meteo->StartYear = StartYear;
         Meteo->EndYear = EndYear;
         Meteo->lat = lat;

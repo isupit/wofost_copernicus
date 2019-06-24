@@ -4,6 +4,13 @@
 #include "wofost.h"
 #include "extern.h"
 
+/* ----------------------------------------------------------------------------*/
+/*  function GetMeteoInput()                                                   */
+/*  Purpose: Get the names of the crop, soil, management and site files as     */
+/*           as well if the simulation starting day and whether the simulation */
+/*           starts at emergence (1) or sowing (0)                             */
+/*-----------------------------------------------------------------------------*/
+
 void GetSimInput(char *list)
 {
     FILE *ifp;
@@ -14,13 +21,13 @@ void GetSimInput(char *list)
     int Start;
     int count;
   
-    char path[100];
-    char cropfile[100];
-    char soilfile[100];
-    char sitefile[100];
-    char management[100];
-    char output[100];
-    char cf[100], sf[100], mf[100], site[100];
+    char path[MAX_STRING];
+    char cropfile[MAX_STRING];
+    char soilfile[MAX_STRING];
+    char sitefile[MAX_STRING];
+    char management[MAX_STRING];
+    char output[MAX_STRING];
+    char cf[MAX_STRING], sf[MAX_STRING], mf[MAX_STRING], site[MAX_STRING];
   
     
     ifp = fopen(list, "r");
@@ -36,17 +43,21 @@ void GetSimInput(char *list)
             path, cf, sf, mf, site, &Start, &Emergence, output)
             != EOF) 
     {    
-        strncpy(cropfile, path, 98);
-        strncat(cropfile, cf, 98);
+        memset(cropfile,0,MAX_STRING);
+        memset(soilfile,0,MAX_STRING);
+        memset(management,0,MAX_STRING);
+                
+        strncpy(cropfile, path, strlen(path));
+        strncat(cropfile, cf, strlen(cf));
 
-        strncpy(soilfile, path, 98);
-        strncat(soilfile, sf, 98);
+        strncpy(soilfile, path, strlen(path));
+        strncat(soilfile, sf, strlen(sf));
 
-        strncpy(management, path, 98);
-        strncat(management, mf, 98);
+        strncpy(management, path, strlen(path));
+        strncat(management, mf, strlen(mf));
 
-        strncpy(sitefile, path, 98);
-        strncat(sitefile, site, 98);
+        strncpy(sitefile, path, strlen(path));
+        strncat(sitefile, site, strlen(site));
         
         /* count the number of output files */
         /* number is the index number of the list of file pointers */
@@ -65,19 +76,22 @@ void GetSimInput(char *list)
         GetManagement(Grid->mng = malloc(sizeof(Management)), management);
         GetSoilData(Grid->soil  = malloc(sizeof(Soil)), soilfile);
 
-        //if (strlen(sf) >= MAX_STRING) exit(0);
-        //if (strlen(output) >= MAX_STRING) exit(0);    
+        if (strlen(sf) >= MAX_STRING) exit(0);
+        if (strlen(output) >= MAX_STRING) exit(0);    
+        
+        memset(Grid->name,0,MAX_STRING);
+        memset(Grid->output,0,MAX_STRING);
+        
+        strncpy(Grid->name,sf,strlen(sf));  // Set the soil filename as ouput file name
+        strncpy(Grid->output,output,strlen(output));
         
         Grid->start = Start;              // Start day (=day number)
         Grid->file  = count++;            // number of elements in Grid carousel
-        strcpy(Grid->name,sf);// Set the soil filename as ouput file name
         Grid->emergence = Emergence;      // Start the simulations at emergence (1) or at sowing (0)
         Grid->start = Start;              // Starting day of the simulations     
         Grid->crp->Sowing = 0;
         Grid->crp->Emergence = 0;         // Crop emergence has not yet occurred
-        strcpy(Grid->output, output);
         Grid->next = NULL;
-
     }
     
     fclose(ifp);

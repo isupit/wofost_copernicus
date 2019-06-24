@@ -14,7 +14,7 @@
 #define NR_TABLES_MANAGEMENT    7
 #define NUMBER_OF_TABLES        31
 #define MAX_STRING             2048
-#define METEO_LENGTH           34334
+#define METEO_LENGTH           36600 //max 100 years 
 
 typedef struct TABLE {
 	float x;
@@ -402,14 +402,14 @@ typedef struct SIMUNIT {
         int start;
         int emergence;
         int file;
-        char name[100];
-        char output[100];
+        char name[MAX_STRING];
+        char output[MAX_STRING];
         struct SIMUNIT *next;
         } SimUnit; 
 SimUnit *Grid;
 
 typedef struct WEATHER {
-        char file[100];
+        char file[MAX_STRING];
         int StartYear;
         int EndYear;
         float lat;

@@ -29,9 +29,11 @@ int main(int argc, char **argv)
     if (argc != 3) exit(0);
     if (strlen(argv[1]) >= MAX_STRING) exit(0);
     if (strlen(argv[2]) >= MAX_STRING) exit(0);
+    
+    memset(list,0,MAX_STRING);
+    memset(meteolist,0,MAX_STRING);
     strncpy(list,argv[1],strlen(argv[1]));
     strncpy(meteolist,argv[2],strlen(argv[2]));
-            
     
     /* Fill the crop, soil, site and management place holders*/
     GetSimInput(list);
@@ -51,8 +53,8 @@ int main(int argc, char **argv)
     /* Open the output files */
     while (Grid)
     {   /* Make valgrind happy  */
-        memset(name,0,100);
-        strcpy(name, Grid->output);
+        memset(name,0,MAX_STRING);
+        strncpy(name, Grid->output,strlen(Grid->output));
            
         output[Grid->file] = fopen(name, "w");
         header(output[Grid->file]);

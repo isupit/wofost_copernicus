@@ -30,8 +30,8 @@ int main(int argc, char **argv)
     if (strlen(argv[1]) >= MAX_STRING) exit(0);
     if (strlen(argv[2]) >= MAX_STRING) exit(0);
     
-    memset(list,0,MAX_STRING);
-    memset(meteolist,0,MAX_STRING);
+    memset(list,'\0',MAX_STRING);
+    memset(meteolist,'\0',MAX_STRING);
     strncpy(list,argv[1],strlen(argv[1]));
     strncpy(meteolist,argv[2],strlen(argv[2]));
     
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     /* Open the output files */
     while (Grid)
     {   /* Make valgrind happy  */
-        memset(name,0,MAX_STRING);
+        memset(name,'\0',MAX_STRING);
         strncpy(name, Grid->output,strlen(Grid->output));
            
         output[Grid->file] = fopen(name, "w");
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 
                     if (Crop->Sowing >= 1 && Crop->Emergence == 1)
                     {   
-                        if (Crop->st.Development <= (Crop->prm.DevelopStageHarvest+0.05) && Crop->GrowthDay < CycleLength) 
+                        if (Crop->st.Development <= (Crop->prm.DevelopStageHarvest + 0.005) && Crop->GrowthDay < CycleLength) 
                         {
                             Astro();
                             CalcPenman();
@@ -151,6 +151,7 @@ int main(int argc, char **argv)
                             //Output(output[Grid->file]);   
                             //printf("%7d %7d\n", MeteoYear[Day], Crop->GrowthDay);
                             Emergence = 0;
+                            Crop->TSumEmergence = 0;
                             Crop->Emergence = 0;
                             Crop->Sowing    = 0;
                         }

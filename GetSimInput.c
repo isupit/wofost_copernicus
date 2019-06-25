@@ -43,9 +43,9 @@ void GetSimInput(char *list)
             path, cf, sf, mf, site, &Start, &Emergence, output)
             != EOF) 
     {    
-        memset(cropfile,0,MAX_STRING);
-        memset(soilfile,0,MAX_STRING);
-        memset(management,0,MAX_STRING);
+        memset(cropfile,'\0',MAX_STRING);
+        memset(soilfile,'\0',MAX_STRING);
+        memset(management,'\0',MAX_STRING);
                 
         strncpy(cropfile, path, strlen(path));
         strncat(cropfile, cf, strlen(cf));
@@ -79,8 +79,8 @@ void GetSimInput(char *list)
         if (strlen(sf) >= MAX_STRING) exit(0);
         if (strlen(output) >= MAX_STRING) exit(0);    
         
-        memset(Grid->name,0,MAX_STRING);
-        memset(Grid->output,0,MAX_STRING);
+        memset(Grid->name,'\0',MAX_STRING);
+        memset(Grid->output,'\0',MAX_STRING);
         
         strncpy(Grid->name,sf,strlen(sf));  // Set the soil filename as ouput file name
         strncpy(Grid->output,output,strlen(output));

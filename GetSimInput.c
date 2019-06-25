@@ -18,7 +18,7 @@ void GetSimInput(char *list)
     SimUnit *initial = NULL;
        
     int Emergence;
-    int Start;
+    //int Start;
     int count;
   
     char path[MAX_STRING];
@@ -27,6 +27,7 @@ void GetSimInput(char *list)
     char sitefile[MAX_STRING];
     char management[MAX_STRING];
     char output[MAX_STRING];
+    char start[MAX_STRING];
     char cf[MAX_STRING], sf[MAX_STRING], mf[MAX_STRING], site[MAX_STRING];
   
     
@@ -39,8 +40,8 @@ void GetSimInput(char *list)
     }
     
     count = 1;
-    while (fscanf(ifp,"%s %s %s %s %s %d %d %s" ,
-            path, cf, sf, mf, site, &Start, &Emergence, output)
+    while (fscanf(ifp,"%s %s %s %s %s %s %d %s" ,
+            path, cf, sf, mf, site, start, &Emergence, output)
             != EOF) 
     {    
         memset(cropfile,'\0',MAX_STRING);
@@ -78,17 +79,18 @@ void GetSimInput(char *list)
 
         if (strlen(sf) >= MAX_STRING) exit(0);
         if (strlen(output) >= MAX_STRING) exit(0);    
+        if (strlen(start) >= MAX_STRING) exit(0);  
         
         memset(Grid->name,'\0',MAX_STRING);
         memset(Grid->output,'\0',MAX_STRING);
+        memset(Grid->start,'\0',MAX_STRING);
         
         strncpy(Grid->name,sf,strlen(sf));  // Set the soil filename as ouput file name
         strncpy(Grid->output,output,strlen(output));
+        strncpy(Grid->start,start,strlen(start)) // Starting string month day of the simulations 
         
-        Grid->start = Start;              // Start day (=day number)
         Grid->file  = count++;            // number of elements in Grid carousel
-        Grid->emergence = Emergence;      // Start the simulations at emergence (1) or at sowing (0)
-        Grid->start = Start;              // Starting day of the simulations     
+        Grid->emergence = Emergence;      // Start the simulations at emergence (1) or at sowing (0)                
         Grid->crp->Sowing = 0;
         Grid->crp->Emergence = 0;         // Crop emergence has not yet occurred
         Grid->next = NULL;

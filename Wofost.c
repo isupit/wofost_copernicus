@@ -25,13 +25,13 @@ int main(int argc, char **argv)
     
     Step = 1.;
     
-    
     if (argc != 3) exit(0);
     if (strlen(argv[1]) >= MAX_STRING) exit(0);
     if (strlen(argv[2]) >= MAX_STRING) exit(0);
     
     memset(list,'\0',MAX_STRING);
     memset(meteolist,'\0',MAX_STRING);
+    
     strncpy(list,argv[1],strlen(argv[1]));
     strncpy(meteolist,argv[2],strlen(argv[2]));
     
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
                 WatBal    = Grid->soil;
                 Mng       = Grid->mng;
                 Site      = Grid->ste;
-                Start     = Grid->start;
+                //Start     = Grid->start;
                 Emergence = Grid->emergence; /* Start simulation at sowing or emergence */
                 
                 Temp = 0.5 * (Tmax[Day] + Tmin[Day]);
@@ -93,10 +93,7 @@ int main(int argc, char **argv)
                 if ( MeteoYear[Day] >=  Meteo->StartYear && MeteoYear[Day] <= Meteo->EndYear + 1)
                 {                
                     /* Determine if the sowing already has occurred */
-                    if (MeteoDay[Day] == Start &&  Crop->Sowing == 0 && MeteoYear[Day] <= Meteo->EndYear)
-                    {
-                        Crop->Sowing = 1;
-                    }
+                    IfSowing(Grid->start);
                 
                     /* If sowing gas occurred than determine the emergence */
                     if (Crop->Sowing >= 1 && Crop->Emergence == 0)
@@ -167,9 +164,9 @@ int main(int argc, char **argv)
             }
 
             /* Update time */
-            //simTime.tm_hour = 18;
-            //simTime.tm_mday++;
-            //mktime(&simTime);
+            simTime.tm_hour = 18;
+            simTime.tm_mday++;
+            mktime(&simTime);
         }   
     head = Meteo;
     Meteo = Meteo->next;

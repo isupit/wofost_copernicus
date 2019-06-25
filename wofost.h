@@ -390,7 +390,7 @@ Field *Site; /* Place holder for the current site simulations */
 
 
 /* Simulation time */
-//struct tm simTime;
+struct tm simTime;
 
 
 /* Place holder for a simulation unit */
@@ -399,9 +399,9 @@ typedef struct SIMUNIT {
         Field *ste;
         Management *mng;
         Soil  *soil;
-        int start;
         int emergence;
         int file;
+        char start[MAX_STRING];
         char name[MAX_STRING];
         char output[MAX_STRING];
         struct SIMUNIT *next;

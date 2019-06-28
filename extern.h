@@ -21,6 +21,7 @@ extern void Output();
 extern void header();
 extern void GetSimInput();
 extern void GetMeteoInput();
+extern void IfSowing();
 
 /* Additional functions */
 extern int Astro();

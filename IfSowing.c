@@ -5,39 +5,37 @@
 #include "wofost.h"
 #include "extern.h"
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+/* ---------------------------------------------------------------------------*/
+/*  function void IfSowing    ()                                              */
+/*  Purpose: Checks whether sowing has occurred. Note that if the emergence   */
+/*           flag is set to 1 the crop simulation starts the next day. If it  */
+/*           is set to 0 the Emergence date has to be established.            */
+/* ---------------------------------------------------------------------------*/
 
 void IfSowing(char* dateString)
 {
-    struct tm sowing_date;
-    struct tm current_date;
-     
+    struct tm sowing_date = { 0 };
+    struct tm current_date = { 0 };
     int month, start_day;
      
     if(sscanf(dateString, "%d-%d", &month, &start_day) != EOF)
     {
         sowing_date.tm_year = MeteoYear[Day] -1900;
-        sowing_date.tm_mon = month - 1;
+        sowing_date.tm_mon  = month-1;
         sowing_date.tm_mday = start_day;
-        sowing_date.tm_hour = 0;
-        sowing_date.tm_min = 0;
-        sowing_date.tm_sec = 0;
+        mktime(&sowing_date);   
     }
     
     current_date.tm_year = MeteoYear[Day] -1900;
-    current_date.tm_yday = MeteoDay[Day];
-    current_date.tm_hour = 0;
-    current_date.tm_min = 0;
-    current_date.tm_sec = 0;
+    current_date.tm_mday =  0 + MeteoDay[Day];
+    mktime(&current_date);
     
-    if (difftime(mktime(&sowing_date), mktime(&current_date)) == 0 && 
-            MeteoYear[Day] <= Meteo->EndYear)
+    if (sowing_date.tm_mon == current_date.tm_mon &&
+        sowing_date.tm_mday== current_date.tm_mday && 
+        MeteoYear[Day] <= Meteo->EndYear)
     {
         Crop->Sowing = 1;
+        
     }
     
 }

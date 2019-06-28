@@ -388,11 +388,6 @@ typedef struct FIELD {
         } Field;
 Field *Site; /* Place holder for the current site simulations */
 
-
-/* Simulation time */
-struct tm simTime;
-
-
 /* Place holder for a simulation unit */
 typedef struct SIMUNIT {
         Plant *crp;

@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     Weather *head;
       
     int CycleLength   = 300;
-    int Start;
+    //int Start;
     int Emergence;
     
     char list[MAX_STRING];
@@ -70,8 +70,10 @@ int main(int argc, char **argv)
         /* Get the meteodata */
         GetMeteoData(Meteo->file);
         printf("%s\n", Meteo->file);
-        for (Day = 1; Day < METEO_LENGTH; Day++)
-        {        
+        
+        
+        for (Day = 1; Day < METEO_LENGTH; Day++) //assume that the series start January first
+        {                   
             /* Go back to the beginning of the list */
             Grid = initial;
 
@@ -91,7 +93,7 @@ int main(int argc, char **argv)
                 
                 /* Only simulate between start and end year */
                 if ( MeteoYear[Day] >=  Meteo->StartYear && MeteoYear[Day] <= Meteo->EndYear + 1)
-                {                
+                {   
                     /* Determine if the sowing already has occurred */
                     IfSowing(Grid->start);
                 
@@ -109,7 +111,7 @@ int main(int argc, char **argv)
 
                     if (Crop->Sowing >= 1 && Crop->Emergence == 1)
                     {   
-                        if (Crop->st.Development <= (Crop->prm.DevelopStageHarvest + 0.005) && Crop->GrowthDay < CycleLength) 
+                        if (Crop->st.Development <= (Crop->prm.DevelopStageHarvest) && Crop->GrowthDay < CycleLength) 
                         {
                             Astro();
                             CalcPenman();
@@ -128,7 +130,7 @@ int main(int argc, char **argv)
                             RateCalculationCrop();
 
                             /* Write to the output files */
-                            Output(output[Grid->file]);   
+                            //Output(output[Grid->file]);   
 
                             /* Calculate LAI */
                             Crop->st.LAI = LeaveAreaIndex();             
@@ -145,7 +147,7 @@ int main(int argc, char **argv)
                         else
                         {
                             /* Write to the output files */
-                            //Output(output[Grid->file]);   
+                            Output(output[Grid->file]);   
                             //printf("%7d %7d\n", MeteoYear[Day], Crop->GrowthDay);
                             Emergence = 0;
                             Crop->TSumEmergence = 0;
@@ -162,12 +164,8 @@ int main(int argc, char **argv)
                 Grid->ste  = Site;
                 Grid = Grid->next;
             }
-
-            /* Update time */
-            simTime.tm_hour = 18;
-            simTime.tm_mday++;
-            mktime(&simTime);
-        }   
+        }
+        
     head = Meteo;
     Meteo = Meteo->next;
     free(head);

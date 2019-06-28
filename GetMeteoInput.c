@@ -54,7 +54,7 @@ void GetMeteoInput(char *meteolist)
         Meteo->lon = lon;
         Meteo->next = NULL;
     }
-        
+          
     Meteo = initial;
     fclose(ifp);
   

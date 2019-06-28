@@ -87,7 +87,7 @@ void GetSimInput(char *list)
         
         strncpy(Grid->name,sf,strlen(sf));  // Set the soil filename as ouput file name
         strncpy(Grid->output,output,strlen(output));
-        strncpy(Grid->start,start,strlen(start)) // Starting string month day of the simulations 
+        strncpy(Grid->start,start,strlen(start)); // Starting string month day of the simulations 
         
         Grid->file  = count++;            // number of elements in Grid carousel
         Grid->emergence = Emergence;      // Start the simulations at emergence (1) or at sowing (0)                

@@ -24,7 +24,7 @@
 void CalcPenman()
 {
     float RelSunShineDuration;
-    float Tmpa;
+    //float Tmpa;
     float Tdif;
     float BU;
     float Pbar;
@@ -50,13 +50,13 @@ void CalcPenman()
     /* (Celsius) and the Bu coefficient Bu of the wind function (depends  on    */ 
     /* temperature difference)                                                  */
     
-    Tmpa  = (Tmin[Day] + Tmax[Day])/2.;
+    //Tmpa  = (Tmin[Day] + Tmax[Day])/2.;
     Tdif  = Tmax[Day] - Tmin[Day];
     BU    = 0.54 + 0.35 * limit(0.,1.,(Tdif-12.)/4.);
 
     /* Barometric pressure (mbar)             */
     /* Psychrometric constant (mbar/Celsius)  */
-    Pbar  = 1013.*exp (-0.034*Altitude/(Tmpa + 273.));
+    Pbar  = 1013.*exp (-0.034*Altitude/(Temp + 273.));
     Gamma = Psycon * Pbar/1013.;
 
 
@@ -66,8 +66,8 @@ void CalcPenman()
             
     /* Measured vapour pressure not to exceed saturated vapour pressure */
 
-    SaturatedVap  = 6.10588 * exp(17.32491 * Tmpa/(Tmpa+238.102));
-    delta         = 238.102 * 17.32491 * SaturatedVap/pow((Tmpa +238.102),2);
+    SaturatedVap  = 6.10588 * exp(17.32491 * Temp/(Temp+238.102));
+    delta         = 238.102 * 17.32491 * SaturatedVap/pow((Temp +238.102),2);
     VapourP       = min(Vapour[Day],SaturatedVap);
 
     /* The expression n/N (RelLSSD) from the Penman formula is estimated   */
@@ -79,7 +79,7 @@ void CalcPenman()
 
     /* Terms in Penman formula, for water, soil and canopy            */
     /* Net outgoing long-wave radiation (J/m2/d) acc. to Brunt (1932) */
-    RB  = Stbc * pow((Tmpa+273.),4) * (0.56-0.079 * sqrt(VapourP)) *
+    RB  = Stbc * pow((Temp+273.),4) * (0.56-0.079 * sqrt(VapourP)) *
               (0.1 + 0.9 * RelSunShineDuration);
 
     /* Net absorbed radiation, expressed in mm/d */
@@ -102,7 +102,7 @@ void CalcPenman()
 
 void CalcPenmanMonteith()
 {
-    float Tmpa;
+    //float Tmpa;
     float Vap;
     float Patm;
     float Gamma;
@@ -126,7 +126,7 @@ void CalcPenmanMonteith()
     float G = 0.;
 
     // mean daily temperature (Celsius)
-    Tmpa  = (Tmin[Day] + Tmax[Day])/2.;
+    //Tmpa  = (Tmin[Day] + Tmax[Day])/2.;
 
     // Vapour pressure to kPa
     Vap = 0.1 * (Vapour[Day]);
@@ -139,8 +139,8 @@ void CalcPenmanMonteith()
 
     // Derivative of SVAP with respect to mean temperature, i.e.
     // slope of the SVAP-temperature curve (kPa/Celsius);
-    Svap_Tmpa = 0.6108 * exp((17.27 * Tmpa) / (237.3 + Tmpa));
-    Delta = (4098. * Svap_Tmpa)/pow((Tmpa + 237.3), 2);
+    Svap_Tmpa = 0.6108 * exp((17.27 * Temp) / (237.3 + Temp));
+    Delta = (4098. * Svap_Tmpa)/pow((Temp + 237.3), 2);
 
     // Daily average saturated vapour pressure [kPa] from min/max temperature
     Svap_Tmax = 0.6108 * exp((17.27 * Tmax[Day]) / (237.3 + Tmax[Day]));
@@ -171,7 +171,7 @@ void CalcPenmanMonteith()
         Rn = ((1-Refcfc) * Radiation[Day] - Rnl)/Lhvap;
 
         // aerodynamic evaporation equivalent [mm/day]
-        EA = ((900./(Tmpa + 273.)) * Windspeed[Day] * (Svap - Vap));
+        EA = ((900./(Temp + 273.)) * Windspeed[Day] * (Svap - Vap));
 
         // Modified psychometric constant (gamma*)[kPa/C]
         MGamma = Gamma * (1. + (Cres/208. * Windspeed[Day]));

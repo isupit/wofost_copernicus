@@ -128,10 +128,10 @@ float Correct(float Assimilation)
     }
     
     Counter = 0;
-    PreviousDay = MeteoDay[Day];
+    PreviousDay = Day;
     while (PreviousDay >= 0 && Counter < number)
     {
-      TminLowAvg += Tmin[PreviousDay--]; 
+      TminLowAvg += Tmin[Day--]; 
       Counter++;
     }
 

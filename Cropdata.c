@@ -12,7 +12,7 @@
 
 void GetCropData(Plant *CROP, char *cropfile)
 {
-    AFGEN *Table[NR_TABLES_CRP], *start;
+    TABLE *Table[NR_TABLES_CRP], *start;
 
     int i, c, count;
     float Variable[NR_VARIABLES_CRP], XValue, YValue;
@@ -70,13 +70,13 @@ void GetCropData(Plant *CROP, char *cropfile)
       while ((c=fscanf(fq,"%s",word)) != EOF) 
       {
         if (!strcmp(word, CropParam2[i])) {
-            Table[i] = start= malloc(sizeof(AFGEN));
+            Table[i] = start= malloc(sizeof(TABLE));
             fscanf(fq,"%s %f %s  %f", x, &Table[i]->x, xx, &Table[i]->y);
             Table[i]->next = NULL;				     
 
             while ((c=fgetc(fq)) !='\n');
             while (fscanf(fq," %f %s  %f",  &XValue, xx, &YValue) > 0)  {
-                Table[i]->next = malloc(sizeof(AFGEN));
+                Table[i]->next = malloc(sizeof(TABLE));
                 Table[i] = Table[i]->next; 
                 Table[i]->next = NULL;
                 Table[i]->x = XValue;

@@ -11,7 +11,7 @@ void Clean(SimUnit *Grid)
 {
     SimUnit *initial, *GridHead;
     Green *LeaveProperties;
-    AFGEN *head;
+    TABLE *head;
     
     /* Store pointer of the beginning of the list */
     initial = Grid;

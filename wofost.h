@@ -16,21 +16,21 @@
 #define MAX_STRING             2048
 #define METEO_LENGTH           36600 //max 100 years 
 
-typedef struct TABLE {
+typedef struct TBL {
 	float x;
 	float y;
-	struct TABLE *next;
-	} AFGEN;
+	struct TBL *next;
+	} TABLE;
 
 typedef struct MANAGEMENT {
         /** Tables for fertilizer application and recovery fraction **/
-        AFGEN *N_Fert_table;
-        AFGEN *P_Fert_table;
-        AFGEN *K_Fert_table;
-        AFGEN *N_Uptake_frac;
-        AFGEN *P_Uptake_frac;
-        AFGEN *K_Uptake_frac;
-        AFGEN *Irrigation;
+        TABLE *N_Fert_table;
+        TABLE *P_Fert_table;
+        TABLE *K_Fert_table;
+        TABLE *N_Uptake_frac;
+        TABLE *P_Uptake_frac;
+        TABLE *K_Uptake_frac;
+        TABLE *Irrigation;
         
         float N_Mins;
         float NRecoveryFrac;
@@ -55,33 +55,33 @@ typedef struct CONSTANTS {
 
 typedef struct PARAMETERS {
           /** Tables for the Crop simulations **/
-        AFGEN *Roots;
-        AFGEN *Stems;
-        AFGEN *Leaves;
-        AFGEN *Storage;
+        TABLE *Roots;
+        TABLE *Stems;
+        TABLE *Leaves;
+        TABLE *Storage;
 
-        AFGEN *VernalizationRate;
-        AFGEN *DeltaTempSum;
-        AFGEN *SpecificLeaveArea;
-        AFGEN *SpecificStemArea;
-        AFGEN *KDiffuseTb;
-        AFGEN *EFFTb;
-        AFGEN *MaxAssimRate; 
-        AFGEN *FactorAssimRateTemp;
-        AFGEN *FactorGrossAssimTemp;
-        AFGEN *FactorSenescence;
-        AFGEN *DeathRateStems;
-        AFGEN *DeathRateRoots; 
+        TABLE *VernalizationRate;
+        TABLE *DeltaTempSum;
+        TABLE *SpecificLeaveArea;
+        TABLE *SpecificStemArea;
+        TABLE *KDiffuseTb;
+        TABLE *EFFTb;
+        TABLE *MaxAssimRate; 
+        TABLE *FactorAssimRateTemp;
+        TABLE *FactorGrossAssimTemp;
+        TABLE *FactorSenescence;
+        TABLE *DeathRateStems;
+        TABLE *DeathRateRoots; 
         
         /** Tables to account for the atmospheric CO2 concentration **/
-        AFGEN *CO2AMAXTB;
-        AFGEN *CO2EFFTB;
-        AFGEN *CO2TRATB;
+        TABLE *CO2AMAXTB;
+        TABLE *CO2EFFTB;
+        TABLE *CO2TRATB;
 
         /** Tables for the maximum nutrient content in leaves as a function of DVS **/
-        AFGEN *N_MaxLeaves;
-        AFGEN *P_MaxLeaves;
-        AFGEN *K_MaxLeaves;
+        TABLE *N_MaxLeaves;
+        TABLE *P_MaxLeaves;
+        TABLE *K_MaxLeaves;
 
         /** Static Variables  **/
         /**  Emergence  **/
@@ -342,8 +342,8 @@ typedef struct SOIL {
         float InfPreviousDay;
         
         /* Tables for Soil */
-        AFGEN *VolumetricSoilMoisture;
-        AFGEN *HydraulicConductivity; /* currently not used */
+        TABLE *VolumetricSoilMoisture;
+        TABLE *HydraulicConductivity; /* currently not used */
         
         Constants ct;
         States st;
@@ -384,7 +384,7 @@ typedef struct FIELD {
         float rt_K_mins;
         
         /** Table for the fraction of precipitation that does not infiltrate **/
-        AFGEN *NotInfTB;
+        TABLE *NotInfTB;
         } Field;
 Field *Site; /* Place holder for the current site simulations */
 

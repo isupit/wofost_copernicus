@@ -14,7 +14,7 @@ void SoilNutrientRates()
     float P_fert;
     float K_fert;
     
-    float day_fl;
+    float day_fl = (float)MeteoDay[Day];
     
     if (Crop->st.Development > 0. && Crop->st.Development <= Crop->prm.DevelopmentStageNLimit)
     {   /* NPK rates that come available through mineralization, cannot exceed */
@@ -33,9 +33,9 @@ void SoilNutrientRates()
     day_fl = (float)MeteoDay[Day];
     
     /* NPK amount that comes available for the crop at day_fl through fertilizer applications */
-    N_fert = Afgen(Mng->N_Fert_table, &day_fl) * Afgen(Mng->N_Uptake_frac, &day_fl);
-    P_fert = Afgen(Mng->P_Fert_table, &day_fl) * Afgen(Mng->P_Uptake_frac, &day_fl);
-    K_fert = Afgen(Mng->K_Fert_table, &day_fl) * Afgen(Mng->K_Uptake_frac, &day_fl);
+    N_fert = List(Mng->N_Fert_table, &day_fl) * Afgen(Mng->N_Uptake_frac, &day_fl);
+    P_fert = List(Mng->P_Fert_table, &day_fl) * Afgen(Mng->P_Uptake_frac, &day_fl);
+    K_fert = List(Mng->K_Fert_table, &day_fl) * Afgen(Mng->K_Uptake_frac, &day_fl);
     
     /* Change in total inorganic NPK in soil as function of fertilizer input, */
     /* soil NPK mineralization and crop uptake                                */

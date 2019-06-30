@@ -75,6 +75,11 @@ void RateCalulationWatBal() {
     float WELOW;
     float RINPRE; // Preliminary infiltration rate 
     
+    float day_fl = (float)MeteoDay[Day];
+    
+    /* Get the irrigation rate */
+    WatBal->rt.Irrigation = Afgen(Mng->Irrigation, &(day_fl));
+    
     /* If surface storage > 1 cm */
     if (WatBal->st.SurfaceStorage > 1.) 
     {
@@ -154,10 +159,7 @@ void RateCalulationWatBal() {
     /* Rates of change in amounts of moisture W and WLOW */
     WatBal->rt.RootZoneMoisture = -WatBal->rt.Transpiration - WatBal->rt.EvapSoil -  
             WatBal->rt.Percolation + WatBal->rt.Infiltration;
-    WatBal->rt.MoistureLOW = WatBal->rt.Percolation - WatBal->rt.Loss;
-    
-
-             
+    WatBal->rt.MoistureLOW = WatBal->rt.Percolation - WatBal->rt.Loss;             
 }
 
 
@@ -229,5 +231,4 @@ void IntegrationWatBal()
     /* Store the infiltration rate of the previous day */
      WatBal->InfPreviousDay = WatBal->rt.Infiltration;
      
-  
 }

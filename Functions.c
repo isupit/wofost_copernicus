@@ -1,4 +1,26 @@
 #include <stdio.h>
+#include <ctype.h>
+#include "wofost.h"
+
+/* ---------------------------------------------------------------------------*/
+/*  function List()                                                           */
+/*  Purpose: Get the value of a user provided input table                     */
+/* ---------------------------------------------------------------------------*/
+
+float List(TABLE *Table, float *X)
+{
+if (*X < Table->x)  return 0.;
+
+while (Table->next) 
+{
+    if (*X == Table->x)  
+	return (Table->y);
+    Table = Table->next;
+}        
+
+return 0.;
+}       
+  
 
 float limit(float a, float b, float c)
 {
@@ -39,3 +61,4 @@ float max(float a, float b)
 {
     return ((a > b) ? a : b);
 }
+

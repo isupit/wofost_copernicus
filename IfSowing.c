@@ -35,7 +35,5 @@ void IfSowing(char* dateString)
         MeteoYear[Day] <= Meteo->EndYear)
     {
         Crop->Sowing = 1;
-        
     }
-    
 }

@@ -7,7 +7,7 @@
 
 void GetSiteData(Field *SITE, char *sitefile)
 {
-  AFGEN *Table[NR_TABLES_SITE], *start;
+  TABLE *Table[NR_TABLES_SITE], *start;
   
   int i, c;
   float Variable[NR_VARIABLES_SITE], XValue, YValue;
@@ -47,13 +47,13 @@ void GetSiteData(Field *SITE, char *sitefile)
   i=0;
   while ((c=fscanf(fq,"%s",word)) != EOF) {
     if (!strcmp(word, SiteParam2[i])) {
-        Table[i]= start= malloc(sizeof(AFGEN));
+        Table[i]= start= malloc(sizeof(TABLE));
 	fscanf(fq,"%s %f %s  %f", x, &Table[i]->x, xx, &Table[i]->y);
         Table[i]->next = NULL;				     
 			       
 	while ((c=fgetc(fq)) !='\n');
 	while (fscanf(fq," %f %s  %f",  &XValue, xx, &YValue) > 0) {
- 	    Table[i]->next = malloc(sizeof(AFGEN));
+ 	    Table[i]->next = malloc(sizeof(TABLE));
             Table[i] = Table[i]->next; 
             Table[i]->next = NULL;
 	    Table[i]->x = XValue;

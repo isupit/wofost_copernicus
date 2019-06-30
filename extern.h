@@ -12,6 +12,7 @@ float DayTemp;
 extern float max(float a, float b);
 extern float min(float a, float b);
 extern float Afgen();
+extern float List();
 extern float limit(float a, float b, float c);
 extern float notnul(float x);
 extern float insw(float x1, float x2, float x3);

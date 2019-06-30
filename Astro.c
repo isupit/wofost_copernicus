@@ -26,13 +26,13 @@ int Astro()
     float DSinB;
     float FractionDiffuseRad;
     
-    int day = MeteoDay[Day];
+    float day_fl = MeteoDay[Day];
     
     if (fabsf(Latitude) > 90.) return 0;  
 
     /* We start at Day= 1, we do not use Day = 0 */
-    Declination    = -asin(sin(23.45*RAD)*cos(2.*PI*(float)(day+10.)/365.));
-    SolarConstant  = 1370.*(1.+0.033*cos(2.*PI*(float)(day)/365.));
+    Declination    = -asin(sin(23.45*RAD)*cos(2.*PI*(day_fl+10.)/365.));
+    SolarConstant  = 1370.*(1.+0.033*cos(2.*PI*(day_fl)/365.));
   
     SinLD = sin(RAD*Latitude)*sin(Declination);
     CosLD = cos(RAD*Latitude)*cos(Declination);

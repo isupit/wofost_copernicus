@@ -31,7 +31,7 @@ float List(TABLE_D *Table)
     current_date.tm_mday =  0 + MeteoDay[Day];
     mktime(&current_date);
 
-    while (Table->next) 
+    while (Table) 
     {
         application_date.tm_year = MeteoYear[Day] -1900;
         application_date.tm_mon  = Table->month -1;

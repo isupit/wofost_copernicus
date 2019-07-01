@@ -29,9 +29,9 @@ void SoilNutrientRates()
     }
     
     /* NPK amount that comes available for the crop at day_fl through fertilizer applications */
-    N_fert = List(Mng->N_Fert_table) * (Mng->N_Uptake_frac);
-    P_fert = List(Mng->P_Fert_table) * (Mng->P_Uptake_frac);
-    K_fert = List(Mng->K_Fert_table) * (Mng->K_Uptake_frac);
+    N_fert = List(Mng->N_Fert_table) * Mng->N_Uptake_frac;
+    P_fert = List(Mng->P_Fert_table) * Mng->P_Uptake_frac;
+    K_fert = List(Mng->K_Fert_table) * Mng->K_Uptake_frac;
     
     /* Change in total inorganic NPK in soil as function of fertilizer input, */
     /* soil NPK mineralization and crop uptake                                */

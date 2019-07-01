@@ -9,9 +9,7 @@
 /* --------------------------------------------------------------------*/
 
 void InitializeNutrients()
-{
-    float day_fl = (float)MeteoDay[Day];
-    
+{    
     /* Initial maximum N concentration in plant organs per kg biomass [kg N kg-1 dry biomass]   */
     Crop->N_st.Max_lv = Afgen(Crop->prm.N_MaxLeaves, &(Crop->st.Development));
     Crop->N_st.Max_st = Crop->prm.N_MaxStems * Crop->N_st.Max_lv;
@@ -79,9 +77,9 @@ void InitializeNutrients()
     
     
      /* Set the soil nutrient states */
-    Site->st_N_tot = List(Mng->N_Fert_table, &day_fl) * Afgen(Mng->N_Uptake_frac, &day_fl);
-    Site->st_P_tot = List(Mng->P_Fert_table, &day_fl) * Afgen(Mng->P_Uptake_frac, &day_fl);
-    Site->st_K_tot = List(Mng->K_Fert_table, &day_fl) * Afgen(Mng->K_Uptake_frac, &day_fl);
+    Site->st_N_tot = List(Mng->N_Fert_table) * Mng->N_Uptake_frac;
+    Site->st_P_tot = List(Mng->P_Fert_table) * Mng->P_Uptake_frac;
+    Site->st_K_tot = List(Mng->K_Fert_table) * Mng->K_Uptake_frac;
 
     Site->st_N_mins = Mng->N_Mins;
     Site->st_P_mins = Mng->P_Mins;

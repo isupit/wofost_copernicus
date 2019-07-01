@@ -10,9 +10,8 @@ void GetManagement(Management *MNG, char *management)
   
   int i, c;
   float Variable[100], YValue;
-  char x[2], xx[2],  word[100];
-  char dateString[70];
-  float test;
+  char x[2], word[100];
+  char dateString[7];
   FILE *fq;
 
  if ((fq = fopen(management, "rt")) == NULL) {
@@ -50,21 +49,21 @@ void GetManagement(Management *MNG, char *management)
   {
     if (!strcmp(word, ManageParam2[i])) {
         
-        //memset(dateString,'\0',7);
-        Table[i] = start = malloc(sizeof(TABLE));
+        memset(dateString,'\0',7);
+        Table[i] = start = malloc(sizeof(TABLE_D));
 	fscanf(fq,"%s %s %f", x,dateString, &Table[i]->amount);
         //fscanf(fq,"%s %s %f,", x, dateString, &test);
         
         if (strlen(dateString) >= 6) exit(0);
-        
         sscanf(dateString, "%d-%d", &Table[i]->month,&Table[i]->day);
         Table[i]->next = NULL;				     
-			       
+			   
+        memset(dateString,'\0',7);  
 	while ((c=fgetc(fq)) !='\n');
-	while (fscanf(fq,"%s  %f",  dateString,  &YValue) > 0)  
-        {
-            //memset(dateString,'\0',7);                    
+	while (fscanf(fq,"%s  %f",  dateString,  &YValue) == 2)  
+        {               
 	    Table[i]->next = malloc(sizeof(TABLE));
+            Table[i] = Table[i]->next; 
             sscanf(dateString, "%d-%d", &Table[i]->month,&Table[i]->day);
 	    Table[i]->amount = YValue;
             Table[i]->next = NULL;

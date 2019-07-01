@@ -176,13 +176,15 @@ void FillSiteVariables(Field *SITE, float *Variable) {
 
 void FillManageVariables(Management *MNG, float *Variable) {
     int i;
-    
-    MNG->N_Mins                          = Variable[0];
-    MNG->NRecoveryFrac                   = Variable[1];
-    MNG->P_Mins                          = Variable[2];
-    MNG->PRecoveryFrac                   = Variable[3];
-    MNG->K_Mins                          = Variable[4];
-    MNG->KRecoveryFrac                   = Variable[5];
+    MNG->N_Uptake_frac                   = Variable[0];
+    MNG->P_Uptake_frac                   = Variable[1];
+    MNG->K_Uptake_frac                   = Variable[2];
+    MNG->N_Mins                          = Variable[3];
+    MNG->NRecoveryFrac                   = Variable[4];
+    MNG->P_Mins                          = Variable[5];
+    MNG->PRecoveryFrac                   = Variable[6];
+    MNG->K_Mins                          = Variable[7];
+    MNG->KRecoveryFrac                   = Variable[8];
     
     for (i=0;i<=NR_VARIABLES_MANAGEMENT;i++) 
     {

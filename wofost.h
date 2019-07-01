@@ -10,8 +10,8 @@
 #define NR_VARIABLES_SOIL       12
 #define NR_VARIABLES_SOIL_USED  6
 #define NR_TABLES_SOIL          2
-#define NR_VARIABLES_MANAGEMENT 6
-#define NR_TABLES_MANAGEMENT    7
+#define NR_VARIABLES_MANAGEMENT 9
+#define NR_TABLES_MANAGEMENT    4
 #define NUMBER_OF_TABLES        31
 #define MAX_STRING             2048
 #define METEO_LENGTH           36600 //max 100 years 
@@ -21,16 +21,20 @@ typedef struct TBL {
 	float y;
 	struct TBL *next;
 	} TABLE;
+        
+typedef struct TBLD {
+	int month;
+	int day;
+        float amount;
+	struct TBLD *next;
+	} TABLE_D;
 
 typedef struct MANAGEMENT {
         /** Tables for fertilizer application and recovery fraction **/
-        TABLE *N_Fert_table;
-        TABLE *P_Fert_table;
-        TABLE *K_Fert_table;
-        TABLE *N_Uptake_frac;
-        TABLE *P_Uptake_frac;
-        TABLE *K_Uptake_frac;
-        TABLE *Irrigation;
+        TABLE_D *N_Fert_table;
+        TABLE_D *P_Fert_table;
+        TABLE_D *K_Fert_table;
+        TABLE_D *Irrigation;
         
         float N_Mins;
         float NRecoveryFrac;
@@ -38,6 +42,9 @@ typedef struct MANAGEMENT {
         float PRecoveryFrac;
         float K_Mins; 
         float KRecoveryFrac;
+        float N_Uptake_frac;
+        float P_Uptake_frac;
+        float K_Uptake_frac;
         } Management;
 Management *Mng;
 

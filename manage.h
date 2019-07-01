@@ -1,7 +1,10 @@
 #ifndef MANAGE_H
 #define MANAGE_H
 
-char *ManageParam[]={ "NMINS",
+char *ManageParam[]={"NRFTAB",
+                   "PRFTAB",
+                   "KRFTAB",
+                   "NMINS",
                    "RTNMINS",
 		   "PMINS",
 		   "RTPMINS",
@@ -14,9 +17,6 @@ char *ManageParam2[]={
                     "FERNTAB",
                     "FERPTAB",
                     "FERKTAB",
-                    "NRFTAB",
-                    "PRFTAB",
-                    "KRFTAB",
                     "IRRTAB",
                     "NULL"
 		    };

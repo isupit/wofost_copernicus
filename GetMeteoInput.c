@@ -45,7 +45,7 @@ void GetMeteoInput(char *meteolist)
         
         if (strlen(filename) >= MAX_STRING) exit(0);
         
-        memset(Meteo->file,0,MAX_STRING);
+        memset(Meteo->file,'\0',MAX_STRING);
         strncpy(Meteo->file, filename, strlen(filename));
         
         Meteo->StartYear = StartYear;

@@ -131,7 +131,7 @@ float Correct(float Assimilation)
     PreviousDay = Day;
     while (PreviousDay >= 0 && Counter < number)
     {
-      TminLowAvg += Tmin[Day--]; 
+      TminLowAvg += Tmin[PreviousDay--]; 
       Counter++;
     }
 

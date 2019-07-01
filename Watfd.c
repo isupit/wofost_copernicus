@@ -75,10 +75,9 @@ void RateCalulationWatBal() {
     float WELOW;
     float RINPRE; // Preliminary infiltration rate 
     
-    float day_fl = (float)MeteoDay[Day];
     
     /* Get the irrigation rate */
-    WatBal->rt.Irrigation = Afgen(Mng->Irrigation, &(day_fl));
+    WatBal->rt.Irrigation = List(Mng->Irrigation);
     
     /* If surface storage > 1 cm */
     if (WatBal->st.SurfaceStorage > 1.) 

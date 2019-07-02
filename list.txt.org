@@ -1,4 +1,0 @@
-./data/ wwh107.cab ec1.new manage-1.dat site-1.sit 1974-01-01 NL 1    1
-./data/ pot701.cab ec2.new manage-2.dat site-2.sit 1974-01-01 NL 105  1
-./data/ mag201.cab ec3.new manage-3.dat site-3.sit 1974-01-01 NL 135  0
-./data/ sorghum.cab ec3.new manage-3.dat site-3.sit 1974-01-01 NL 135  1

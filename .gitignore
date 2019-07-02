@@ -1,10 +1,9 @@
 wofost
 data/run.var
 nbproject
-list.txt
 mag201
 pot201
 wwh107
 *.o
 *.core
-
+*.txt

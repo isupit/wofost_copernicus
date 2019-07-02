@@ -277,36 +277,6 @@ void Clean(SimUnit *Grid)
         Grid->mng->K_Fert_table = NULL;
 
 
-/*        while(Grid->mng->N_Uptake_frac)
-        {
-            head = Grid->mng->N_Uptake_frac;
-            Grid->mng->N_Uptake_frac = Grid->mng->N_Uptake_frac->next;
-            free(head);
-        }
-        free(Grid->mng->N_Uptake_frac);
-        Grid->mng->N_Uptake_frac = NULL;
-
-
-        while(Grid->mng->P_Uptake_frac)
-        {
-            head = Grid->mng->P_Uptake_frac;
-            Grid->mng->P_Uptake_frac = Grid->mng->P_Uptake_frac->next;
-            free(head);
-        }
-        free(Grid->mng->P_Uptake_frac);
-        Grid->mng->P_Uptake_frac = NULL;
-
-
-        while(Grid->mng->K_Uptake_frac)        
-        {
-            head = Grid->mng->K_Uptake_frac;
-            Grid->mng->K_Uptake_frac = Grid->mng->K_Uptake_frac->next;
-            free(head);
-        }
-        free(Grid->mng->K_Uptake_frac);
-        Grid->mng->K_Uptake_frac = NULL;*/
-
-
         while(Grid->mng->Irrigation)        
         {
             head_D = Grid->mng->Irrigation;

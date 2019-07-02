@@ -16,7 +16,7 @@ int EmergenceCrop(int Emergence)
 {
     float DeltaTempSum;
      
-    /*  Emergence has not taken place yet*/
+    /*  Emergence has not taken place yet */
     if (!Emergence)
 	{
             /* Start counting TSumEmergence one day after sowing */

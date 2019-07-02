@@ -16,6 +16,8 @@
 #define MAX_STRING             2048
 #define METEO_LENGTH           36600 //max 100 years 
 
+struct tm current_date;
+
 typedef struct TBL {
 	float x;
 	float y;

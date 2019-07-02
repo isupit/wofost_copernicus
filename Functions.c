@@ -1,56 +1,5 @@
-#include <stdio.h>
-#include <ctype.h>
 #include "wofost.h"
 #include "extern.h"
-
-/* ---------------------------------------------------------------------------*/
-/*  function List()                                                           */
-/*  Purpose: Get the value of a user provided input table                     */
-/* ---------------------------------------------------------------------------*/
-
-//float List_D(TABLE *Table, float *X)
-//{
-//if (*X < Table->x)  return 0.;
-//
-//while (Table->next) 
-//{
-//    if (*X == Table->x)  
-//	return (Table->y);
-//    Table = Table->next;
-//}        
-//
-//return 0.;
-//}       
-  
-float List(TABLE_D *Table)
-{
-    struct tm application_date = { 0 };
-    struct tm current_date = { 0 };
-    
-    current_date.tm_year = MeteoYear[Day] -1900;
-    current_date.tm_mday =  0 + MeteoDay[Day];
-    mktime(&current_date);
-
-    while (Table) 
-    {
-        application_date.tm_year = MeteoYear[Day] -1900;
-        application_date.tm_mon  = Table->month -1;
-        application_date.tm_mday = Table->day;
-        mktime(&application_date);   
-  
-        if (application_date.tm_mon == current_date.tm_mon &&
-            application_date.tm_mday== current_date.tm_mday && 
-            MeteoYear[Day] <= Meteo->EndYear)
-        {
-            return Table->amount;
-        }
-        Table = Table->next;
-    }
-    
-    return 0.;
-}
-
-
 
 float limit(float a, float b, float c)
 {

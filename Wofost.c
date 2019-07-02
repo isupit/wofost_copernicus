@@ -76,6 +76,12 @@ int main(int argc, char **argv)
         {                   
             /* Go back to the beginning of the list */
             Grid = initial;
+            
+            /* Set the date struct */
+            memset(&current_date, 0, sizeof(current_date)); 
+            current_date.tm_year = MeteoYear[Day] -1900;
+            current_date.tm_mday =  0 + MeteoDay[Day];
+            mktime(&current_date);
 
             while (Grid)
             {

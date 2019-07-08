@@ -406,7 +406,6 @@ typedef struct SIMUNIT {
         int emergence;
         int file;
         char start[MAX_STRING];
-        char name[MAX_STRING];
         char output[MAX_STRING];
         struct SIMUNIT *next;
         } SimUnit; 

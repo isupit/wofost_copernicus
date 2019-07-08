@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     Weather *head;
       
     int CycleLength   = 300;
-    //int Start;
+    int NumberOfFiles;
     int Emergence;
     
     char list[MAX_STRING];
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     strncpy(meteolist,argv[2],strlen(argv[2]));
     
     /* Fill the crop, soil, site and management place holders*/
-    GetSimInput(list);
+    NumberOfFiles = GetSimInput(list);
     
     /* Set the initial Grid address */
     initial = Grid;    
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     GetMeteoInput(meteolist);
     
     /* Allocate memory for the file pointers */
-    output = malloc(sizeof(**output) * Grid->file);
+    output = malloc(sizeof(**output) * NumberOfFiles);
     
     /* Go back to the beginning of the list */
     Grid = initial;

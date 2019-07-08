@@ -20,7 +20,7 @@ extern int leap_year(int year);
 extern void RatesToZero();
 extern void Output();
 extern void header();
-extern void GetSimInput();
+extern int GetSimInput();
 extern void GetMeteoInput();
 extern void IfSowing();
 

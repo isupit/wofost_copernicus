@@ -12,7 +12,6 @@ int main(int argc, char **argv)
     FILE **output;
     
     SimUnit *initial  = NULL;
-    //Weather *Meteo = NULL;
     Weather *head;
       
     int CycleLength   = 300;

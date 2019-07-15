@@ -16,6 +16,9 @@
 #define MAX_STRING             2048
 #define METEO_LENGTH           36600 //max 100 years 
 
+#define NLATS 24
+#define NLONS 28
+
 struct tm current_date;
 
 typedef struct TBL {
@@ -412,29 +415,27 @@ typedef struct SIMUNIT {
 SimUnit *Grid;
 
 typedef struct WEATHER {
-        char file[MAX_STRING];
+        char path[MAX_STRING];
+        char model[MAX_STRING];
+        int Initial;
         int StartYear;
         int EndYear;
-        float lat;
-        float lon;
         struct WEATHER *next;
         } Weather;
 Weather *Meteo; /* Place holder for the meteo filenames and lat/lon */
 
 /** Meteorological Variables  **/
 int Station, Year;
-int MeteoYear[METEO_LENGTH];
-int MeteoDay[METEO_LENGTH];
 float CO2;
 float AngstA;
 float AngstB;
 float Longitude, Latitude, Altitude;
-float Tmin[METEO_LENGTH];
-float Tmax[METEO_LENGTH];
-float Radiation[METEO_LENGTH];
-float Rain[METEO_LENGTH];
-float Windspeed[METEO_LENGTH];
-float Vapour[METEO_LENGTH];
+float Tmin[NLATS][NLONS][METEO_LENGTH];
+float Tmax[NLATS][NLONS][METEO_LENGTH];
+float Radiation[NLATS][NLONS][METEO_LENGTH];
+float Rain[NLATS][NLONS][METEO_LENGTH];
+float Windspeed[NLATS][NLONS][METEO_LENGTH];
+float Vapour[NLATS][NLONS][METEO_LENGTH];
 
 
 /* Time step */

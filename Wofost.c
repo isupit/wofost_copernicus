@@ -67,10 +67,11 @@ int main(int argc, char **argv)
     while (Meteo)
     {
         /* Get the meteodata */
-        GetMeteoData(Meteo->file);
-        printf("%s\n", Meteo->file);
+        GetMeteoData(Meteo->model);
+        printf("%s\n", Meteo->model);
         
-        
+        for (lat = 0; lat < NLATS; lat++)
+        for (lon = 0; lon < NLONS; lon++)
         for (Day = 1; Day < METEO_LENGTH; Day++) //assume that the series start January first
         {                   
             /* Go back to the beginning of the list */
@@ -78,8 +79,8 @@ int main(int argc, char **argv)
             
             /* Set the date struct */
             memset(&current_date, 0, sizeof(current_date)); 
-            current_date.tm_year = MeteoYear[Day] -1900;
-            current_date.tm_mday =  0 + MeteoDay[Day];
+            current_date.tm_year = Meteo->Initial -1900;
+            current_date.tm_mday =  0 + Day;
             mktime(&current_date);
 
             while (Grid)
@@ -90,6 +91,7 @@ int main(int argc, char **argv)
                 WatBal    = Grid->soil;
                 Mng       = Grid->mng;
                 Site      = Grid->ste;
+                
                 //Start     = Grid->start;
                 Emergence = Grid->emergence; /* Start simulation at sowing or emergence */
                 
@@ -97,7 +99,8 @@ int main(int argc, char **argv)
                 DayTemp = 0.5 * (Tmax[Day] + Temp);
                 
                 /* Only simulate between start and end year */
-                if ( MeteoYear[Day] >=  Meteo->StartYear && MeteoYear[Day] <= Meteo->EndYear + 1)
+                if ( current_date.tm_year >=  Meteo->StartYear && 
+                        current_date.tm_year <= Meteo->EndYear + 1)
                 {   
                     /* Determine if the sowing already has occurred */
                     IfSowing(Grid->start);
@@ -147,7 +150,6 @@ int main(int argc, char **argv)
 
                             /* Update the number of days that the crop has grown*/
                             Crop->GrowthDay++;
-                            
                         }
                         else
                         {

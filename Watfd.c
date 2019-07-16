@@ -107,17 +107,17 @@ void RateCalulationWatBal() {
     {
         /* Without surface storage */
         if (Site->InfRainDependent) WatBal->rt.Infiltration = 
-               (1. - Site->NotInfiltrating * Afgen(Site->NotInfTB, &Rain[Day])) * 
-               Rain[Day] + WatBal->rt.Irrigation + WatBal->st.SurfaceStorage / Step;
+               (1. - Site->NotInfiltrating * Afgen(Site->NotInfTB, &Rain[Day][lat][lon])) * 
+               Rain[Day][lat][lon] + WatBal->rt.Irrigation + WatBal->st.SurfaceStorage / Step;
         else
-            RINPRE = (1. - Site->NotInfiltrating) * Rain[Day] + 
+            RINPRE = (1. - Site->NotInfiltrating) * Rain[Day][lat][lon] + 
                 WatBal->rt.Irrigation + WatBal->st.SurfaceStorage / Step;
     }
     else 
     {
         /* Surface storage, infiltration limited by maximum percolation */
         /* rate root zone */
-        Available = WatBal->st.SurfaceStorage + (Rain[Day] * 
+        Available = WatBal->st.SurfaceStorage + (Rain[Day][lat][lon] * 
                 (1.-Site->NotInfiltrating) + WatBal->rt.Irrigation 
                  - WatBal->rt.EvapSoil) * Step;
         RINPRE = min(WatBal->ct.MaxPercolRTZ * Step, 
@@ -177,12 +177,12 @@ void IntegrationWatBal()
     WatBal->st.EvapWater     += WatBal->rt.EvapWater;
     WatBal->st.EvapSoil      += WatBal->rt.EvapSoil;
     
-    WatBal->st.Rain += Rain[Day];
+    WatBal->st.Rain += Rain[Day][lat][lon];
     WatBal->st.Infiltration += WatBal->rt.Infiltration;
     WatBal->st.Irrigation   += WatBal->rt.Irrigation;
     
     /* Surface storage and runoff */
-    PreSurfaceStorage = WatBal->st.SurfaceStorage + (Rain[Day] + 
+    PreSurfaceStorage = WatBal->st.SurfaceStorage + (Rain[Day][lat][lon] + 
             WatBal->rt.Irrigation - WatBal->rt.EvapWater - 
             WatBal->rt.Infiltration) * Step;
     WatBal->st.SurfaceStorage = min(PreSurfaceStorage, 

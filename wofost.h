@@ -425,17 +425,24 @@ typedef struct WEATHER {
 Weather *Meteo; /* Place holder for the meteo filenames and lat/lon */
 
 /** Meteorological Variables  **/
-int Station, Year;
+size_t time_length, lat_length, lon_length;
+size_t Day;
+int lat, lon;
+
 float CO2;
 float AngstA;
 float AngstB;
-float Longitude, Latitude, Altitude;
-float Tmin[NLATS][NLONS][METEO_LENGTH];
-float Tmax[NLATS][NLONS][METEO_LENGTH];
-float Radiation[NLATS][NLONS][METEO_LENGTH];
-float Rain[NLATS][NLONS][METEO_LENGTH];
-float Windspeed[NLATS][NLONS][METEO_LENGTH];
-float Vapour[NLATS][NLONS][METEO_LENGTH];
+float Altitude;
+
+float lats[NLATS];
+float lons[NLONS];
+
+float Tmin[METEO_LENGTH][NLATS][NLONS];
+float Tmax[METEO_LENGTH][NLATS][NLONS];
+float Radiation[METEO_LENGTH][NLATS][NLONS];
+float Rain[METEO_LENGTH][NLATS][NLONS];
+float Windspeed[METEO_LENGTH][NLATS][NLONS];
+float Vapour[METEO_LENGTH][NLATS][NLONS];
 
 
 /* Time step */

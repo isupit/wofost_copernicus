@@ -51,7 +51,7 @@ void CalcPenman()
     /* temperature difference)                                                  */
     
     //Tmpa  = (Tmin[Day] + Tmax[Day])/2.;
-    Tdif  = Tmax[Day] - Tmin[Day];
+    Tdif  = Tmax[Day][lat][lon] - Tmin[Day][lat][lon];
     BU    = 0.54 + 0.35 * limit(0.,1.,(Tdif-12.)/4.);
 
     /* Barometric pressure (mbar)             */
@@ -68,7 +68,7 @@ void CalcPenman()
 
     SaturatedVap  = 6.10588 * exp(17.32491 * Temp/(Temp+238.102));
     delta         = 238.102 * 17.32491 * SaturatedVap/pow((Temp +238.102),2);
-    VapourP       = min(Vapour[Day],SaturatedVap);
+    VapourP       = min(Vapour[Day][lat][lon],SaturatedVap);
 
     /* The expression n/N (RelLSSD) from the Penman formula is estimated   */
     /* from the Angstrom formula: RI=RA(A+B.n/N) -> n/N=(RI/RA-A)/B,       */
@@ -83,12 +83,12 @@ void CalcPenman()
               (0.1 + 0.9 * RelSunShineDuration);
 
     /* Net absorbed radiation, expressed in mm/d */
-    Rnw = (Radiation[Day] * (1.-Refcfw)-RB)/Lhvap;
-    Rns = (Radiation[Day] * (1.-Refcfs)-RB)/Lhvap;
+    Rnw = (Radiation[Day][lat][lon] * (1.-Refcfw)-RB)/Lhvap;
+    Rns = (Radiation[Day][lat][lon] * (1.-Refcfs)-RB)/Lhvap;
     //Rnc = (Radiation[Day] * (1.-Refcfc)-RB)/Lhvap;
 
     /* Evaporative demand of the atmosphere (mm/d)  */
-    Ea  = 0.26 * max (0.,(SaturatedVap-VapourP)) * (0.5+BU * Windspeed[Day]);
+    Ea  = 0.26 * max (0.,(SaturatedVap-VapourP)) * (0.5+BU * Windspeed[Day][lat][lon]);
     //Eac = 0.26 * max (0.,(SaturatedVap-VapourP)) * (1.0+BU * Windspeed[Day]);
    
     /* Penman formula (1948)                */
@@ -126,10 +126,10 @@ void CalcPenmanMonteith()
     float G = 0.;
 
     // mean daily temperature (Celsius)
-    //Tmpa  = (Tmin[Day] + Tmax[Day])/2.;
+    //Tmpa  = (Tmin[Day][lat][lon] + Tmax[Day][lat][lon])/2.;
 
     // Vapour pressure to kPa
-    Vap = 0.1 * (Vapour[Day]);
+    Vap = 0.1 * (Vapour[Day][lat][lon]);
 
     // atmospheric pressure at standard temperature of 293K (kPa)
     Patm= 101.3 * pow((293.0 - (0.0065*Altitude))/293.0, 5.26);
@@ -143,8 +143,8 @@ void CalcPenmanMonteith()
     Delta = (4098. * Svap_Tmpa)/pow((Temp + 237.3), 2);
 
     // Daily average saturated vapour pressure [kPa] from min/max temperature
-    Svap_Tmax = 0.6108 * exp((17.27 * Tmax[Day]) / (237.3 + Tmax[Day]));
-    Svap_Tmin = 0.6108 * exp((17.27 * Tmin[Day]) / (237.3 + Tmin[Day]));
+    Svap_Tmax = 0.6108 * exp((17.27 * Tmax[Day][lat][lon]) / (237.3 + Tmax[Day][lat][lon]));
+    Svap_Tmin = 0.6108 * exp((17.27 * Tmin[Day][lat][lon]) / (237.3 + Tmin[Day][lat][lon]));
     Svap = (Svap_Tmax + Svap_Tmin) / 2.;
 
     //measured vapour pressure not to exceed saturated vapour pressure
@@ -152,8 +152,8 @@ void CalcPenmanMonteith()
 
     // Longwave radiation according at Tmax, Tmin (J/m2/d)
     // and preliminary net outgoing long-wave radiation (J/m2/d)
-    Stb_Tmax = Stbc * pow((273.16 + Tmax[Day]), 4);
-    Stb_Tmin = Stbc * pow((273.16 + Tmin[Day]), 4);
+    Stb_Tmax = Stbc * pow((273.16 + Tmax[Day][lat][lon]), 4);
+    Stb_Tmin = Stbc * pow((273.16 + Tmin[Day][lat][lon]), 4);
     Rnl_Tmp = ((Stb_Tmax + Stb_Tmin) / 2.) * (0.34 - 0.14 * sqrt(Vap));
 
     // Clear Sky radiation [J/m2/DAY] from Angot TOA radiation
@@ -164,17 +164,17 @@ void CalcPenmanMonteith()
     if (CskyRad > 0)
     {
         // Final net outgoing longwave radiation [J/m2/day]
-        Rnl = Rnl_Tmp * (1.35 * (Radiation[Day]/CskyRad) - 0.35);
+        Rnl = Rnl_Tmp * (1.35 * (Radiation[Day][lat][lon]/CskyRad) - 0.35);
 
         // radiative evaporation equivalent for the reference surface
         // [mm/DAY]
-        Rn = ((1-Refcfc) * Radiation[Day] - Rnl)/Lhvap;
+        Rn = ((1-Refcfc) * Radiation[Day][lat][lon] - Rnl)/Lhvap;
 
         // aerodynamic evaporation equivalent [mm/day]
-        EA = ((900./(Temp + 273.)) * Windspeed[Day] * (Svap - Vap));
+        EA = ((900./(Temp + 273.)) * Windspeed[Day][lat][lon] * (Svap - Vap));
 
         // Modified psychometric constant (gamma*)[kPa/C]
-        MGamma = Gamma * (1. + (Cres/208. * Windspeed[Day]));
+        MGamma = Gamma * (1. + (Cres/208. * Windspeed[Day][lat][lon]));
 
         // Reference ET0 in mm/day
         ET0 = (Delta * (Rn - G))/(Delta + MGamma) + (Gamma * EA)/(Delta + MGamma);

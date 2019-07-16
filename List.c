@@ -12,7 +12,7 @@ float List(TABLE_D *Table)
     { 
         if (current_date.tm_mon == Table->month -1 &&
             current_date.tm_mday == Table->day && 
-            MeteoYear[Day] <= Meteo->EndYear)
+            (current_date.tm_year + 1900) <= Meteo->EndYear)
         {
             return Table->amount;
         }

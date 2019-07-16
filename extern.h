@@ -4,7 +4,6 @@
 #ifndef EXTERN_H
 #define EXTERN_H
 
-int Day;
 float Temp;
 float DayTemp;
 

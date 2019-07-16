@@ -20,8 +20,6 @@ void GetMeteoInput(char *meteolist)
     int StartYear;
     int EndYear;
     int Init;
-    float lat;
-    float lon;
     char path[MAX_STRING];
     char model[MAX_STRING];
 
@@ -34,7 +32,7 @@ void GetMeteoInput(char *meteolist)
         exit(1);
     }
     
-    while (fscanf(ifp,"%s %d %d %f %f" , path, model, &Init, &StartYear, &EndYear) != EOF) 
+    while (fscanf(ifp,"%s %s %d %d %d" , path, model, &Init, &StartYear, &EndYear) != EOF) 
     {
         if (initial == NULL) 
         {
@@ -46,7 +44,10 @@ void GetMeteoInput(char *meteolist)
             Meteo = Meteo->next;  
         }  
         
-        if (strlen(model) >= MAX_STRING) exit(0);
+        if (strlen(path) + strlen(model) + 10  >= MAX_STRING) exit(0);
+        
+        memset(Meteo->path,'\0',MAX_STRING);
+        strncpy(Meteo->path, path, strlen(path));
         
         memset(Meteo->model,'\0',MAX_STRING);
         strncpy(Meteo->model, model, strlen(model));
@@ -59,5 +60,4 @@ void GetMeteoInput(char *meteolist)
           
     Meteo = initial;
     fclose(ifp);
-  
 }

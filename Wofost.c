@@ -17,6 +17,7 @@ int main(int argc, char **argv)
     int CycleLength   = 300;
     int NumberOfFiles;
     int Emergence;
+    size_t lat, lon;
     
     char list[MAX_STRING];
     char meteolist[MAX_STRING];
@@ -67,12 +68,12 @@ int main(int argc, char **argv)
     while (Meteo)
     {
         /* Get the meteodata */
-        GetMeteoData(Meteo->model);
+        GetMeteoData(Meteo->path, Meteo->model);
         printf("%s\n", Meteo->model);
         
-        for (lat = 0; lat < NLATS; lat++)
-        for (lon = 0; lon < NLONS; lon++)
-        for (Day = 1; Day < METEO_LENGTH; Day++) //assume that the series start January first
+        for (lat = 0; lat < lat_length; lat++)
+        for (lon = 0; lon < lon_length; lon++)
+        for (Day = 1; Day < time_length; Day++) //assume that the series start January first
         {                   
             /* Go back to the beginning of the list */
             Grid = initial;
@@ -92,15 +93,16 @@ int main(int argc, char **argv)
                 Mng       = Grid->mng;
                 Site      = Grid->ste;
                 
+              
                 //Start     = Grid->start;
                 Emergence = Grid->emergence; /* Start simulation at sowing or emergence */
                 
-                Temp = 0.5 * (Tmax[Day] + Tmin[Day]);
-                DayTemp = 0.5 * (Tmax[Day] + Temp);
+                Temp = 0.5 * (Tmax[Day][lat][lon] + Tmin[Day][lat][lon]);
+                DayTemp = 0.5 * (Tmax[Day][lat][lon] + Temp);
                 
                 /* Only simulate between start and end year */
-                if ( current_date.tm_year >=  Meteo->StartYear && 
-                        current_date.tm_year <= Meteo->EndYear + 1)
+                if ( (current_date.tm_year + 1900) >=  Meteo->StartYear && 
+                     (current_date.tm_year + 1900) <= Meteo->EndYear + 1)
                 {   
                     /* Determine if the sowing already has occurred */
                     IfSowing(Grid->start);

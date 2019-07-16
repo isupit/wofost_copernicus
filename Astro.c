@@ -27,7 +27,8 @@ int Astro()
     float FractionDiffuseRad;
     
     //float day_fl = MeteoDay[Day];
-    float day_t  = (float)(current_date.tm_yday + 1);
+    float day_fl  = (float)(current_date.tm_yday + 1);
+    float Latitude = lats[lat];
     
     if (fabsf(Latitude) > 90.) return 0;  
 
@@ -60,7 +61,7 @@ int Astro()
     
     /*  Extraterrestrial radiation and atmospheric transmission */
     AngotRadiation  = SolarConstant*DSinB;
-    AtmosphTransm   = Radiation[Day]/AngotRadiation;
+    AtmosphTransm   = Radiation[Day][lat][lon]/AngotRadiation;
 
     if (AtmosphTransm > 0.75)
        FractionDiffuseRad = 0.23;

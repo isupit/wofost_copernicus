@@ -62,7 +62,7 @@ void GetManagement(Management *MNG, char *management)
 	while ((c=fgetc(fq)) !='\n');
 	while (fscanf(fq,"%s  %f",  dateString,  &YValue) == 2)  
         {               
-	    Table[i]->next = malloc(sizeof(TABLE));
+	    Table[i]->next = malloc(sizeof(TABLE_D));
             Table[i] = Table[i]->next; 
             sscanf(dateString, "%d-%d", &Table[i]->month,&Table[i]->day);
 	    Table[i]->amount = YValue;

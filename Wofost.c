@@ -81,7 +81,7 @@ int main(int argc, char **argv)
             /* Set the date struct */
             memset(&current_date, 0, sizeof(current_date)); 
             current_date.tm_year = Meteo->Initial -1900;
-            current_date.tm_mday =  0 + Day;
+            current_date.tm_mday =  0 + Day + 1;
             mktime(&current_date);
 
             while (Grid)

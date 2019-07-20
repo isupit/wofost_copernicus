@@ -427,7 +427,7 @@ Weather *Meteo; /* Place holder for the meteo filenames and lat/lon */
 /** Meteorological Variables  **/
 size_t time_length, lat_length, lon_length;
 size_t Day;
-int lat, lon;
+size_t lat, lon;
 
 float CO2;
 float AngstA;

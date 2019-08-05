@@ -141,7 +141,7 @@ int main(int argc, char **argv)
                                     RateCalculationCrop();
 
                                     /* Write to the output files */
-                                    //Output(output[Grid->file]);   
+                                    Output(output[Grid->file]);   
 
                                     /* Calculate LAI */
                                     Crop->st.LAI = LeaveAreaIndex();             

@@ -26,8 +26,7 @@ int Astro()
     float DSinB;
     float FractionDiffuseRad;
     
-    //float day_fl = MeteoDay[Day];
-    float day_fl  = (float) current_date.tm_yday;
+    float day_fl  = 1.0 + (float) current_date.tm_yday;
     float Latitude = lats[lat];
     
     if (fabsf(Latitude) > 90.) return 0;  

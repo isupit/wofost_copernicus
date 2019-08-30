@@ -181,6 +181,17 @@ typedef struct PARAMETERS {
         float TCPT;   
         float TCKT;   
         float N_fixation; 
+        
+        
+        /** Farquhar **/
+        float C3;
+        float EnAcJmax;  // Activation Energy Jmax
+        float DEJmax;    // Deactivation Energy Jmax
+        float CFV;
+        float SLMIN; // Minimum or base SLNT for photosynthesis    g m-2
+        float XVN;   // Slope of linearity between Vcmax & leaf N  umol/g/s
+        float XJN;   // Slope of linearity between Jmax & leaf N   umol/g/s
+        float Theta; // Convexity for light response of e-transport
         } Parameters;
 
 
@@ -278,6 +289,8 @@ typedef struct GROWTH_RATES {
         float Development;
         float RootDepth;
         float vernalization;
+        float DarkResp;
+        float LeafPhoto;
 } growth_rates;
 
 typedef struct GROWTH_STATES {
@@ -326,6 +339,8 @@ typedef struct PLANT {
         float fac_lv;
         float fac_st;
         float fac_so;
+        
+        float CO2int;
         
         Parameters prm;
         

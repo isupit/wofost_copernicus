@@ -8,6 +8,28 @@
 #define  PI     3.1415926
 #define  RAD	0.0174533
 
+// Michaelis-Menten constants for CO2 and O2 at 25oC for C4
+//#define  KMC25  650.   // umol/mol
+//#define  KMO25  450.   // mmol/mol
+
+// Michaelis-Menten constants for CO2 and O2 at 25oC for C3
+# define KMC25  404.9  // umol/mol
+# define KMO25  278.4 // mmol/mol
+  
+
+
+// Constants related to the Farquhar-type photosynthesis model
+#define O2      210.    // oxygen concentration(mmol/mol)
+#define EAVCMX  65330.  // energy of activation for Vcmx(J/mol)
+#define EAKMC   79430.  // energy of activation for KMC (J/mol)
+#define EAKMO   36380.  // energy of activation for KMO (J/mol)
+#define EARD    46390.  // energy of activation for dark respiration(J/mol)
+#define DEJMAX  200000. // energy of deactivation for JMAX (J/mol)
+#define SJ      650.    // entropy term in JT equation (J/mol/K)
+#define PHI2M   0.85    // maximum electron transport efficiency of PS II
+#define HH      3.      // number of protons required to synthesise 1 ATP
+#define RDVX25  0.0089  // ratio of dark respiration to Vcmax at 25oC
+
 float ScatCoef =0.2;
 float XGauss[] ={0.1127017, 0.5000000, 0.8872983};
 float WGauss[] ={0.2777778, 0.4444444, 0.2777778};
@@ -138,4 +160,81 @@ float Correct(float Assimilation)
     TminLowAvg = TminLowAvg/Counter;
     return (Assimilation*Afgen(Crop->prm.FactorGrossAssimTemp, &TminLowAvg)*30./44.);
 
+}
+
+float Photosynthese()
+{
+    float Upar; 
+    float TempLeaf;
+    float GammaX;
+    float Kmc, Kmo;
+    float VCT, JT;
+    float VCmax, Jmax;
+    float FPseud;
+    float CO2_leakage;
+    float CC, SF, FQ, Fcyc;
+    float  Alpha2, X, J2;
+    float Vc, Vj;
+    float Rdt;
+    
+    /* Par photonflux umol/m2/s absorbed by leaf photo-sytems */
+    Upar = 4.56  * 0.5 *Radiation[Day][lat][lon];
+    
+    /* Michaelis-Menten constants for CO2 and O2 */
+    Kmc = KMC25 *exp((1./298 - 1/(TempLeaf + 273.15)) * EAKMC/8.314);
+    Kmo = KMO25 *exp((1./298 - 1/(TempLeaf + 273.15)) * EAKMO/8.314);
+    
+    //CO2 compensation point in the absence of dark respiration
+    GammaX = 0.5*exp(-3.3801+5220./(TempLeaf+273.)/8.314)*O2*Kmc/Kmo;
+
+    //Arrhenius function for the effect of temperature on carboxylation
+    VCT    =    exp((1./298.-1./(TempLeaf+273.))*EAVCMX/8.314);
+    
+    // function for the effect of temperature on electron transport
+    JT = exp((1./298.-1./(TempLeaf + 273.)) * Crop->prm.EnAcJmax/8.314)*
+           (1. + exp(SJ/8.314 - Crop->prm.DEJmax/298./8.314))/
+           (1. + exp(SJ/8.314-1./(TempLeaf + 273.) *Crop->prm.DEJmax*8.314));
+    
+    //maximum rates of carboxylation(VCMX) and of electron transport(JMAX)
+    VCmax  = Crop->prm.XVN * VCT * ((Crop->N_st.leaves/Crop->st.LAI) - Crop->prm.SLMIN);
+    Jmax   = Crop->prm.XJN * JT *  ((Crop->N_st.leaves/Crop->st.LAI) - Crop->prm.SLMIN);
+    
+    // CO2 concentration at carboxylation site & electron pathways and
+    // their stoichiometries
+    FPseud = 0.;           //assuming no pseudocyclic e- transport
+    if (!Crop->prm.C3)       //C4
+    {
+        CO2_leakage   = 0.2;         //CO2 leakage from bundle-sheath to mesophyll
+        CC   = 10.*Crop->CO2int;     //to mimic C4 CO2 concentrating mechanism
+        SF   = 2.*(CC-GammaX)/(1.-CO2_leakage);
+        FQ   = 1.- FPseud- 2.*(4.*CC+8.*GammaX)/HH/(SF+3.*CC+7.*GammaX);
+        Fcyc = FQ;
+    }
+    else
+    {
+        CC   = Crop->CO2int; 
+        SF   = 0.
+        FQ   = 0.
+        Fcyc = 1.-(FPseud*HH*(SF+3.*CC+7.*GammaX)/(4.*CC + 8.*GammaX)+1.)/
+                      (HH*(SF+3.*CC+7.*GammaX)/(4.*CC + 8.*GammaX)-1.);
+    }
+
+    // electron transport rate in dependence on PAR photon flux
+    Alpha2 = (1.-Fcyc)/(1.+(1.-Fcyc)/PHI2M);
+    X      = Alpha2 * Upar/max(1.E-10,Jmax);
+    J2     = Jmax*(1+X-((1+X)**2-4.*X*Crop->prm.Theta)**0.5)/2./Crop->prm.Theta;
+
+    // rates of carboxylation limited by Rubisco and electron transport
+    Vc   = VCmax * CC/(CC + Kmc*(O2/Kmo+1.));
+    Vj   = J2 * CC*(2.+FQ-Fcyc)/HH/(SF+3.*CC+7.*GammaX)/(1.-Fcyc);
+
+    // gross rate of leaf photosynthesis
+    Crop->rt.LeafPhoto  = max(1.E-10, (1.E-6)*44. * (1.-GammaX/CC)*min(Vc,Vj));
+
+    // leaf dark respiration rate
+    RDVX25 = 0.0089;      //ratio of dark respiration to Vcmax at 25oC
+    Rdt    = exp((1./298.-1./(TempLeaf + 273.))*EARD/8.314);
+    Crop->rt.DarkResp = (1.E-6)*44. * RDVX25 * (Crop->prm.XVN * 
+            ((Crop->N_st.leaves/Crop->st.LAI) - Crop->prm.SLMIN)) * Rdt;    
+    
 }

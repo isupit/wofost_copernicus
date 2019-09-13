@@ -45,7 +45,6 @@ void CalcPenman()
     //float Refcfc = 0.25;    // albedo for a  canopy                              
     float Lhvap  = 2.45e6;  // latent heat of evaporation of water (J/kg=J/mm)  
     float Stbc   = 4.9e-3;  // Stefan Boltzmann constant (J/m2/d/K4) */
-            
     /* Preparatory calculations: mean daily temperature, temperature difference */
     /* (Celsius) and the Bu coefficient Bu of the wind function (depends  on    */ 
     /* temperature difference)                                                  */
@@ -101,6 +100,7 @@ void CalcPenman()
 }
 
 void CalcPenmanMonteith()
+//http://www.fao.org/3/X0490E/x0490e06.htm#fao%20penman%20monteith%20equation
 {
     //float Tmpa;
     float Vap;
@@ -174,6 +174,7 @@ void CalcPenmanMonteith()
         EA = ((900./(Temp + 273.)) * Windspeed[Day][lat][lon] * (Svap - Vap));
 
         // Modified psychometric constant (gamma*)[kPa/C]
+        // ra = 208/u2 s m-1, (with u2 wind speed at 2 m height)
         MGamma = Gamma * (1. + (Cres/208. * Windspeed[Day][lat][lon]));
 
         // Reference ET0 in mm/day

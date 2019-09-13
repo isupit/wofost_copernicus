@@ -20,7 +20,7 @@
 
 // Constants related to the Farquhar-type photosynthesis model
 #define O2      210.    // oxygen concentration(mmol/mol)
-#define EAVCMX  65330.  // energy of activation for Vcmx(J/mol)
+#define MaxCarboxRate  65330.  // energy of activation for Vcmx(J/mol)
 #define EAKMC   79430.  // energy of activation for KMC (J/mol)
 #define EAKMO   36380.  // energy of activation for KMO (J/mol)
 #define EARD    46390.  // energy of activation for dark respiration(J/mol)
@@ -31,8 +31,8 @@
 #define RDVX25  0.0089  // ratio of dark respiration to Vcmax at 25oC
 
 float ScatCoef =0.2;
-float XGauss[] ={0.1127017, 0.5000000, 0.8872983};
-float WGauss[] ={0.2777778, 0.4444444, 0.2777778};
+float XGauss[] ={0.0469101,0.2307534,0.5      ,0.7692465,0.9530899};
+float WGauss[] ={0.1184635,0.2393144,0.2844444,0.2393144,0.1184635};
 
 
 /* ----------------------------------------------------------------------------*/
@@ -90,6 +90,66 @@ float InstantAssimilation(float KDiffuse, float EFF, float AssimMax, float SinB,
     return (GrossCO2 * Crop->st.LAI);     
 }
 
+/* ---------------------------------------------------------------------------------*/
+/* function ExtinctionDIR()                                                         */
+/* Purpose: Calculation of the extinction coefficient for the direct beam radiation */
+/* See pg75 formula E2 Crop Systems Dynamics Yin & van Laar 2005                    */
+/* ---------------------------------------------------------------------------------*/
+float ExtinctionDIR(float *SinB)
+{
+    float Oav;
+    
+    // Average projection of the leaves in the solar beam direction
+    if (*SinB > sin(Crop->prm.LeafAngle))
+    {
+        Oav = (*SinB) * cos(Crop->prm.LeafAngle);
+    }
+    else
+    {
+        Oav = (*SinB) * cos(Crop->prm.LeafAngle) * 
+                 asin(tan(asin(*SinB))/tan(Crop->prm.LeafAngle)) + 
+                 sqrt(pow(sin(Crop->prm.LeafAngle,2) - pow((*SinB),2)));
+        Oav = Oav * 2./PI;
+    }
+    
+    return Oav/(*SinB);
+}
+
+
+/* ----------------------------------------------------------------------------*/
+/* function ExtinctionDIF()                                                    */
+/* Purpose: Calculation of the extinction coefficient for diffuse radiation    */
+/* See pg75 formula E4 Crop Systems Dynamics Yin & van Laar 2005               */
+/* ----------------------------------------------------------------------------*/
+float ExtinctionDIF(float *Sc)
+{
+    float Extinct_15;
+    float Extinct_45;
+    float Extinct_75;
+    
+    Extinct_15 = ExtinctionDIR(sin(15.*PI/180.));
+    Extinct_45 = ExtinctionDIR(sin(45.*PI/180.));
+    Extinct_75 = ExtinctionDIR(sin(75.*PI/180.));
+    
+    return (-1./Crop->st.LAI) * log(0.178*exp(-Extinct_15 * sqrt(1.-*Sc) * Crop->st.LAI)
+                                  + 0.514*exp(-Extinct_45 * sqrt(1.-*Sc) * Crop->st.LAI)
+                                  + 0.308*exp(-Extinct_75 * sqrt(1.-*Sc) * Crop->st.LAI));
+}
+
+
+float Reflection(float *K, float *Sc)
+{
+    float Kbp;
+    float Ph;
+    /* Scattered beam radiation extinction coefficient */
+    Kbp  = (*K) * sqrt(1.-*Sc);
+
+    /* Canopy reflection coefficient for horizontal leaves */
+    Ph   = (1. - sqrt(1.- *Sc))/(1. + sqrt(1. - *Sc));
+
+    /* Canopy beam radiation reflection coefficient */
+    return 1. - exp(-2. * Ph * (*K)/(1. + (*K)));
+}
 
 /* ----------------------------------------------------------------------------*/
 /*  function DailyTotalAssimilation()                                          */ 
@@ -100,7 +160,11 @@ float DailyTotalAssimilation()
 {
     int i;
     float KDiffuse, EFF, Factor;
-    float Hour, SinB, PAR, PARDiffuse, PARDirect, AssimMax; 
+    float Hour, SinB, PAR, NIR, PARDiffuse, PARDirect, AssimMax;
+    float NIRDiffuse, NIRDirect;
+    float DayTMP;
+    float FractionDiffuseRad;
+    float K, KdiffPAR, KdiffNIR;
     float DailyTotalAssimilation = 0.;
 
     KDiffuse = Afgen(Crop->prm.KDiffuseTb, &(Crop->st.Development));
@@ -117,13 +181,50 @@ float DailyTotalAssimilation()
 
     if (AssimMax > 0. && Crop->st.LAI > 0.)
     {
-        for (i=0;i<3;i++)
+        for (i=0;i<5;i++)
         {
-            Hour       = 12.0+0.5*Daylength*XGauss[i];
+            Hour       = SunRise + Daylength*XGauss[i];
             SinB       = max (0.,SinLD+CosLD*cos(2.*PI*(Hour+12.)/24.));
-            PAR        = 0.5*Radiation[Day][lat][lon]*SinB*(1.+0.4*SinB)/DSinBE;
-            PARDiffuse = min (PAR,SinB*DiffRadPP);
-            PARDirect  = PAR-PARDiffuse;
+            PAR        = 0.5*Radiation[Day][lat][lon]*(SinB*SolarConstant/1367.)/DSinBE;
+            NIR        = PAR;
+            
+            DayTMP = Tmin[Day][lat][lon]+(Tmax[Day][lat][lon]-Tmin[Day][lat][lon]) *
+                     sin(PI*(Hour+Daylength/2.-12.)/(Daylength+3.));
+            
+            /* diffuse light fraction from atmospheric transmission */
+            AtmosphTransm = PAR/(0.5*SolarConstant*SinB);
+                    
+            if (AtmosphTransm > 0.35)
+                FractionDiffuseRad = 1.47 - 1.66 * AtmosphTransm;
+  
+            if (AtmosphTransm <= 0.22 && AtmosphTransm > 0.35)
+                FractionDiffuseRad = 1. - 6.4*pow((AtmosphTransm-0.22),2);
+  
+            if (AtmosphTransm < 0.22)  
+                    FractionDiffuseRad = 1.0;
+            
+            FractionDiffuseRad = max(FractionDiffuseRad, 0.15 + 0.85*(1.-exp(-0.1/SinB)));
+            
+            /* Incoming diffuse and direct PAR */
+            PARDiffuse = PAR * FractionDiffuseRad ;
+            PARDirect  = PAR - PARDiffuse;
+            
+            /* Incoming diffuse and direct NIR */
+            NIRDiffuse = NIR * FractionDiffuseRad ;
+            NIRDirect  = NIR - NIRDiffuse;
+            
+            /* Extinction */
+            K = ExtinctionDIR(&SinB);
+            
+            float ScPAR = 0.2;     // leaf scattering coefficient for PAR
+            float ScNIR = 0.8;     // leaf scattering coefficient for NIR
+            KdiffPAR = ExtinctionDIF(&ScPAR);
+            KdiffNIR = ExtinctionDIF(&ScNIR);
+            
+            CALL REFL (SCPPAR,KB, KBPPAR,PCBPAR)
+            CALL REFL (SCPNIR,KB, KBPNIR,PCBNIR)
+            
+            
             DailyTotalAssimilation = DailyTotalAssimilation + 
                 InstantAssimilation(KDiffuse,EFF,AssimMax,SinB,PARDiffuse,PARDirect) * WGauss[i];
         }  
@@ -188,7 +289,7 @@ float Photosynthese()
     GammaX = 0.5*exp(-3.3801+5220./(TempLeaf+273.)/8.314)*O2*Kmc/Kmo;
 
     //Arrhenius function for the effect of temperature on carboxylation
-    VCT    =    exp((1./298.-1./(TempLeaf+273.))*EAVCMX/8.314);
+    VCT    =    exp((1./298.-1./(TempLeaf+273.)) * MaxCarboxRate/8.314);
     
     // function for the effect of temperature on electron transport
     JT = exp((1./298.-1./(TempLeaf + 273.)) * Crop->prm.EnAcJmax/8.314)*

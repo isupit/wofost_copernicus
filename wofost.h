@@ -188,10 +188,11 @@ typedef struct PARAMETERS {
         float EnAcJmax;  // Activation Energy Jmax
         float DEJmax;    // Deactivation Energy Jmax
         float CFV;
-        float SLMIN; // Minimum or base SLNT for photosynthesis    g m-2
-        float XVN;   // Slope of linearity between Vcmax & leaf N  umol/g/s
-        float XJN;   // Slope of linearity between Jmax & leaf N   umol/g/s
-        float Theta; // Convexity for light response of e-transport
+        float SLMIN;     // Minimum or base SLNT for photosynthesis    g m-2
+        float XVN;       // Slope of linearity between Vcmax & leaf N  umol/g/s
+        float XJN;       // Slope of linearity between Jmax & leaf N   umol/g/s
+        float Theta;     // Convexity for light response of e-transport
+        float LeafAngle; //leaf angle from horizontal degree
         } Parameters;
 
 

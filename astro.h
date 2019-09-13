@@ -9,6 +9,9 @@ float SinLD;
 float CosLD; 
 float DiffRadPP;
 float DSinBE;
+float SunRise;
+float SunSet;
+float SolarConstant;
 
 extern float min(float a, float b);
 extern float max(float a, float b);

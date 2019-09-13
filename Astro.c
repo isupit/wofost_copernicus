@@ -21,7 +21,6 @@
 int Astro()
 {
     float Declination;
-    float SolarConstant;
     float AOB;
     float DSinB;
     float FractionDiffuseRad;
@@ -41,6 +40,10 @@ int Astro()
     
    /* Astronomical day length */
     Daylength = max(0,min(24.,12.0*(1.+2.*asin(AOB)/PI)));
+    
+    /* SunRise-Set */
+    SunRise = 12. - 0.5*Daylength;
+    SunSet  = 12. + 0.5*Daylength;
     
     /* Photoactive day length */
     PARDaylength = max(0,min(24.,12.0*(1.+2.*asin((-sin(ANGLE*RAD)+SinLD)/CosLD)/PI)));
@@ -62,16 +65,13 @@ int Astro()
     AngotRadiation  = SolarConstant*DSinB;
     AtmosphTransm   = Radiation[Day][lat][lon]/AngotRadiation;
 
-    if (AtmosphTransm > 0.75)
-       FractionDiffuseRad = 0.23;
+    if (AtmosphTransm > 0.35)
+       FractionDiffuseRad = 1.47 - 1.66 * AtmosphTransm;
   
-    if (AtmosphTransm <= 0.75 && AtmosphTransm > 0.35)
-       FractionDiffuseRad = 1.33-1.46 * AtmosphTransm;
+    if (AtmosphTransm <= 0.22 && AtmosphTransm > 0.35)
+       FractionDiffuseRad = 1. - 6.4*pow((AtmosphTransm-0.22),2);
   
-    if (AtmosphTransm <= 0.35 && AtmosphTransm > 0.07) 
-       FractionDiffuseRad = 1.-2.3*pow((AtmosphTransm-0.07), 2.);
-  
-    if (AtmosphTransm < 0.07)  
+    if (AtmosphTransm < 0.22)  
        FractionDiffuseRad = 1.0;
     
     DiffRadPP = 0.5 * FractionDiffuseRad * AtmosphTransm * SolarConstant;

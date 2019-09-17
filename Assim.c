@@ -35,60 +35,8 @@ float XGauss[] ={0.0469101,0.2307534,0.5      ,0.7692465,0.9530899};
 float WGauss[] ={0.1184635,0.2393144,0.2844444,0.2393144,0.1184635};
 
 
-/* ----------------------------------------------------------------------------*/
-/*  function InstantAssimilation(float KDiffuse, float EFF, float AssimMax,    */
-/*                            float SinB, float PARDiffuse, float PARDirect)   */ 
-/*  Purpose: Calculation of the instant Assimilation rate as a function of     */
-/*  radiation using the three point Gaussian integration method.               */
-/*-----------------------------------------------------------------------------*/
 
-float InstantAssimilation(float KDiffuse, float EFF, float AssimMax, float SinB, 
-        float PARDiffuse, float PARDirect)
-{
-    int i;
-    float AbsorbedRadiationDiffuse, AbsorbedRadiationTotal, AbsorbedRadiationDirect;
-    float AbsorbedShadedLeaves, AbsorbedDirectLeaves;
-    float AssimShadedLeaves, AssimSunlitLeaves, AssimTotal;
-    float Reflection, KDirectBl, KDirectTl;
-    float GrossCO2, FractionSunlitLeaves, LAIC ;
 
-    /* Extinction coefficients KDIF,KDIRBL,KDIRT */
-    Reflection  = (1.-sqrt(1.-ScatCoef))/(1.+sqrt(1.-ScatCoef))*(2/(1+1.6*SinB));
-    KDirectBl   = (0.5/SinB)*KDiffuse/(0.8*sqrt(1.-ScatCoef));
-    KDirectTl   = KDirectBl*sqrt(1.-ScatCoef);
-
-    /* Three-point Gaussian integration over LAI */
-    GrossCO2  = 0.;
-    for (i=0;i<3;i++)
-    {
-       LAIC   = Crop->st.LAI*XGauss[i];
-        
-       /* Absorbed radiation */
-       AbsorbedRadiationDiffuse = (1.-Reflection)*PARDiffuse*KDiffuse * exp(-KDiffuse * LAIC);
-       AbsorbedRadiationTotal   = (1.-Reflection)*PARDirect*KDirectTl * exp(-KDirectTl * LAIC);
-       AbsorbedRadiationDirect  = (1.-ScatCoef)  *PARDirect*KDirectBl * exp(-KDirectBl * LAIC);
-
-       /* Absorbed flux in W/m2 for shaded leaves and assimilation */
-       AbsorbedShadedLeaves = AbsorbedRadiationDiffuse  + AbsorbedRadiationTotal - AbsorbedRadiationDirect;
-       AssimShadedLeaves    = AssimMax*(1.-exp (-AbsorbedShadedLeaves*EFF/max(2.0,AssimMax)));
-
-       /* Direct light absorbed by leaves perpendicular on direct */
-       /* beam and assimilation of sunlit leaf area               */
-       AbsorbedDirectLeaves=(1 - ScatCoef)*PARDirect/SinB;
-       if (AbsorbedDirectLeaves <= 0) AssimSunlitLeaves = AssimShadedLeaves;
-       else AssimSunlitLeaves = AssimMax*(1. - (AssimMax - AssimShadedLeaves)*
-              (1 - exp( -AbsorbedDirectLeaves*EFF/max(2.0,AssimMax)))/(EFF*AbsorbedDirectLeaves));
-
-        /*  Fraction of sunlit leaf area and local assimilation rate  */ 
-        FractionSunlitLeaves  = exp(-KDirectBl*LAIC);
-        AssimTotal = FractionSunlitLeaves*AssimSunlitLeaves + (1. - FractionSunlitLeaves)*AssimShadedLeaves;
-
-        /*  Integration */
-        GrossCO2 += AssimTotal * WGauss[i];
-    }
-    
-    return (GrossCO2 * Crop->st.LAI);     
-}
 
 /* ---------------------------------------------------------------------------------*/
 /* function ExtinctionDIR()                                                         */
@@ -164,7 +112,11 @@ float DailyTotalAssimilation()
     float NIRDiffuse, NIRDirect;
     float DayTMP;
     float FractionDiffuseRad;
-    float K, KdiffPAR, KdiffNIR;
+    float Kb, Kw, KdiffPAR, KdiffNIR;
+    float Rtc, Rts;
+    float PcbPAR, PcbNIR;
+    float FracSunlit, FracShaded;
+    float BndConducH, BndConducCnp, BndConducSunlit, BndConducShaded;
     float DailyTotalAssimilation = 0.;
 
     KDiffuse = Afgen(Crop->prm.KDiffuseTb, &(Crop->st.Development));
@@ -178,6 +130,20 @@ float DailyTotalAssimilation()
     AssimMax = Afgen(Crop->prm.FactorAssimRateTemp, &DayTemp) * 
                Afgen(Crop->prm.MaxAssimRate, &(Crop->st.Development)) * 
                Afgen(Crop->prm.CO2AMAXTB, &CO2);
+    
+    float ScPAR = 0.2;     // leaf scattering coefficient for PAR
+    float ScNIR = 0.8;     // leaf scattering coefficient for NIR
+    
+    KdiffPAR = ExtinctionDIF(&ScPAR);
+    KdiffNIR = ExtinctionDIF(&ScNIR);
+    
+    /* Assume extinction coefficient wind = extinction coefficient PAR*/
+    Kw = KdiffPAR;
+    
+    /* Extinction coefficient of nitrogen  */
+    Kln    = KdiffPAR*(Crop->N_st.leaves - Crop->prm.SLMIN*Crop->st.TLAI);
+    Nbk    = Crop->prm.SLMIN*(1.-exp(-KL*Crop->st.LAI));
+    Kn     = 1./Crop->st.TLAI*log((KLN+NBK)/(KLN*EXP(-KL*Crop->st.TLAI)+NBK));
 
     if (AssimMax > 0. && Crop->st.LAI > 0.)
     {
@@ -214,16 +180,37 @@ float DailyTotalAssimilation()
             NIRDirect  = NIR - NIRDiffuse;
             
             /* Extinction */
-            K = ExtinctionDIR(&SinB);
+            Kb = ExtinctionDIR(&SinB);
             
-            float ScPAR = 0.2;     // leaf scattering coefficient for PAR
-            float ScNIR = 0.8;     // leaf scattering coefficient for NIR
-            KdiffPAR = ExtinctionDIF(&ScPAR);
-            KdiffNIR = ExtinctionDIF(&ScNIR);
+            PcbPAR = Reflection(&ScPAR, &Kb);
+            PcbNIR = Reflection(&ScNIR, &Kb);
             
-            CALL REFL (SCPPAR,KB, KBPPAR,PCBPAR)
-            CALL REFL (SCPNIR,KB, KBPNIR,PCBNIR)
+            float PCDPAR = 0.057;          // canopy diffuse PAR reflection coefficient
+            float PCDNIR = 0.389;          // canopy diffuse NIR reflection coefficient
+
+            /* Turbulence resistance for canopy (RT) and for soil (RTS) */
+            Rtc    = 0.74*pow((log((2.-0.7*Crop->st.Height)/(0.1*Crop->st.Height))),2)/ (1.6 * Windspeed[Day][lat][lon]);
+            Rts    = 0.74*pow((log(56.)),2)/(0.16 * Windspeed[Day][lat][lon]);   
             
+            /* Fraction of sunlit and shaded components in */
+            FracSunlit   = (1./(Kb*Crop->st.LAI)) * (1.-exp(-Kb * Crop->st.LAI)); //eq 11b pg15
+            FracShaded   =  1.-FracSunlit;
+
+            
+            /* Boundary layer conductance for canopy, sunlit and shaded leaves */
+            BndConducH   = 0.01*sqrt(Windspeed[Day][lat][lon]/Crop->prm.LeafWidth);
+            BndConducCnp     = (1.-exp(- 0.5*Kw * Crop->st.LAI))/(0.5*Kw ) * BndConducH;
+            BndConducSunlit  = (1.-exp(-(0.5*Kw + Kb)*Crop->st.LAI))/(0.5*Kw + Kb) * BndConducH;
+            BndConducShaded  = BndConducCnp - BndConducSunlit;
+            
+            /* boundary layer resistance for soil */
+            RBHS   = 172.*sqrt(0.05/max(0.1,Windspeed[Day][lat][lon]*exp(-Kw*Crop->st.LAI)));
+            RBWS   = 0.93*RBHS;
+
+            /* Total photosynthetic nitrogen in canopy */
+            NPC   = SLNT*(1.-EXP(-KN*LAI))/KN-SLNMIN*LAI
+            NPSU  = SLNT*(1.-EXP(-(KN+KB)*LAI))/(KN+KB) - SLNMIN*(1.-EXP(-KB*LAI))/KB
+            NPSH  = NPC-NPSU
             
             DailyTotalAssimilation = DailyTotalAssimilation + 
                 InstantAssimilation(KDiffuse,EFF,AssimMax,SinB,PARDiffuse,PARDirect) * WGauss[i];

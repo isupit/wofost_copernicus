@@ -182,6 +182,7 @@ typedef struct PARAMETERS {
         float TCKT;   
         float N_fixation; 
         
+        float Height;
         
         /** Farquhar **/
         float C3;
@@ -193,6 +194,7 @@ typedef struct PARAMETERS {
         float XJN;       // Slope of linearity between Jmax & leaf N   umol/g/s
         float Theta;     // Convexity for light response of e-transport
         float LeafAngle; //leaf angle from horizontal degree
+        float LeafWidth; //m
         } Parameters;
 
 
@@ -292,18 +294,21 @@ typedef struct GROWTH_RATES {
         float vernalization;
         float DarkResp;
         float LeafPhoto;
-} growth_rates;
+        float Height;
+        } growth_rates;
 
 typedef struct GROWTH_STATES {
         float roots;
         float stems;
         float leaves;
         float LAI;
+        float TLAI;
         float LAIExp;
         float storage;
         float Development;
         float RootDepth;
         float RootDepth_prev;
+        float Height;
         float vernalization;
         } growth_states;
 

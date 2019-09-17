@@ -36,6 +36,9 @@ void RateCalculationCrop()
     /* Conversion */
     GrossGrowth = Conversion(TotalAssimilation-Maintenance); 
     
+    /* Height */
+    Crop->rt.Height = Crop->prm.Height*Crop->rt.Development*pow(Stress,0.333);
+    
     /* Growth of roots, stems, leaves and storage organs */
     Growth(GrossGrowth);
     

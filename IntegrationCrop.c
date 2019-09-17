@@ -20,11 +20,12 @@ void IntegrationCrop()
     Crop->st.leaves   += Crop->rt.leaves;
     Crop->st.storage  += Crop->rt.storage;
     Crop->st.LAIExp   += Crop->rt.LAIExp;
+    Crop->st.Height   += Crop->rt.Height;
     
     Crop->st.RootDepth_prev = Crop->st.RootDepth;
     Crop->st.RootDepth += Crop->rt.RootDepth;
     
-    /* Calculate the developmentstage */
+    /* Calculate the developmentstage and height */
     if (Crop->st.Development < 1.)
     {
         Crop->st.Development += Crop->rt.Development;

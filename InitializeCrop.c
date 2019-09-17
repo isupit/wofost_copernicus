@@ -78,6 +78,9 @@ void InitializeCrop()
            Afgen(Crop->prm.SpecificStemArea, &(Crop->st.Development)) +
            Crop->st.storage*Crop->prm.SpecificPodArea;
     
+    /* Green and senesced LAI*/
+    Crop->st.TLAI = Crop->st.LAI
+    
     /* Initialize the leaves */
     Crop->LeaveProperties         = malloc(sizeof (Green));
     Crop->LeaveProperties->age    = 0.;

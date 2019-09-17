@@ -144,8 +144,12 @@ int main(int argc, char **argv)
                                     //Output(output[Grid->file]);   
 
                                     /* Calculate LAI */
-                                    Crop->st.LAI = LeaveAreaIndex();             
-
+                                    Crop->st.LAI = LeaveAreaIndex(); 
+                                    
+                                    /* Establish TLAI*/
+                                    if (Crop->st.LAI > Crop->st.TLAI)
+                                        Crop->st.TLAI = Crop->st.LAI;
+                                    
                                     /* State calculations */
                                     IntegrationCrop();
                                     IntegrationWatBal();

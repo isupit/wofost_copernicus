@@ -117,6 +117,7 @@ float DailyTotalAssimilation()
     float PcbPAR, PcbNIR;
     float FracSunlit, FracShaded;
     float BndConducH, BndConducCnp, BndConducSunlit, BndConducShaded;
+    float Kln, Nbk, Kn;
     float DailyTotalAssimilation = 0.;
 
     KDiffuse = Afgen(Crop->prm.KDiffuseTb, &(Crop->st.Development));
@@ -143,7 +144,7 @@ float DailyTotalAssimilation()
     /* Extinction coefficient of nitrogen  */
     Kln    = KdiffPAR*(Crop->N_st.leaves - Crop->prm.SLMIN*Crop->st.TLAI);
     Nbk    = Crop->prm.SLMIN*(1.-exp(-KL*Crop->st.LAI));
-    Kn     = 1./Crop->st.TLAI*log((KLN+NBK)/(KLN*EXP(-KL*Crop->st.TLAI)+NBK));
+    Kn     = 1./Crop->st.TLAI*log((Kln + Nbk)/(Kln*exp(-KL*Crop->st.TLAI)+Nbk));
 
     if (AssimMax > 0. && Crop->st.LAI > 0.)
     {
@@ -200,11 +201,11 @@ float DailyTotalAssimilation()
             /* Boundary layer conductance for canopy, sunlit and shaded leaves */
             BndConducH   = 0.01*sqrt(Windspeed[Day][lat][lon]/Crop->prm.LeafWidth);
             BndConducCnp     = (1.-exp(- 0.5*Kw * Crop->st.LAI))/(0.5*Kw ) * BndConducH;
-            BndConducSunlit  = (1.-exp(-(0.5*Kw + Kb)*Crop->st.LAI))/(0.5*Kw + Kb) * BndConducH;
+            BndConducSunlit  = (1.-exp(-(0.5*Kw + Kb)*Crop->st.LAI))/(0.5*Kw + Kb) * BndConducH; // eq41 pg35
             BndConducShaded  = BndConducCnp - BndConducSunlit;
             
             /* boundary layer resistance for soil */
-            RBHS   = 172.*sqrt(0.05/max(0.1,Windspeed[Day][lat][lon]*exp(-Kw*Crop->st.LAI)));
+            RBHS   = 172.*sqrt(0.05/max(0.1,Windspeed[Day][lat][lon]*exp(-Kw*Crop->st.TLAI)));
             RBWS   = 0.93*RBHS;
 
             /* Total photosynthetic nitrogen in canopy */

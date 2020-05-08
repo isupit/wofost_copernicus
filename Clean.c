@@ -22,6 +22,15 @@ void Clean(SimUnit *Grid)
     while (Grid)
     {
         /* Free all the Afgen tables */
+        while(Grid->crp->prm.VernalizationRate)
+        {
+            head = Grid->crp->prm.VernalizationRate;
+            Grid->crp->prm.VernalizationRate = Grid->crp->prm.VernalizationRate->next;
+            free(head);
+        }
+        free(Grid->crp->prm.VernalizationRate);
+        Grid->crp->prm.VernalizationRate = NULL;
+        
         while(Grid->crp->prm.DeltaTempSum)
         {
             head = Grid->crp->prm.DeltaTempSum;
@@ -337,4 +346,41 @@ void Clean(SimUnit *Grid)
     }
 
     Grid = initial = NULL;
+}
+
+void CleanMeteo(Weather * Meteo)
+{
+    size_t j, k;
+    for (j = 0; j < Meteo->nlon; j++) {
+        for (k = 0; k < Meteo->nlat; k++) {
+            free(Tmin[j][k]);
+            free(Tmax[j][k]);
+            free(Radiation[j][k]);
+            free(Rain[j][k]);
+            free(Windspeed[j][k]);
+            free(Vapour[j][k]);
+        }
+        free(Tmin[j]);
+        free(Tmax[j]);
+        free(Radiation[j]);
+        free(Rain[j]);
+        free(Windspeed[j]);
+        free(Vapour[j]);
+        
+        free(AngstA[j]);
+        free(AngstB[j]);
+        free(Altitude[j]);
+        free(Mask[j]);
+    }
+    free(Tmin);
+    free(Tmax);
+    free(Radiation);
+    free(Rain);
+    free(Windspeed);
+    free(Vapour);
+        
+    free(AngstA);
+    free(AngstB);
+    free(Altitude);
+    free(Mask);
 }

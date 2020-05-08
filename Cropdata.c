@@ -14,6 +14,7 @@ void GetCropData(Plant *CROP, char *cropfile)
 {
     TABLE *Table[NR_TABLES_CRP], *start;
 
+    char line[MAX_STRING];
     int i, c, count;
     float Variable[NR_VARIABLES_CRP], XValue, YValue;
     char x[2], xx[2],  word[100];
@@ -22,7 +23,7 @@ void GetCropData(Plant *CROP, char *cropfile)
 
     if ((fq = fopen(cropfile, "rt")) == NULL)
     {
-        fprintf(stderr, "Cannot open input file.\n"); 
+        fprintf(stderr, "Cannot open input file %s.\n", cropfile); 
         exit(0);
     }
 
@@ -41,13 +42,12 @@ void GetCropData(Plant *CROP, char *cropfile)
             {
                 while ((c=fgetc(fq)) !='=');
                 fscanf(fq,"%f",  &Variable[i]);
-                i++;
                 count++;
+                break;
             }
         }  
         rewind(fq);
-        if(strcmp(CropParam[i],"NULL")) 
-            i++;
+        i++;
     }
 
 
@@ -55,7 +55,7 @@ void GetCropData(Plant *CROP, char *cropfile)
         ;
     else
     {
-       fprintf(stderr, "Something wrong with the Crop variables.\n"); 
+       fprintf(stderr, "Something wrong with the Crop variables in file %s.\n", cropfile);
        exit(0);
     }
 
@@ -65,34 +65,39 @@ void GetCropData(Plant *CROP, char *cropfile)
 
     i = 0;
     count = 0;
-    while (strcmp(CropParam2[i],"NULL")) 
-    {
-      while ((c=fscanf(fq,"%s",word)) != EOF) 
-      {
-        if (!strcmp(word, CropParam2[i])) {
-            Table[i] = start= malloc(sizeof(TABLE));
-            fscanf(fq,"%s %f %s  %f", x, &Table[i]->x, xx, &Table[i]->y);
-            Table[i]->next = NULL;				     
-
-            while ((c=fgetc(fq)) !='\n');
-            while (fscanf(fq," %f %s  %f",  &XValue, xx, &YValue) > 0)  {
-                Table[i]->next = malloc(sizeof(TABLE));
-                Table[i] = Table[i]->next; 
+    while (strcmp(CropParam2[i],"NULL")) {
+        while(fgets(line, MAX_STRING, fq)) {
+            if(line[0] == '*' || line[0] == ' ' || line[0] == '\n' || line[0] == '\r'){
+                continue;
+            }
+            
+            sscanf(line,"%s",word);
+            if (!strcmp(word, CropParam2[i])) {
+                
+                c = sscanf(line,"%s %s %f %s  %f", word, x, &XValue, xx, &YValue);
+                
+                Table[i] = start= malloc(sizeof(TABLE));
                 Table[i]->next = NULL;
                 Table[i]->x = XValue;
                 Table[i]->y = YValue;
-
-                while ((c=fgetc(fq)) !='\n');
+                
+                while (fgets(line, MAX_STRING, fq)) {  
+                    if((c = sscanf(line," %f %s  %f",  &XValue, xx, &YValue)) != 3) break;
+                    
+                    Table[i]->next = malloc(sizeof(TABLE));
+                    Table[i] = Table[i]->next; 
+                    Table[i]->next = NULL;
+                    Table[i]->x = XValue;
+                    Table[i]->y = YValue;
                 }
-            /* Go back to beginning of the table */
-            Table[i] = start;
-            i++;
-            count++;
-           }      
-      }
-      rewind(fq);
-      if(strcmp(CropParam2[i],"NULL"))
-          i++;
+                /* Go back to beginning of the table */
+                Table[i] = start;
+                count++;
+                break;
+            }
+        }
+        rewind(fq);
+        i++;
     }
 
     fclose(fq);
@@ -101,7 +106,7 @@ void GetCropData(Plant *CROP, char *cropfile)
         ;
     else
     {
-        fprintf(stderr, "Something wrong with the Crop tables.\n"); 
+        fprintf(stderr, "Something wrong with the Crop tables in file %s.\n", cropfile); 
         exit(0);
     } 
 

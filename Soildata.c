@@ -7,79 +7,97 @@
 
 void GetSoilData(Soil *SOIL, char *soilfile)
 {
-  TABLE *Table[NR_TABLES_SOIL], *start;
-  
-  int i, c;
-  float Variable[100], XValue, YValue;
-  char x[2], xx[2],  word[100];
-  FILE *fq;
+    TABLE *Table[NR_TABLES_SOIL], *start;
 
- if ((fq = fopen(soilfile, "rt")) == NULL)
- {
-     fprintf(stderr, "Cannot open the soil input file.\n"); 
-     exit(0);
- }
+    char line[MAX_STRING];
+    int i, c, count;
+    float Variable[100], XValue, YValue;
+    char x[2], xx[2],  word[100];
+    FILE *fq;
 
- i=0;
-  while ((c=fscanf(fq,"%s",word)) != EOF && i < 12 ) 
-  {
-    if (!strcmp(word, SoilParam[i])) {
-        while ((c=fgetc(fq)) !='=');
-	fscanf(fq,"%f",  &Variable[i]);
-
-	i++; 
-       }  
-  }
-
- if (i != NR_VARIABLES_SOIL) 
- {
-    fprintf(stderr, "Something wrong with the Soil variables.\n"); 
-    exit(0);
- }
- 
-  rewind(fq);  
-  
-  FillSoilVariables(SOIL, Variable);
- 
-
-  i=0;
-  while ((c=fscanf(fq,"%s",word)) != EOF) 
-  {
-    if (strlen(word)> 98) 
+    if ((fq = fopen(soilfile, "rt")) == NULL)
     {
-        fprintf(stderr, "Check the soil input file: very long strings.\n"); 
+        fprintf(stderr, "Cannot open input file %s.\n", soilfile); 
         exit(0);
     }
-    if (!strcmp(word, SoilParam2[i])) 
-    {
-        Table[i] = start= malloc(sizeof(TABLE));
-	fscanf(fq,"%s %f %s  %f", x, &Table[i]->x, xx, &Table[i]->y);
-        Table[i]->next = NULL;				     
-			       
-	while ((c=fgetc(fq)) !='\n');
-	while (fscanf(fq," %f %s  %f",  &XValue, xx, &YValue) > 0)  
-        {
-	    Table[i]->next = malloc(sizeof(TABLE));
-            Table[i] = Table[i]->next; 
-            Table[i]->next = NULL;
-	    Table[i]->x = XValue;
-	    Table[i]->y = YValue;
-	    
-	    while ((c=fgetc(fq)) !='\n');
-	    }
-        /* Go back to beginning of the table */
-        Table[i] = start;
-	i++; 
-       }      
-  }
-  
-  fclose(fq);
 
- if (i!= NR_TABLES_SOIL) 
- {
-    fprintf(stderr, "Something wrong with the Soil tables.\n"); 
-    exit(0);
- }
+    i=0;
+    count = 0;
+    while (strcmp(SoilParam[i],"NULL")) 
+    {
+        while ((c=fscanf(fq,"%s",word)) != EOF && i < 12 ) 
+        {
+            if (strlen(word)> 98) 
+            {
+                fprintf(stderr, "Check the site input file: very long strings.\n"); 
+                exit(0);
+            }
+            if (!strcmp(word, SoilParam[i])) {
+                while ((c=fgetc(fq)) !='=');
+                fscanf(fq,"%f",  &Variable[i]);
+                count++;
+                break;
+            }
+        }
+        rewind(fq);
+        i++;
+    }
+
+    if (i != NR_VARIABLES_SOIL) 
+    {
+       fprintf(stderr, "Something wrong with the Soil variables in file %s.\n", soilfile);
+       exit(0);
+    }
+ 
+    rewind(fq);  
+
+    FillSoilVariables(SOIL, Variable);
+ 
+
+    i=0;
+    count = 0;
+    while (strcmp(SoilParam2[i],"NULL")) {
+        while(fgets(line, MAX_STRING, fq)) {
+            if(line[0] == '*' || line[0] == ' ' || line[0] == '\n' || line[0] == '\r'){
+                continue;
+            }
+
+            sscanf(line,"%s",word);
+            if (!strcmp(word, SoilParam2[i])) {
+
+                c = sscanf(line,"%s %s %f %s  %f", word, x, &XValue, xx, &YValue);
+
+                Table[i]= start= malloc(sizeof(TABLE));
+                Table[i]->next = NULL;		
+                Table[i]->x = XValue;
+                Table[i]->y = YValue;		     
+
+                while (fgets(line, MAX_STRING, fq)) {  
+                    if((c = sscanf(line," %f %s  %f",  &XValue, xx, &YValue)) != 3) break;
+
+                    Table[i]->next = malloc(sizeof(TABLE));
+                    Table[i] = Table[i]->next; 
+                    Table[i]->next = NULL;
+                    Table[i]->x = XValue;
+                    Table[i]->y = YValue;
+                }
+                /* Go back to beginning of the table */
+                Table[i] = start;
+                count++;
+                break;
+            }
+        } 
+        rewind(fq);    
+        i++; 
+    }
+
+    fclose(fq);
+
+    if (count!= NR_TABLES_SOIL) 
+    {
+       fprintf(stderr, "Something wrong with the Soil tables in file %s.\n", soilfile);
+       exit(0);
+    }
  
     SOIL->VolumetricSoilMoisture = Table[0];
     SOIL->HydraulicConductivity  = Table[1];

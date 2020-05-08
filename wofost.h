@@ -15,9 +15,7 @@
 #define NUMBER_OF_TABLES        31
 #define MAX_STRING             2048
 #define METEO_LENGTH           36600 //max 100 years 
-
-#define NLATS 24
-#define NLONS 28
+#define DOMAIN_LENGTH          720   //max 0.5 degree
 
 struct tm current_date;
 
@@ -410,43 +408,60 @@ typedef struct SIMUNIT {
         int file;
         char start[MAX_STRING];
         char output[MAX_STRING];
+        
+        /* Statistics */
+        float twso[31];
+        
         struct SIMUNIT *next;
         } SimUnit; 
 SimUnit *Grid;
 
+enum{
+    WEATHER_TMIN,
+    WEATHER_TMAX,
+    WEATHER_RADIATION,
+    WEATHER_RAIN,
+    WEATHER_WINDSPEED,
+    WEATHER_VAPOUR,
+    WEATHER_NTYPES
+};
+
 typedef struct WEATHER {
-        char path[MAX_STRING];
-        char model[MAX_STRING];
-        int Initial;
+        char mask[MAX_STRING];
+        char file[WEATHER_NTYPES][MAX_STRING];
+        char type[WEATHER_NTYPES][MAX_STRING];
+        char var[WEATHER_NTYPES][MAX_STRING];
         int StartYear;
         int EndYear;
+        size_t nlat;
+        size_t nlon;
+        size_t ntime;
         struct WEATHER *next;
         } Weather;
 Weather *Meteo; /* Place holder for the meteo filenames and lat/lon */
 
 /** Meteorological Variables  **/
-size_t time_length, lat_length, lon_length;
-size_t Day;
-size_t lat, lon;
-
+int Station, Year;
+int MeteoYear[METEO_LENGTH];
+int MeteoDay[METEO_LENGTH];
 float CO2;
-float AngstA;
-float AngstB;
-float Altitude;
-
-float lats[NLATS];
-float lons[NLONS];
-
-float Tmin[METEO_LENGTH][NLATS][NLONS];
-float Tmax[METEO_LENGTH][NLATS][NLONS];
-float Radiation[METEO_LENGTH][NLATS][NLONS];
-float Rain[METEO_LENGTH][NLATS][NLONS];
-float Windspeed[METEO_LENGTH][NLATS][NLONS];
-float Vapour[METEO_LENGTH][NLATS][NLONS];
+double Longitude[DOMAIN_LENGTH], Latitude[DOMAIN_LENGTH];
+int **Mask;
+float **Altitude;
+float **AngstA;
+float **AngstB;
+float ***Tmin;
+float ***Tmax;
+float ***Radiation;
+float ***Rain;
+float ***Windspeed;
+float ***Vapour;
 
 
 /* Time step */
 float Step;
+
+
 
              
 #endif	// 

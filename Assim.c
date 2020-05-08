@@ -99,7 +99,7 @@ float DailyTotalAssimilation()
         {
             Hour       = 12.0+0.5*Daylength*XGauss[i];
             SinB       = max (0.,SinLD+CosLD*cos(2.*PI*(Hour+12.)/24.));
-            PAR        = 0.5*Radiation[Day][lat][lon]*SinB*(1.+0.4*SinB)/DSinBE;
+            PAR        = 0.5*Radiation[Lon][Lat][Day]*SinB*(1.+0.4*SinB)/DSinBE;
             PARDiffuse = min (PAR,SinB*DiffRadPP);
             PARDirect  = PAR-PARDiffuse;
             DailyTotalAssimilation = DailyTotalAssimilation + 
@@ -131,7 +131,7 @@ float Correct(float Assimilation)
     PreviousDay = Day;
     while (PreviousDay >= 0 && Counter < number)
     {
-      TminLowAvg += Tmin[PreviousDay--][lat][lon]; 
+      TminLowAvg += Tmin[Lon][Lat][PreviousDay--]; 
       Counter++;
     }
 

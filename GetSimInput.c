@@ -20,6 +20,7 @@ int GetSimInput(char *list)
     int Emergence;
     int count;
   
+    char line[MAX_STRING];
     char path[MAX_STRING];
     char cropfile[MAX_STRING];
     char soilfile[MAX_STRING];
@@ -38,11 +39,15 @@ int GetSimInput(char *list)
         exit(1);
     }
     
-    count = 1;
-    while (fscanf(ifp,"%s %s %s %s %s %s %d %s" ,
-            path, cf, sf, mf, site, start, &Emergence, output)
-            != EOF) 
-    {    
+    count = 0;
+    while(fgets(line, MAX_STRING, ifp)) {
+        if(line[0] == '*' || line[0] == ' ' || line[0] == '\n'){
+            continue;
+        }
+        
+        sscanf(line,"%s %s %s %s %s %s %d %s" ,
+            path, cf, sf, mf, site, start, &Emergence, output);
+        
         memset(cropfile,'\0',MAX_STRING);
         memset(sitefile,'\0',MAX_STRING);
         memset(soilfile,'\0',MAX_STRING);
@@ -84,7 +89,7 @@ int GetSimInput(char *list)
         memset(Grid->output,'\0',MAX_STRING);
         memset(Grid->start,'\0',MAX_STRING);
         
-        strncpy(Grid->output,output,strlen(output)); // Set output file name
+        strncpy(Grid->output,output,strlen(output)); // Name og output file
         strncpy(Grid->start,start,strlen(start)); // Starting string month day of the simulations 
         
         Grid->file  = count++;            // number of elements in Grid carousel
@@ -99,6 +104,6 @@ int GetSimInput(char *list)
     /* Set Grid back to initial address */
     Grid = initial;
     
-    /* return number of meteo files */
-    return --count;
+    /* Return the number of meteo files */
+    return count;
 }   

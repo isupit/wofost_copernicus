@@ -63,7 +63,8 @@ typedef struct CONSTANTS {
         float MaxPercolSubS;
         float MaxSurfaceStorge;
         float K0;
-        } Constants;
+        } Constants;    
+       
 
 typedef struct PARAMETERS {
           /** Tables for the Crop simulations **/
@@ -185,7 +186,6 @@ typedef struct PARAMETERS {
         float Height;
         
         /** Farquhar **/
-        float C3;
         float EnAcJmax;  // Activation Energy Jmax
         float DEJmax;    // Deactivation Energy Jmax
         float CFV;
@@ -260,6 +260,7 @@ typedef struct NUTRIENT_STATES {
         float roots;
         float stems;
         float leaves;
+        float T_leaves;
         float storage;
         float Max_lv;
         float Max_st;
@@ -279,7 +280,6 @@ typedef struct NUTRIENT_STATES {
         float Avail_lv;
         float Avail_st;
         float Avail_ro;
-        
         } nutrient_states;
         
 
@@ -295,6 +295,8 @@ typedef struct GROWTH_RATES {
         float DarkResp;
         float LeafPhoto;
         float Height;
+        float PotLeafTran;
+        float NetLeafAbsRad;
         } growth_rates;
 
 typedef struct GROWTH_STATES {
@@ -310,6 +312,7 @@ typedef struct GROWTH_STATES {
         float RootDepth_prev;
         float Height;
         float vernalization;
+        float LeafTemp;
         } growth_states;
 
 typedef struct DYING_STATES {
@@ -334,6 +337,7 @@ typedef struct GREEN {
         
 
 typedef struct PLANT {
+        int C3C4;  // 1 = C3, -1 = C4
         int Emergence;
         int Sowing;
         int GrowthDay;       

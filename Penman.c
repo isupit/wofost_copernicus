@@ -99,7 +99,7 @@ void CalcPenman()
     
 }
 
-void CalcPenmanMonteith()
+void CalcPenmanMonteith(float *Rad, float *RnetAbs, float *PT, float *Frac, float *R_stomata)
 //http://www.fao.org/3/X0490E/x0490e06.htm#fao%20penman%20monteith%20equation
 {
     //float Tmpa;
@@ -116,14 +116,18 @@ void CalcPenmanMonteith()
     float MGamma;
     float EA;
     float ET0;
+    float p_su, p_sh;
+    float T, T_su, T_sh;
+    float Psr, Ptr, Ptd;
+    float BlackBRad, RnetOut;
     
     
-    float Psycon = 0.665; // psychrometric instrument constant (kPa/Celsius)
-    float Refcfc = 0.23;  // albedo and surface resistance [sec/m] for the reference crop canopy
-    float Cres = 70.;     // latent heat of evaporation of water [J/kg == J/mm] and
-    float Lhvap = 2.45e6; // Stefan Boltzmann constant (J/m2/d/K4, e.g multiplied by 24*60*60)
-    float Stbc= 4.903e-3; // Soil heat flux [J/m2/day] explicitly set to zero
-    float G = 0.;
+    float Psycon = 0.665;  // psychrometric instrument constant (kPa/Celsius)
+    float Refcfc = 0.23;   // albedo and surface resistance [sec/m] for the reference crop canopy
+    float Cres  = 70.;     // latent heat of evaporation of water [J/kg == J/mm] and
+    float Lhvap = 2.45e6;
+    float Stbc  = 4.903e-3; // Stefan Boltzmann constant (J/m2/d/K4, e.g multiplied by 24*60*60) 
+    float G = 0.;         // Soil heat flux [J/m2/day] explicitly set to zero
 
     // mean daily temperature (Celsius)
     //Tmpa  = (Tmin[Day][lat][lon] + Tmax[Day][lat][lon])/2.;
@@ -163,25 +167,23 @@ void CalcPenmanMonteith()
     
     if (CskyRad > 0)
     {
-        // Final net outgoing longwave radiation [J/m2/day]
-        Rnl = Rnl_Tmp * (1.35 * (Radiation[Day][lat][lon]/CskyRad) - 0.35);
+        BlackBRad  = Stbc * (Temp +273.)**4 // Black body radiation Note this per day
+ 
+        // net absorbed radiation sunlit
+        RnetOut = Rnl_Tmp*(0.1+0.9*CskyRad) * (*Frac); // Net outgoing radiation
+        *RnetAbs = *Rad - RnetOut;  // Net absorbed sunlit radiation
 
-        // radiative evaporation equivalent for the reference surface
-        // [mm/DAY]
-        Rn = ((1-Refcfc) * Radiation[Day][lat][lon] - Rnl)/Lhvap;
+        // Intermediate variable related to resistances
+        Psr    = Psycon * (RBW+RT+*R_stomata)/(RBH+RT);
 
-        // aerodynamic evaporation equivalent [mm/day]
-        EA = ((900./(Temp + 273.)) * Windspeed[Day][lat][lon] * (Svap - Vap));
+        // Radiation-determined term
+        Ptr    = *RnetAbs * Delta /(Delta + Psr)/Lhvap;
 
-        // Modified psychometric constant (gamma*)[kPa/C]
-        // ra = 208/u2 s m-1, (with u2 wind speed at 2 m height)
-        MGamma = Gamma * (1. + (Cres/208. * Windspeed[Day][lat][lon]));
+        // Vapour pressure-determined term
+        Ptd    = (VHCA*VPD/(RBH+RT))/(Delta + Psr)/Lhvap;
 
-        // Reference ET0 in mm/day
-        ET0 = (Delta * (Rn - G))/(Delta + MGamma) + (Gamma * EA)/(Delta + MGamma);
-        
-        // Convert to cm/day;
-        Penman.ET0 = max(0., 0.1 * ET0);
+        // Potential evaporation or transpiration
+        *PT     = max(1.e-10,Ptr + Ptd);
     }
     else
     {

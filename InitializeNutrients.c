@@ -15,6 +15,7 @@ void InitializeNutrients()
     Crop->N_st.Max_st = Crop->prm.N_MaxStems * Crop->N_st.Max_lv;
     Crop->N_st.Max_ro = Crop->prm.N_MaxRoots * Crop->N_st.Max_lv;
     Crop->N_st.Max_so = 0.;
+    Crop->N_st.T_leaves = 0.;
         
     /* Initial maximum N concentration in plant organs [kg N ]           */
     Crop->N_st.leaves = Crop->N_st.Max_lv * Crop->st.leaves;

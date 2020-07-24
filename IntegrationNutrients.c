@@ -30,6 +30,7 @@ void IntegrationNutrients()
     Crop->N_st.stems   += Crop->N_rt.stems  ;
     Crop->N_st.roots   += Crop->N_rt.roots  ;
     Crop->N_st.storage += Crop->N_rt.storage;
+    Crop->N_st.T_leaves += max(0., Crop->N_rt.leaves);
           
     Crop->P_st.leaves  += Crop->P_rt.leaves ;
     Crop->P_st.stems   += Crop->P_rt.stems  ;

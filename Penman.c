@@ -99,16 +99,13 @@ void CalcPenman()
     
 }
 
-void CalcPenmanMonteith(float *Rad, float *RnetAbs, float *PT, float *Frac, float *R_stomata)
-//http://www.fao.org/3/X0490E/x0490e06.htm#fao%20penman%20monteith%20equation
+void CalcPenmanMonteith(float Temperature, float R_turb, float RB_water, float RB_heat, 
+        float R_stomata, float PAR, float RnetAbs,  float PT)
 {
-    //float Tmpa;
-    float Vap;
     float Patm;
     float Gamma;
     float Svap, Svap_Tmpa, Svap_Tmax, Svap_Tmin;
     float Delta;
-    float Stb_Tmax, Stb_Tmin;
     float Rnl_Tmp;
     float CskyRad;
     float Rnl;
@@ -122,18 +119,12 @@ void CalcPenmanMonteith(float *Rad, float *RnetAbs, float *PT, float *Frac, floa
     float BlackBRad, RnetOut;
     
     
-    float Psycon = 0.665;  // psychrometric instrument constant (kPa/Celsius)
+    float Psycon = 0.067;  // psychrometric instrument constant (kPa/Celsius)
     float Refcfc = 0.23;   // albedo and surface resistance [sec/m] for the reference crop canopy
-    float Cres  = 70.;     // latent heat of evaporation of water [J/kg == J/mm] and
-    float Lhvap = 2.45e6;
-    float Stbc  = 4.903e-3; // Stefan Boltzmann constant (J/m2/d/K4, e.g multiplied by 24*60*60) 
-    float G = 0.;         // Soil heat flux [J/m2/day] explicitly set to zero
-
-    // mean daily temperature (Celsius)
-    //Tmpa  = (Tmin[Day][lat][lon] + Tmax[Day][lat][lon])/2.;
-
-    // Vapour pressure to kPa
-    Vap = 0.1 * (Vapour[Day][lat][lon]);
+    
+    float Lhvap  = 2.45e6;  // Latent heat of evaporation of water (J/kg=J/mm)  
+    float Vhca   = 1200.;   // Volumetric heat capacity
+    float Stbc   = 5.668e-8; // Stefan Boltzmann constant (J/m2/s/K4, e.g multiplied by 24*60*60) 
 
     // atmospheric pressure at standard temperature of 293K (kPa)
     Patm= 101.3 * pow((293.0 - (0.0065*Altitude))/293.0, 5.26);
@@ -143,34 +134,20 @@ void CalcPenmanMonteith(float *Rad, float *RnetAbs, float *PT, float *Frac, floa
 
     // Derivative of SVAP with respect to mean temperature, i.e.
     // slope of the SVAP-temperature curve (kPa/Celsius);
-    Svap_Tmpa = 0.6108 * exp((17.27 * Temp) / (237.3 + Temp));
-    Delta = (4098. * Svap_Tmpa)/pow((Temp + 237.3), 2);
-
-    // Daily average saturated vapour pressure [kPa] from min/max temperature
-    Svap_Tmax = 0.6108 * exp((17.27 * Tmax[Day][lat][lon]) / (237.3 + Tmax[Day][lat][lon]));
-    Svap_Tmin = 0.6108 * exp((17.27 * Tmin[Day][lat][lon]) / (237.3 + Tmin[Day][lat][lon]));
-    Svap = (Svap_Tmax + Svap_Tmin) / 2.;
-
-    //measured vapour pressure not to exceed saturated vapour pressure
-    Vap = min(Vap, Svap);
-
-    // Longwave radiation according at Tmax, Tmin (J/m2/d)
-    // and preliminary net outgoing long-wave radiation (J/m2/d)
-    Stb_Tmax = Stbc * pow((273.16 + Tmax[Day][lat][lon]), 4);
-    Stb_Tmin = Stbc * pow((273.16 + Tmin[Day][lat][lon]), 4);
-    Rnl_Tmp = ((Stb_Tmax + Stb_Tmin) / 2.) * (0.34 - 0.14 * sqrt(Vap));
+    Svap  = 0.6108 * exp((17.27 * Temperature) / (237.3 + Temperature));
+    Delta = (4098. * Svap_Tmpa)/pow((Temperature + 237.3), 2);
 
     // Clear Sky radiation [J/m2/DAY] from Angot TOA radiation
     // the latter is found through a call to astro()
     CskyRad = (0.75 + (2e-05 * Altitude)) * AngotRadiation;
     
-    
     if (CskyRad > 0)
     {
-        BlackBRad  = Stbc * (Temp +273.)**4 // Black body radiation Note this per day
+        BlackBRad  = Stbc * (LeafTemp +273.)**4 // Black body radiation 
+        Rnl_Tmp  = BlackBRad * (0.56 -0.079 * sqrt(Vapour[Day][lat][lon])); //Note that Vap here is hPa!
  
         // net absorbed radiation sunlit
-        RnetOut = Rnl_Tmp*(0.1+0.9*CskyRad) * (*Frac); // Net outgoing radiation
+        RnetOut = Rnl_Tmp * (0.1+0.9*CskyRad) * (*Frac); // Net outgoing radiation
         *RnetAbs = *Rad - RnetOut;  // Net absorbed sunlit radiation
 
         // Intermediate variable related to resistances
@@ -180,7 +157,7 @@ void CalcPenmanMonteith(float *Rad, float *RnetAbs, float *PT, float *Frac, floa
         Ptr    = *RnetAbs * Delta /(Delta + Psr)/Lhvap;
 
         // Vapour pressure-determined term
-        Ptd    = (VHCA*VPD/(RBH+RT))/(Delta + Psr)/Lhvap;
+        Ptd    = (Vhca*VPD/(RBH+RT))/(Delta + Psr)/Lhvap;
 
         // Potential evaporation or transpiration
         *PT     = max(1.e-10,Ptr + Ptd);

@@ -23,12 +23,11 @@ int Astro()
     float Declination;
     float AOB;
     float DSinB;
-    float FractionDiffuseRad;
     
     float day_fl  = 1.0 + (float) current_date.tm_yday;
     float Latitude = lats[lat];
     
-    if (fabsf(Latitude) > 90.) return 0;  
+    if (fabs(Latitude) > 90.) return 0;  
 
     /* We start at Day= 1, we do not use Day = 0 */
     Declination    = -asin(sin(23.45*RAD)*cos(2.*PI*(day_fl+10.)/365.));
@@ -60,21 +59,6 @@ int Astro()
         DSinB  = 3600.*(Daylength*SinLD);
         DSinBE = 3600.*(Daylength*(SinLD+0.4*(SinLD*SinLD + CosLD*CosLD*0.5)));
     }
-    
-    /*  Extraterrestrial radiation and atmospheric transmission */
-    AngotRadiation  = SolarConstant*DSinB;
-    AtmosphTransm   = Radiation[Day][lat][lon]/AngotRadiation;
-
-    if (AtmosphTransm > 0.35)
-       FractionDiffuseRad = 1.47 - 1.66 * AtmosphTransm;
-  
-    if (AtmosphTransm <= 0.22 && AtmosphTransm > 0.35)
-       FractionDiffuseRad = 1. - 6.4*pow((AtmosphTransm-0.22),2);
-  
-    if (AtmosphTransm < 0.22)  
-       FractionDiffuseRad = 1.0;
-    
-    DiffRadPP = 0.5 * FractionDiffuseRad * AtmosphTransm * SolarConstant;
 
     return 1;
 }

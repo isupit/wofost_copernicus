@@ -8,6 +8,7 @@
 #include "extern.h"
 #include "penman.h"
 #include "wofost.h"
+#include "assim.h"
 
 /* ---------------------------------------------------------------------*/
 /*  function CalcPenman()                                               */
@@ -99,43 +100,16 @@ void CalcPenman()
     
 }
 
-void CalcPenmanMonteith(float Temperature, float R_turb, float RB_water, float RB_heat, 
-        float R_stomata, float PAR, float RnetAbs,  float PT)
+void CalcPenmanMonteith(float R_turb, float RB_water, float RB_heat, 
+        float R_stomata, float Radiation, float RnetAbs,  float PT)
 {
-    float Patm;
-    float Gamma;
-    float Svap, Svap_Tmpa, Svap_Tmax, Svap_Tmin;
-    float Delta;
+    float Temperature;
     float Rnl_Tmp;
     float CskyRad;
-    float Rnl;
-    float Rn;
-    float MGamma;
-    float EA;
-    float ET0;
-    float p_su, p_sh;
-    float T, T_su, T_sh;
     float Psr, Ptr, Ptd;
     float BlackBRad, RnetOut;
     
-    
-    float Psycon = 0.067;  // psychrometric instrument constant (kPa/Celsius)
-    float Refcfc = 0.23;   // albedo and surface resistance [sec/m] for the reference crop canopy
-    
-    float Lhvap  = 2.45e6;  // Latent heat of evaporation of water (J/kg=J/mm)  
-    float Vhca   = 1200.;   // Volumetric heat capacity
-    float Stbc   = 5.668e-8; // Stefan Boltzmann constant (J/m2/s/K4, e.g multiplied by 24*60*60) 
-
-    // atmospheric pressure at standard temperature of 293K (kPa)
-    Patm= 101.3 * pow((293.0 - (0.0065*Altitude))/293.0, 5.26);
-    
-    // psychrometric constant (kPa/Celsius)
-    Gamma = Psycon * Patm * 1.0e-3;
-
-    // Derivative of SVAP with respect to mean temperature, i.e.
-    // slope of the SVAP-temperature curve (kPa/Celsius);
-    Svap  = 0.6108 * exp((17.27 * Temperature) / (237.3 + Temperature));
-    Delta = (4098. * Svap_Tmpa)/pow((Temperature + 237.3), 2);
+    Temperature = DayTemp + Dif;
 
     // Clear Sky radiation [J/m2/DAY] from Angot TOA radiation
     // the latter is found through a call to astro()
@@ -143,21 +117,21 @@ void CalcPenmanMonteith(float Temperature, float R_turb, float RB_water, float R
     
     if (CskyRad > 0)
     {
-        BlackBRad  = Stbc * (LeafTemp +273.)**4 // Black body radiation 
-        Rnl_Tmp  = BlackBRad * (0.56 -0.079 * sqrt(Vapour[Day][lat][lon])); //Note that Vap here is hPa!
+        BlackBRad  = BOLTZM * (Temperature +273.)**4 // Black body radiation 
+        Rnl_Tmp  = BlackBRad * (0.56 -0.079 * sqrt(10*Vapour[Day][lat][lon])); //Note that Vap here is hPa!
  
         // net absorbed radiation sunlit
-        RnetOut = Rnl_Tmp * (0.1+0.9*CskyRad) * (*Frac); // Net outgoing radiation
-        *RnetAbs = *Rad - RnetOut;  // Net absorbed sunlit radiation
+        RnetOut = Rnl_Tmp * (0.1+0.9*CskyRad) * (Frac); // Net outgoing radiation
+        *RnetAbs = Radiation - RnetOut;  // Net absorbed sunlit radiation
 
         // Intermediate variable related to resistances
-        Psr    = Psycon * (RBW+RT+*R_stomata)/(RBH+RT);
+        Psr    = PSYCH * (RB_water + R_turb + *R_stomata)/(RB_heat + R_turb);
 
         // Radiation-determined term
-        Ptr    = *RnetAbs * Delta /(Delta + Psr)/Lhvap;
+        Ptr    = *RnetAbs * Delta /(Delta + Psr)/LHVAP;
 
         // Vapour pressure-determined term
-        Ptd    = (Vhca*VPD/(RBH+RT))/(Delta + Psr)/Lhvap;
+        Ptd    = (VHCA * VapDeficit/(RB_heat + R_turb))/(Delta + Psr)/LHVAP;
 
         // Potential evaporation or transpiration
         *PT     = max(1.e-10,Ptr + Ptd);

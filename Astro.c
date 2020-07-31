@@ -60,5 +60,9 @@ int Astro()
         DSinBE = 3600.*(Daylength*(SinLD+0.4*(SinLD*SinLD + CosLD*CosLD*0.5)));
     }
 
+    //  Extraterrestrial radiation and atmospheric transmission
+    AngotRadiation  = SolarConstant*DSinB;
+    AtmosphTransm   = Radiation[Day][lat][lon]/AngotRadiation;
+    
     return 1;
 }

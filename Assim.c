@@ -121,7 +121,7 @@ void InternalCO2()
     float RatioCO2intCO2amb;
     float Temperature;
     
-    Temperature = DayTemp + Dif;
+    Temperature = DTemp + Dif;
     
     // Air-to-leaf vapour pressure deficit
     SatVap     = 0.611 * exp(17.4 * Temperature / (Temperature + 239.));
@@ -159,7 +159,7 @@ float LeafPhotoResp(float PAR, float NP, float *LeafPhoto, float *DarkResp)
     float Rdt;
     float Temperature;
     
-    Temperature = DayTemp + Dif;
+    Temperature = DTemp + Dif;
     
     // Par photonflux umol/m2/s absorbed by leaf photo-sytems 
     Upar = 4.56  * PAR;
@@ -241,7 +241,7 @@ void InstantAssimTransp(float Frac, float RT, float RB_water, float RB_heat,
     LeafPhotoResp(PAR, NP, &Photo_lf, &DarkResp);
     
     // Potential conductance for CO2
-    CndCO2 = (LeafPhoto - DarkResp)*((273.+DayTemp)/0.53717)/(CO2 - Crop->CO2int); //eq 4 pg11
+    CndCO2 = (LeafPhoto - DarkResp)*((273.+DTemp)/0.53717)/(CO2 - Crop->CO2int); //eq 4 pg11
     
     // potential stomatal resistance to water
     *R_stomata = max(1e-10, 1./CndCO2 - RB_water *1.3 - R_turb)/1.6;
@@ -257,7 +257,7 @@ void InstantAssimTransp(float Frac, float RT, float RB_water, float RB_heat,
     LeafPhotoResp(PAR, NP, &Photo_lf, &DarkResp);
        
     // Potential conductance for CO2
-    CndCO2 = (Photo_lf - DarkResp)*((273. + (DayTemp +Dif))/0.53717)/(CO2 - Crop->CO2int); //eq 4 pg11
+    CndCO2 = (Photo_lf - DarkResp)*((273. + (DTemp +Dif))/0.53717)/(CO2 - Crop->CO2int); //eq 4 pg11
     
     // potential stomatal resistance to water
     *R_stomata = max(1e-10, 1./CndCO2 - RB_water *1.3 - RT_canopy*Frac)/1.6;
@@ -286,9 +286,9 @@ void InstantAssimTransp(float Frac, float RT, float RB_water, float RB_heat,
     
     // First-round calculation to estimate soil surface temperature (Soiltemp)
     // Air-to-soil vapour pressure deficit
-    SatVap     = 0.611 * exp(17.4 * DayTemp / (DayTemp + 239.));
+    SatVap     = 0.611 * exp(17.4 * DTemp / (DTemp + 239.));
     VapDeficit = max(0., SatVap - Vapour[Day][lat][lon]);
-    Delta      = (4098. * SatVap)/pow((DayTemp + 237.3),2); 
+    Delta      = (4098. * SatVap)/pow((DTemp + 237.3),2); 
     
     CalcPenmanMonteith(RT_soil, RS_Water, RS_Heat, 100., Rad, &RnetAbs, &PE);
             
@@ -296,7 +296,7 @@ void InstantAssimTransp(float Frac, float RT, float RB_water, float RB_heat,
     FaeSol = min(FpeSol,FpeSol/(PtTran1+FpeSol)*WSup1);
     
     Dif = limit(-25.,25., RnetAbs - LHVAP * FaeSol) * (RT_soil + RS_Heat);
-    SoilTemp   = DayTemp + Dif;
+    SoilTemp   = DTemp + Dif;
 
     // Second-round calculation to estimate potential soil evaporation
     SatVap_s  = 0.611 * exp(17.4 * SoilTemp / (SoilTemp + 239.));
@@ -377,16 +377,16 @@ float DailyTotalAssimilation()
     float RS_Water_su, RS_Water_sh;
     
     float WSup, WSup1, PT1, IEvap, SoilEvap;
-    float IE, IAT, AT_su, AT_sh;
+    float IE, IAT, AT_su, AT_sh, Transpiration;
     
     float ActualPh_su, ActualPh_n_su, ActualPh_sh, &ActualPh_n_sh;
     
     GrossCO2  = 0.;
+    SoilEvap  = 0.;
+    Transpiration = 0.;
     
     if (Crop->st.LAI > 0.)
-    {
-        SoilEvap = 0.;
-        
+    {        
         // Extinction coefficient of nitrogen  */
         Kl     = KDiff(0.2);
         Kln    = Kl * (Crop->N_st.leaves - Crop->prm.SLMIN * Crop->st.TLAI);
@@ -407,7 +407,7 @@ float DailyTotalAssimilation()
             SinB       = max (0.,SinLD+CosLD*cos(2.*PI*(Hour+12.)/24.));
             Tn         = Tmin[Day][lat][lon];
             Tx         = Tmax[Day][lat][lon];
-            DayTemp    = Tn + (Tx-Tn) * sin(PI*(Hour + Daylength/2.-12.)/(Daylength + 3.));   
+            DTemp    = Tn + (Tx-Tn) * sin(PI*(Hour + Daylength/2.-12.)/(Daylength + 3.));   
             Rad        = Radiation[Day][lat][lon] * (SinB*SolarConstant/1367.)/DSinBE;
             // Daytime course of water supply
             WSup       =  WatBal->st.RootZoneMoisture * (SinB*SolarConstant/1367.)/DSinBE;
@@ -526,7 +526,15 @@ float DailyTotalAssimilation()
                     RB_Heat_su,RS_Water_su,AT_su, &ActualPh_su, &ActualPh_n_su);
             ActualAssim(NP_sh, NP_sh_n, APAR_sh, FracShaded,RT_canopy,RB_Water_sh,
                     RB_Heat_sh,RS_Water_sh,AT_sh, &ActualPh_sh, &ActualPh_n_sh); 
+            
+            GrossCO2      = GrossCO2 + (ActualPh_su + ActualPh_sh)*WGauss[i];
+            Transpiration = Transpiration + IAT*WGauss[i];
+            SoilEvap      = SoilEvap + IE*WGauss[i];
+            
         }  
+        GrossCO2 = GrossCO2 * Daylength *3600;
+        WatBal->rt.Transpiration = Transpiration * Daylength *3600;
+        WatBal->rt.EvapSoil      = SoilEvap * Daylength *3600;
     }
     return(DailyTotalAssimilation*Daylength);
 }

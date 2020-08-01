@@ -94,11 +94,7 @@ void RateCalulationWatBal() {
         }
         else 
         {
-            WatBal->DaysSinceLastRain++;
-            CMaxSoilEvap = Evtra.MaxEvapSoil*(sqrt(WatBal->DaysSinceLastRain) - 
-                    sqrt(WatBal->DaysSinceLastRain - 1));
-            WatBal->rt.EvapSoil = min(Evtra.MaxEvapSoil, CMaxSoilEvap + 
-                    WatBal->InfPreviousDay);
+            WatBal->rt.EvapSoil = min(Evtra.MaxEvapSoil, WatBal->rt.EvapSoil); 
         }
     }
     

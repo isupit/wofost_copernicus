@@ -6,7 +6,7 @@
 #define VHCA    1200.           // Volumetric heat capacity (J/m3/oC)
 #define PSYCH   0.067           // Psychrometric constant (kPa/oC)
 
-float DayTemp;
+float DTemp;
 float VapourDef;
 float SatVap;
 float Slope;

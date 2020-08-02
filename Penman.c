@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <math.h>
 #include "astro.h"
-#include "extern.h"
 #include "penman.h"
 #include "wofost.h"
+#include "extern.h"
 #include "assim.h"
 
 /* ---------------------------------------------------------------------*/
@@ -100,8 +100,7 @@ void CalcPenman()
     
 }
 
-void CalcPenmanMonteith(float R_turb, float RB_water, float RB_heat, 
-        float R_stomata, float Radiation, float RnetAbs,  float PT)
+void CalcPenmanMonteith(float Frac, float R_turb, float RB_water, float RB_heat, float R_stomata, float Radiation, float *RnetAbs,  float *PT)
 {
     float Temperature;
     float Rnl_Tmp;
@@ -109,7 +108,7 @@ void CalcPenmanMonteith(float R_turb, float RB_water, float RB_heat,
     float Psr, Ptr, Ptd;
     float BlackBRad, RnetOut;
     
-    Temperature = DayTemp + Dif;
+    Temperature = DTemp + Dif;
 
     // Clear Sky radiation [J/m2/DAY] from Angot TOA radiation
     // the latter is found through a call to astro()
@@ -117,15 +116,15 @@ void CalcPenmanMonteith(float R_turb, float RB_water, float RB_heat,
     
     if (CskyRad > 0)
     {
-        BlackBRad  = BOLTZM * (Temperature +273.)**4 // Black body radiation 
+        BlackBRad  = BOLTZM * pow((Temperature +273.),4); // Black body radiation 
         Rnl_Tmp  = BlackBRad * (0.56 -0.079 * sqrt(10*Vapour[Day][lat][lon])); //Note that Vap here is hPa!
  
         // net absorbed radiation sunlit
-        RnetOut = Rnl_Tmp * (0.1+0.9*CskyRad) * (Frac); // Net outgoing radiation
+        RnetOut = Rnl_Tmp * (0.1+0.9*CskyRad) * Frac; // Net outgoing radiation
         *RnetAbs = Radiation - RnetOut;  // Net absorbed sunlit radiation
 
         // Intermediate variable related to resistances
-        Psr    = PSYCH * (RB_water + R_turb + *R_stomata)/(RB_heat + R_turb);
+        Psr    = PSYCH * (RB_water + R_turb + R_stomata)/(RB_heat + R_turb);
 
         // Radiation-determined term
         Ptr    = *RnetAbs * Delta /(Delta + Psr)/LHVAP;

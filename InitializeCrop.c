@@ -79,7 +79,7 @@ void InitializeCrop()
            Crop->st.storage*Crop->prm.SpecificPodArea;
     
     /* Green and senesced LAI*/
-    Crop->st.TLAI = Crop->st.LAI
+    Crop->st.TLAI = Crop->st.LAI;
     
     /* Initialize the leaves */
     Crop->LeaveProperties         = malloc(sizeof (Green));

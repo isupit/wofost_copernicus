@@ -97,8 +97,6 @@ int main(int argc, char **argv)
                         Emergence = Grid->emergence; /* Start simulation at sowing or emergence */
 
                         Temp = 0.5 * (Tmax[Day][lat][lon] + Tmin[Day][lat][lon]);
-  
-                        DayTemp = 0.5 * (Tmax[Day][lat][lon] + Temp);
 
                         /* Only simulate between start and end year */
                         if ( (current_date.tm_year + 1900) >=  Meteo->StartYear && 
@@ -126,7 +124,6 @@ int main(int argc, char **argv)
                                 {
                                     Astro();
                                     CalcPenman();
-                                    CalcPenmanMonteith();
 
                                    /* Calculate the evapotranspiration */
                                     EvapTra();

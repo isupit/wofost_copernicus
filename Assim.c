@@ -144,7 +144,7 @@ void InternalCO2()
     Crop->CO2int = RatioCO2intCO2amb * CO2;
 }
 
-float LeafPhotoResp(float PAR, float NP, float *LeafPhoto, float *DarkResp)
+void LeafPhotoResp(float PAR, float NP, float *LeafPhoto, float *DarkResp)
 {
     float Upar; 
     float GammaX;
@@ -206,7 +206,7 @@ float LeafPhotoResp(float PAR, float NP, float *LeafPhoto, float *DarkResp)
     // Electron transport rate in dependence on PAR photon flux
     Alpha2 = (1.-Fcyc)/(1.+(1.-Fcyc)/PHI2M);
     X      = Alpha2 * Upar/max(1.E-10,Jmax);
-    J2     = Jmax*(1+X-( pow((1+X),2) - 4.*X*Crop->prm.Theta)**0.5)/2./Crop->prm.Theta;
+    J2     = Jmax*(1+X -sqrt( pow((1+X),2) - 4.*X*Crop->prm.Theta))/2./Crop->prm.Theta;
 
     // Rates of carboxylation limited by Rubisco and electron transport
     Vc   = VCmax * CC/(CC + Kmc*(O2/Kmo+1.));
@@ -223,7 +223,7 @@ float LeafPhotoResp(float PAR, float NP, float *LeafPhoto, float *DarkResp)
 
 void InstantAssimTransp(float Frac, float RT, float RB_water, float RB_heat,  
         float PAR, float Radiation, float NP, float *LeafPhoto, float *PotTran,
-        float *R_stomata)
+        float *R_stomata, float *AbsorbedRad)
 {
     float R_turb;
     float CndCO2;
@@ -241,12 +241,12 @@ void InstantAssimTransp(float Frac, float RT, float RB_water, float RB_heat,
     LeafPhotoResp(PAR, NP, &Photo_lf, &DarkResp);
     
     // Potential conductance for CO2
-    CndCO2 = (LeafPhoto - DarkResp)*((273.+DTemp)/0.53717)/(CO2 - Crop->CO2int); //eq 4 pg11
+    CndCO2 = (*LeafPhoto - DarkResp)*((273.+DTemp)/0.53717)/(CO2 - Crop->CO2int); //eq 4 pg11
     
     // potential stomatal resistance to water
     *R_stomata = max(1e-10, 1./CndCO2 - RB_water *1.3 - R_turb)/1.6;
     
-    CalcPenmanMonteith(R_turb, RB_water, RB_heat, *R_stomata, Radiation, &RnetAbs, &PT);
+    CalcPenmanMonteith(Frac, R_turb, RB_water, RB_heat, *R_stomata, Radiation, &RnetAbs, &PT);
     
     Dif = limit(-25.,25., RnetAbs - LHVAP * PT) * (R_turb + RB_heat);
  
@@ -267,10 +267,11 @@ void InstantAssimTransp(float Frac, float RT, float RB_water, float RB_heat,
     else
         Delta = (Svp_L - Svp)/Dif;    //eq 6 pg 12
     
-   CalcPenmanMonteith(R_turb, RB_water, RB_heat, *R_stomata, Radiation, &RnetAbs, &PT);
+   CalcPenmanMonteith(Frac, R_turb, RB_water, RB_heat, *R_stomata, Radiation, &RnetAbs, &PT);
    
-   *LeafPhoto = Photo_lf;
-   *PotTran   = PT;            
+   *LeafPhoto   = Photo_lf;
+   *PotTran     = PT;
+   *AbsorbedRad = RnetAbs;
 }
 
  float InstantEvap(float Rad, float PtTran1,float WSup1)
@@ -290,7 +291,7 @@ void InstantAssimTransp(float Frac, float RT, float RB_water, float RB_heat,
     VapDeficit = max(0., SatVap - Vapour[Day][lat][lon]);
     Delta      = (4098. * SatVap)/pow((DTemp + 237.3),2); 
     
-    CalcPenmanMonteith(RT_soil, RS_Water, RS_Heat, 100., Rad, &RnetAbs, &PE);
+    CalcPenmanMonteith(1., RT_soil, RS_Water, RS_Heat, 100., Rad, &RnetAbs, &PE);
             
     FpeSol = max(0., PE);
     FaeSol = min(FpeSol,FpeSol/(PtTran1+FpeSol)*WSup1);
@@ -305,14 +306,15 @@ void InstantAssimTransp(float Frac, float RT, float RB_water, float RB_heat,
     else
         Delta = (SatVap_s - SatVap)/Dif;    //eq 6 pg 12
 
-    CalcPenmanMonteith(RT_soil, RS_Water, RS_Heat, 100., Rad, &RnetAbs, &PE);
+    CalcPenmanMonteith(1, RT_soil, RS_Water, RS_Heat, 100., Rad, &RnetAbs, &PE);
           
    return max(0., PE);
     }
 
- void ActualAssim(float NP, float NPn, float PAR, float Frac, float RT, float RB_water, 
-         float RB_heat, float RS_Water, float RnetAbs, float PT, float AT,
-         float *ActualPh, float *ActualPh_n)
+ void ActualAssim(float NP, float NPn, float PAR, float Frac, float RT, 
+         float RB_water, float RB_heat, float RS_Water, float RnetAbs, 
+         float PT, float AT, float *ActualPh, float *ActualPh_n)
+                     
  {
     float ARS_Water;
     float R_turb;
@@ -330,13 +332,13 @@ void InstantAssimTransp(float Frac, float RT, float RB_water, float RB_heat,
     ARS_Water= (PT-AT)*(Delta *(RB_heat +R_turb)+PSYCH*(RB_water+R_turb))/AT/PSYCH+PT/AT*RS_Water;
 
     LeafPhotoResp(PAR, NP, &Photo_lf, &DarkResp);
-    LeafPhotoResp(PAR, NPn, &Photo_lf, &DarkResp);
+    LeafPhotoResp(PAR, NPn, &Photo_lf_n, &DarkResp_n);
 
     // Actual photosynthesis under water stress condition
     *ActualPh   = (1.6*RS_Water + 1.3*RB_water + R_turb)/
-            (1.6*ARS_Water + 1.3*RB_water + R_turb)*(Photo_lf -DarkResp) + DarkResp;
+            (1.6*ARS_Water + 1.3*RB_water + R_turb)*(Photo_lf - DarkResp) + DarkResp;
     *ActualPh_n = (1.6*RS_Water + 1.3*RB_water + R_turb)/
-            (1.6*ARS_Water + 1.3*RB_water + R_turb)*(Photo_lf_n-DarkResp_n) + DarkResp_n;
+            (1.6*ARS_Water + 1.3*RB_water + R_turb)*(Photo_lf_n - DarkResp_n) + DarkResp_n;
  }
 
 
@@ -355,7 +357,7 @@ float DailyTotalAssimilation()
     float GrossCO2;
     
     float KdpPAR, KdpNIR,KbPAR, KbNIR;
-    float ReflPAR_b, ReflNIR_b, KDirTlPAR;
+    float ReflPAR_b, ReflNIR_b;
     float APAR_tot, ANIR_tot, APAR_su, ANIR_su, APAR_sh, ANIR_sh ;
 
     float Kl, Kwind, KNitro; // Extinction coefficient wind and nitrogen
@@ -370,7 +372,6 @@ float DailyTotalAssimilation()
     float BndConducCnp;  
     float BndConducSunlit;
     float BndConducShaded;
-    float KDifPAR, KDifNIR;
     
     float LeafPhoto_su, PotTran_su;
     float LeafPhoto_sh, PotTran_sh;
@@ -378,8 +379,9 @@ float DailyTotalAssimilation()
     
     float WSup, WSup1, PT1, IEvap, SoilEvap;
     float IE, IAT, AT_su, AT_sh, Transpiration;
+    float ARAD_su, ARAD_sh;
     
-    float ActualPh_su, ActualPh_n_su, ActualPh_sh, &ActualPh_n_sh;
+    float ActualPh_su, ActualPh_n_su, ActualPh_sh, ActualPh_n_sh;
     
     GrossCO2  = 0.;
     SoilEvap  = 0.;
@@ -407,7 +409,7 @@ float DailyTotalAssimilation()
             SinB       = max (0.,SinLD+CosLD*cos(2.*PI*(Hour+12.)/24.));
             Tn         = Tmin[Day][lat][lon];
             Tx         = Tmax[Day][lat][lon];
-            DTemp    = Tn + (Tx-Tn) * sin(PI*(Hour + Daylength/2.-12.)/(Daylength + 3.));   
+            DTemp      = Tn + (Tx-Tn) * sin(PI*(Hour + Daylength/2.-12.)/(Daylength + 3.));   
             Rad        = Radiation[Day][lat][lon] * (SinB*SolarConstant/1367.)/DSinBE;
             // Daytime course of water supply
             WSup       =  WatBal->st.RootZoneMoisture * (SinB*SolarConstant/1367.)/DSinBE;
@@ -466,8 +468,8 @@ float DailyTotalAssimilation()
             /* Canopy boundary layer conductance for sunlit and shaded leaves */
             BndConducH       = 0.01*sqrt(Windspeed[Day][lat][lon]/Crop->prm.LeafWidth);
             BndConducCnp     = (1.-exp(- 0.5 * Kwind * Crop->st.LAI))/(0.5 * Kwind ) * BndConducH;
-            BndConducSunlit  = (1.-exp(-(0.5 * Kwind + KDirTlPAR) * Crop->st.LAI)) /
-                    (0.5 * Kwind + KDirTlPAR) * BndConducH; 
+            BndConducSunlit  = (1.-exp(-(0.5 * Kwind + Kb) * Crop->st.LAI)) /
+                    (0.5 * Kwind + Kb) * BndConducH; 
             BndConducShaded  = BndConducCnp - BndConducSunlit;
 
             // Canopy boundary layer resistance for sunlit and shaded leaves 
@@ -497,15 +499,17 @@ float DailyTotalAssimilation()
 
             //  Absorbed radiation by soil
             ASoil = (1.-PARsoil)*(PARDirect * exp(-KbPAR * Crop->st.TLAI) + 
-                     PARDiffuse * exp(-KDifPAR * Crop->st.TLAI)) +
+                     PARDiffuse * exp(-KdpPAR * Crop->st.TLAI)) +
                      (1.-NIRsoil)*(NIRDirect * exp(-KbNIR * Crop->st.TLAI) +
-                     NIRDiffuse * exp(-KDifNIR * Crop->st.TLAI));
+                     NIRDiffuse * exp(-KdpNIR * Crop->st.TLAI));
 
             InstantAssimTransp(FracSunlit,RT_canopy,RB_Water_su,RB_Heat_su,
-                APAR_su, Rad_su, NP_su, &LeafPhoto_su, &PotTran_su, &RS_Water_su);
+                APAR_su, Rad_su, NP_su, &LeafPhoto_su, &PotTran_su, &RS_Water_su,
+                &ARAD_su);
             
             InstantAssimTransp(FracShaded, RT_canopy, RB_Water_sh, RB_Heat_sh,
-                APAR_sh, Rad_sh, NP_sh, &LeafPhoto_sh, &PotTran_sh, &RS_Water_sh);
+                APAR_sh, Rad_sh, NP_sh, &LeafPhoto_sh, &PotTran_sh, &RS_Water_sh,
+                &ARAD_sh);
             
             LeafPhoto  = LeafPhoto_su + LeafPhoto_sh; 
             PotTran    = PotTran_su + PotTran_sh;
@@ -514,7 +518,7 @@ float DailyTotalAssimilation()
             // Instantaneous potential soil evaporation
             IEvap = InstantEvap(ASoil, PT1, WSup);
             // Instantaneous actual soil evaporation
-            IE   = min(IEvap,IEvap/(PT1+IEvap)*WSup1)
+            IE   = min(IEvap,IEvap/(PT1+IEvap)*WSup1);
             // Instantaneous actual canopy transpiration and photosynthesis
             IAT    = min(PotTran,PT1/(PT1+IEvap)*WSup1 + WSup-WSup1);
             
@@ -522,10 +526,10 @@ float DailyTotalAssimilation()
             AT_sh   = PotTran_sh/PotTran*IAT;        
             
             // Instantaneous photosynthesis
-            ActualAssim(NP_su, NP_su_n, APAR_su, FracSunlit,RT_canopy,RB_Water_su,
-                    RB_Heat_su,RS_Water_su,AT_su, &ActualPh_su, &ActualPh_n_su);
-            ActualAssim(NP_sh, NP_sh_n, APAR_sh, FracShaded,RT_canopy,RB_Water_sh,
-                    RB_Heat_sh,RS_Water_sh,AT_sh, &ActualPh_sh, &ActualPh_n_sh); 
+            ActualAssim(NP_su, NP_su_n, APAR_su, ARAD_su, FracSunlit,RT_canopy,RB_Water_su,
+                    RB_Heat_su,RS_Water_su, PotTran_su, AT_su, &ActualPh_su, &ActualPh_n_su);
+            ActualAssim(NP_sh, NP_sh_n, APAR_sh, ARAD_sh, FracShaded,RT_canopy,RB_Water_sh,
+                    RB_Heat_sh,RS_Water_sh, PotTran_su, AT_sh, &ActualPh_sh, &ActualPh_n_sh); 
             
             GrossCO2      = GrossCO2 + (ActualPh_su + ActualPh_sh)*WGauss[i];
             Transpiration = Transpiration + IAT*WGauss[i];

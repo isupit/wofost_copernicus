@@ -69,7 +69,6 @@ void InitializeWatBal()
 void RateCalulationWatBal() {
    
     float Available;
-    float CMaxSoilEvap;
     float Perc1, Perc2;
     float WaterEq;
     float WELOW;

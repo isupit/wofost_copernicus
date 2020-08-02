@@ -5,7 +5,6 @@
 #define EXTERN_H
 
 float Temp;
-float DayTemp;
 
 /* General help functions */
 extern float max(float a, float b);
@@ -26,7 +25,7 @@ extern void IfSowing();
 /* Additional functions */
 extern int Astro();
 extern void CalcPenman();
-extern void CalcPenmanMonteith();
+extern void CalcPenmanMonteith(float Frac, float R_turb, float RB_water, float RB_heat, float R_stomata, float Radiation, float *RnetAbs,  float *PT);
 extern void Clean();
 
 /* Crop growth */

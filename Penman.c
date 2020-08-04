@@ -100,15 +100,17 @@ void CalcPenman()
     
 }
 
-void CalcPenmanMonteith(float Frac, float R_turb, float RB_water, float RB_heat, float R_stomata, float Radiation, float *RnetAbs,  float *PT)
+void CalcPenmanMonteith(SUSH S)
 {
     float Temperature;
     float Rnl_Tmp;
     float CskyRad;
     float Psr, Ptr, Ptd;
     float BlackBRad, RnetOut;
+    float R_turb;
     
     Temperature = DTemp + Dif;
+    R_turb = S->RT * S->Frac;
 
     // Clear Sky radiation [J/m2/DAY] from Angot TOA radiation
     // the latter is found through a call to astro()
@@ -120,20 +122,20 @@ void CalcPenmanMonteith(float Frac, float R_turb, float RB_water, float RB_heat,
         Rnl_Tmp  = BlackBRad * (0.56 -0.079 * sqrt(10*Vapour[Day][lat][lon])); //Note that Vap here is hPa!
  
         // net absorbed radiation sunlit
-        RnetOut = Rnl_Tmp * (0.1+0.9*CskyRad) * Frac; // Net outgoing radiation
-        *RnetAbs = Radiation - RnetOut;  // Net absorbed sunlit radiation
+        RnetOut = Rnl_Tmp * (0.1+0.9*CskyRad) * S->Frac; // Net outgoing radiation
+        S->RnetAbs = S->ARAD - RnetOut;  // Net absorbed sunlit radiation
 
         // Intermediate variable related to resistances
-        Psr    = PSYCH * (RB_water + R_turb + R_stomata)/(RB_heat + R_turb);
+        Psr    = PSYCH * (S->RB_Water + R_turb + S->R_stomata)/(S->RB_Heat + R_turb);
 
         // Radiation-determined term
-        Ptr    = *RnetAbs * Delta /(Delta + Psr)/LHVAP;
+        Ptr    = S->RnetAbs * Delta /(Delta + Psr)/LHVAP;
 
         // Vapour pressure-determined term
-        Ptd    = (VHCA * VapDeficit/(RB_heat + R_turb))/(Delta + Psr)/LHVAP;
+        Ptd    = (VHCA * VapDeficit/(S->RB_Heat + R_turb))/(Delta + Psr)/LHVAP;
 
         // Potential evaporation or transpiration
-        *PT     = max(1.e-10,Ptr + Ptd);
+        S->PotTran     = max(1.e-10,Ptr + Ptd);
     }
     else
     {

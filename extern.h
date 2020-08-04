@@ -25,7 +25,7 @@ extern void IfSowing();
 /* Additional functions */
 extern int Astro();
 extern void CalcPenman();
-extern void CalcPenmanMonteith(float Frac, float R_turb, float RB_water, float RB_heat, float R_stomata, float Radiation, float *RnetAbs,  float *PT);
+extern void CalcPenmanMonteith();
 extern void Clean();
 
 /* Crop growth */
@@ -84,6 +84,8 @@ extern void InitializeWatBal();
 extern void RateCalulationWatBal();
 extern void IntegrationWatBal();
 extern void EvapTra();
+
+void LeafPhotoResp(float APAR, float NP, float *LeafPhoto, float *DarkResp);
 
 #endif	// EXTERN_H
 

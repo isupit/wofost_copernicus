@@ -312,7 +312,6 @@ typedef struct GROWTH_STATES {
         float RootDepth_prev;
         float Height;
         float vernalization;
-        float LeafTemp;
         } growth_states;
 
 typedef struct DYING_STATES {
@@ -349,8 +348,6 @@ typedef struct PLANT {
         float fac_lv;
         float fac_st;
         float fac_so;
-        
-        float CO2int;
         
         Parameters prm;
         

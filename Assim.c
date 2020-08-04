@@ -379,11 +379,7 @@ float DailyTotalAssimilation()
     
     SoilEvap  = 0.;
     Transpiration = 0.;
-    
-    Su = malloc(sizeof(SUSH));
-    Sh = malloc(sizeof(SUSH));
-    Ev = malloc(sizeof(SUSH));
-    
+        
     if (Crop->st.LAI > 0.)
     {        
         // Extinction coefficient of nitrogen  */

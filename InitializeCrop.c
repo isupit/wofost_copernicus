@@ -3,8 +3,7 @@
 #include <float.h>
 #include "wofost.h"
 #include "extern.h"
-
-
+#include "assim.h"
 
 
 /*---------------------------------------------------*/
@@ -99,5 +98,10 @@ void InitializeCrop()
     
     /* No vernalization yet */
     Crop->st.vernalization = 0.;
+    
+    // Set the placeholders for the assimilation calculations.
+    Su = malloc(sizeof(SUSH));
+    Sh = malloc(sizeof(SUSH));
+    Ev = malloc(sizeof(SUSH));
             
 }  

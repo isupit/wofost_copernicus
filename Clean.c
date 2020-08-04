@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "wofost.h"
+#include "assim.h"
 
 /* ---------------------------------------------------------------*/
 /*  function Clean()                                              */
@@ -336,5 +337,10 @@ void Clean(SimUnit *Grid)
        free(GridHead);
     }
 
+    free(Su);
+    free(Sh);
+    free(Ev);
+    
+    
     Grid = initial = NULL;
 }

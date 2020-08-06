@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include "astro.h"
@@ -7,39 +8,15 @@
 #include "penman.h"
 #include "assim.h"
 
-#define  ANGLE  -4.0
-#define  PI     3.1415926
-#define  RAD	0.0174533
-
-// Michaelis-Menten constants for CO2 and O2 at 25oC for C4
-//#define  KMC25  650.   // umol/mol
-//#define  KMO25  450.   // mmol/mol
-
-// Michaelis-Menten constants for CO2 and O2 at 25oC for C3
-# define KMC25  404.9  // umol/mol
-# define KMO25  278.4 // mmol/mol
-
-// Constants related to the Farquhar-type photosynthesis model
-#define O2      210.    // oxygen concentration(mmol/mol)
-#define MaxCarboxRate  65330.  // energy of activation for Vcmx(J/mol)
-#define EAKMC   79430.  // energy of activation for KMC (J/mol)
-#define EAKMO   36380.  // energy of activation for KMO (J/mol)
-#define EARD    46390.  // energy of activation for dark respiration(J/mol)
-#define DEJMAX  200000. // energy of deactivation for JMAX (J/mol)
-#define SJ      650.    // entropy term in JT equation (J/mol/K)
-#define PHI2M   0.85    // maximum electron transport efficiency of PS II
-#define HH      3.      // number of protons required to synthesise 1 ATP
-#define RDVX25  0.0089  // ratio of dark respiration to Vcmax at 25oC
-
-#define ScatPAR    0.2      // leaf scattering coefficient for PAR
-#define ScatNIR    0.8      // leaf scattering coefficient for NIR  
-#define ReflPAR_d  0.057    // canopy diffuse PAR reflection coefficient
-#define ReflNIR_d  0.389    // canopy diffuse NIR reflection coefficient 
-
-
-//float ScatCoef =0.2;
 float XGauss[] ={0.0469101,0.2307534,0.5      ,0.7692465,0.9530899};
 float WGauss[] ={0.1184635,0.2393144,0.2844444,0.2393144,0.1184635};
+
+void ToZero()
+{   // Fill the global memory blocks used for data transfer to zero
+    memset(Su, 0, 19 * sizeof(float)); 
+    memset(Sh, 0, 19 * sizeof(float)); 
+    memset(Ev, 0, 19 * sizeof(float)); 
+}    
 
 float KBeam(float sin_b)
 {
@@ -54,11 +31,11 @@ float KBeam(float sin_b)
     if (sin_b >= sin(LeafAngle))
         OAV = sin_b * cos(LeafAngle);
     else
-        OAV = 2./3.141592654*(sin_b * cos(LeafAngle) * asin(tan(B)/tan(LeafAngle))
+        OAV = 2./PI*(sin_b * cos(LeafAngle) * asin(tan(B)/tan(LeafAngle))
              + sqrt(pow(sin(LeafAngle),2) - pow(sin_b,2)));
     
     // Beam radiation extinction coefficient
-    return(OAV/SinB);
+    return(OAV/sin_b);
 }
    
 float KDiff(float Scat)
@@ -66,21 +43,21 @@ float KDiff(float Scat)
     float Kb15, Kb45, Kb75;
     
     // Extinction coefficient of beam lights from 15, 45 and 75o elevations
-    Kb15 = KBeam(15. * RAD);
-    Kb45 = KBeam(45. * RAD);
-    Kb75 = KBeam(75. * RAD);
+    Kb15 = KBeam(sin(15. * RAD));
+    Kb45 = KBeam(sin(45. * RAD));
+    Kb75 = KBeam(sin(75. * RAD));
 
-    // Diffuse light extinction coefficient
+    // Diffuse light extinction coefficient pg 75 eq 75
     return(-1./Crop->st.TLAI*log(0.178*exp(-Kb15*sqrt(1.-Scat)*Crop->st.TLAI)
                     + 0.514*exp(-Kb45*sqrt(1.-Scat)*Crop->st.TLAI)
                     + 0.308*exp(-Kb75*sqrt(1.-Scat)*Crop->st.TLAI)));
 }
 
-float Reflect(float SCP)
+float Reflect(float Scat)
 { 
     float Ph;
     // Canopy reflection coefficient for horizontal leaves
-    Ph  = (1.-sqrt(1.-SCP))/(1.+sqrt(1.-SCP));
+    Ph  = (1.-sqrt(1.-Scat))/(1.+sqrt(1.-Scat));
 
     // Canopy beam radiation reflection coefficient
     return (1.-exp(-2.*Ph*Kb/(1.+Kb)));
@@ -97,10 +74,10 @@ void PhotoAciveN()
             Crop->prm.SLMIN*Crop->st.LAI);
     
    // Photosynthetic nitrogen for sunlit and shaded parts of canopy
-    Su->NP   = (Slnt*(1.-exp(-(KNitro + Kb) * Crop->st.LAI))/(KNitro + Kb) - 
-            Crop->prm.SLMIN*(1.-exp(-Kb * Crop->st.LAI))/Kb);
-    Su->NP_n = (Slnnt*(1.-exp(-(KNitro + Kb) * Crop->st.LAI))/(KNitro + Kb) - 
-            Crop->prm.SLMIN*(1.-exp(-Kb * Crop->st.LAI))/Kb);
+    Su->NP   = Slnt*(1.-exp(-(KNitro + Kb) * Crop->st.LAI))/(KNitro + Kb) - 
+            Crop->prm.SLMIN*(1.-exp(-Kb * Crop->st.LAI))/Kb;
+    Su->NP_n = Slnnt*(1.-exp(-(KNitro + Kb) * Crop->st.LAI))/(KNitro + Kb) - 
+            Crop->prm.SLMIN*(1.-exp(-Kb * Crop->st.LAI))/Kb;
     
     Sh->NP   = NP_tot - Su->NP;
     Sh->NP_n = NP_tot_n - Su->NP_n;
@@ -132,8 +109,7 @@ void AbsorbedLight_tot()
 
 void InternalCO2()
 {
-    float Kmc;
-    float Kmo;
+    float Kmc, Kmo;
     float Gamma, Gamma0, GammaX;
     float RatioDarkResVCX;
     float RatioCO2intCO2amb;
@@ -146,8 +122,8 @@ void InternalCO2()
     VapDeficit = max(0., SatVap - Vapour[Day][lat][lon]);
     Delta      = (4098. * SatVap)/pow((Temperature + 237.3), 2);
 
-    Kmc    = KMC25*exp((1./298.-1./(Temperature + 273.))*EAKMC/8.314);
-    Kmo    = KMO25*exp((1./298.-1./(Temperature + 273.))*EAKMO/8.314);
+    Kmc    = Crop->prm.KMC25*exp((1./298.-1./(Temperature + 273.))*EAKMC/8.314);
+    Kmo    = Crop->prm.KMO25*exp((1./298.-1./(Temperature + 273.))*EAKMO/8.314);
     GammaX = 0.5*exp(-3.3801+5220./(Temperature + 273.)/8.314)*O2*Kmc/Kmo;
 
     // CO2 compensation point (GAMMA)
@@ -183,8 +159,8 @@ void LeafPhotoResp(float APAR, float NP, float *LeafPhoto, float *DarkResp)
     Upar = 4.56  * APAR;
     
     // Michaelis-Menten constants for CO2 and O2 */
-    Kmc = KMC25 *exp((1./298 - 1/(Temperature + 273.15)) * EAKMC/8.314);
-    Kmo = KMO25 *exp((1./298 - 1/(Temperature + 273.15)) * EAKMO/8.314);
+    Kmc = Crop->prm.KMC25 *exp((1./298 - 1/(Temperature + 273.15)) * EAKMC/8.314);
+    Kmo = Crop->prm.KMO25 *exp((1./298 - 1/(Temperature + 273.15)) * EAKMO/8.314);
     
     // CO2 compensation point in the absence of dark respiration
     GammaX = 0.5*exp(-3.3801+5220./(Temperature +273.)/8.314)*O2*Kmc/Kmo;
@@ -193,9 +169,9 @@ void LeafPhotoResp(float APAR, float NP, float *LeafPhoto, float *DarkResp)
     VCT    =    exp((1./298.-1./(Temperature + 273.)) * MaxCarboxRate/8.314);
     
     // Function for the effect of temperature on electron transport
-    JT = exp((1./298.-1./(Temperature + 273.)) * Crop->prm.EnAcJmax/8.314)*
-           (1. + exp(SJ/8.314 - Crop->prm.DEJmax/298./8.314))/
-           (1. + exp(SJ/8.314-1./(Temperature + 273.) *Crop->prm.DEJmax*8.314));
+    JT = exp((1./298.-1./(Temperature + 273.)) * Crop->prm.EnAcJmax/8.314)*     // pg68 eq A5
+           (1. + exp(SJ/8.314 - DEJMAX/298./8.314))/
+           (1. + exp(SJ/8.314-1./(Temperature + 273.) * DEJMAX *8.314));
     
     // Maximum rates of carboxylation(VCMX) and of electron transport(JMAX)
     VCmax  = Crop->prm.XVN * VCT * NP;
@@ -222,7 +198,7 @@ void LeafPhotoResp(float APAR, float NP, float *LeafPhoto, float *DarkResp)
     }
 
     // Electron transport rate in dependence on PAR photon flux
-    Alpha2 = (1.-Fcyc)/(1.+(1.-Fcyc)/PHI2M);
+    Alpha2 = (1.-Fcyc)/(1.+(1.-Fcyc)/PHI2M);            //pg 68 eq A3
     X      = Alpha2 * Upar/max(1.E-10,Jmax);
     J2     = Jmax*(1+X -sqrt( pow((1+X),2) - 4.*X*Crop->prm.Theta))/2./Crop->prm.Theta;
 
@@ -368,6 +344,7 @@ float DailyTotalAssimilation()
 
     float Kl, Kwind;  // Extinction coefficient wind and nitrogen
     float Kln, Nbk;
+    float PAR, NIR;
     float PARsoil, NIRsoil;
     float FractionDiffuseRad;
     
@@ -379,19 +356,21 @@ float DailyTotalAssimilation()
     
     SoilEvap  = 0.;
     Transpiration = 0.;
-        
+    
+    ToZero();
+    
     if (Crop->st.LAI > 0.)
     {        
         // Extinction coefficient of nitrogen  */
         Kl     = KDiff(0.2);
         Kln    = Kl * (Crop->N_st.leaves - Crop->prm.SLMIN * Crop->st.TLAI);
-        Nbk    = Crop->prm.SLMIN * (1.-exp(-Kl * Crop->st.LAI));
+        Nbk    = Crop->prm.SLMIN * (1.-exp(-Kl * Crop->st.TLAI));
         KNitro = 1./Crop->st.TLAI*log((Kln + Nbk)/(Kln*exp(-Kl * Crop->st.TLAI)+Nbk)); // eq41 pg35
         Kwind  =  Kl;
 
         // Specific leaf nitrogen and its profile in the canopy
         Sln   = Crop->N_st.leaves/Crop->st.LAI;
-        Slnt  = Crop->N_st.leaves * KNitro;
+        Slnt  = Crop->N_st.leaves * KNitro/(1. - exp(-KNitro*Crop->st.LAI));
         Slnnt = (Crop->N_st.leaves + 0.001*Crop->N_st.leaves)*KNitro /(1.-exp(-KNitro*Crop->st.LAI));   
         
         Fvpd = insw(Crop->C3C4, 0.195127, 0.116214); //Slope for linear effect of VPD on Ci/Ca    (kPa)-1
@@ -410,6 +389,8 @@ float DailyTotalAssimilation()
             WSup1 = WSup * 5./Crop->st.RootDepth;
             PAR        = 0.5 * Rad;
             NIR        = PAR;
+            
+            AtmosphTransm = PAR/(SolarConstant * SinB);
             
             if (AtmosphTransm > 0.35)
                 FractionDiffuseRad = 1.47 - 1.66 * AtmosphTransm;

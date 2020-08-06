@@ -4,7 +4,7 @@
 #include <time.h>
 
 #define NR_VARIABLES_CRP	66
-#define NR_TABLES_CRP   	22
+#define NR_TABLES_CRP   	15
 #define NR_VARIABLES_SITE       12
 #define NR_TABLES_SITE          1
 #define NR_VARIABLES_SOIL       12
@@ -18,6 +18,10 @@
 
 #define NLATS 24
 #define NLONS 28
+
+#define  ANGLE  -4.0
+#define  PI     3.1415926
+#define  RAD	0.0174533
 
 struct tm current_date;
 
@@ -78,18 +82,10 @@ typedef struct PARAMETERS {
         TABLE *SpecificLeaveArea;
         TABLE *SpecificStemArea;
         TABLE *KDiffuseTb;
-        TABLE *EFFTb;
-        TABLE *MaxAssimRate; 
-        TABLE *FactorAssimRateTemp;
-        TABLE *FactorGrossAssimTemp;
         TABLE *FactorSenescence;
         TABLE *DeathRateStems;
         TABLE *DeathRateRoots; 
         
-        /** Tables to account for the atmospheric CO2 concentration **/
-        TABLE *CO2AMAXTB;
-        TABLE *CO2EFFTB;
-        TABLE *CO2TRATB;
 
         /** Tables for the maximum nutrient content in leaves as a function of DVS **/
         TABLE *N_MaxLeaves;
@@ -195,6 +191,8 @@ typedef struct PARAMETERS {
         float Theta;     // Convexity for light response of e-transport
         float LeafAngle; //leaf angle from horizontal degree
         float LeafWidth; //m
+        float KMC25;
+        float KMO25; 
         } Parameters;
 
 

@@ -96,7 +96,6 @@ void CalcPenman()
     /* Convert to cm/day                    */
     Penman.E0  = max(0., 0.1 * (delta*Rnw + Gamma*Ea)/(delta + Gamma));
     Penman.ES0 = max(0., 0.1 * (delta*Rns + Gamma*Ea)/(delta + Gamma));
-    //Penman.ET0 = max(0., 0.1 * (delta*Rnc + Gamma*Eac)/(delta + Gamma));
     
 }
 
@@ -104,7 +103,7 @@ void CalcPenmanMonteith(SUSH S)
 {
     float Temperature;
     float Rnl_Tmp;
-    float CskyRad;
+    float Csky;
     float Psr, Ptr, Ptd;
     float BlackBRad, RnetOut;
     float R_turb;
@@ -112,17 +111,15 @@ void CalcPenmanMonteith(SUSH S)
     Temperature = DTemp + Dif;
     R_turb = S->RT * S->Frac;
 
-    // Clear Sky radiation [J/m2/DAY] from Angot TOA radiation
-    // the latter is found through a call to astro()
-    CskyRad = (0.75 + (2e-05 * Altitude)) * AngotRadiation;
+    Csky = (AtmosphTransm - 0.25)/0.45;
     
-    if (CskyRad > 0)
+    if (Csky > 0)
     {
         BlackBRad  = BOLTZM * pow((Temperature +273.),4); // Black body radiation 
-        Rnl_Tmp  = BlackBRad * (0.56 -0.079 * sqrt(10*Vapour[Day][lat][lon])); //Note that Vap here is hPa!
+        Rnl_Tmp  = BlackBRad * (0.56 -0.079 * sqrt(10*Vapour[Day][lat][lon])); 
  
         // net absorbed radiation sunlit
-        RnetOut = Rnl_Tmp * (0.1+0.9*CskyRad) * S->Frac; // Net outgoing radiation
+        RnetOut = Rnl_Tmp * (0.1+0.9*Csky) * S->Frac; // Net outgoing radiation
         S->RnetAbs = S->ARAD - RnetOut;  // Net absorbed sunlit radiation
 
         // Intermediate variable related to resistances
@@ -139,6 +136,6 @@ void CalcPenmanMonteith(SUSH S)
     }
     else
     {
-        Penman.ET0 = 0.;      
+        S->PotTran = 0.;      
     }    
 }

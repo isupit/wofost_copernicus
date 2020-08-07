@@ -129,7 +129,7 @@ void InternalCO2()
     // CO2 compensation point (GAMMA)
     RatioDarkResVCX  = RDVX25 * exp((1./298.-1./(Temperature + 273.))*(EARD-MaxCarboxRate)/8.314);
     Gamma0 = (GammaX + RatioDarkResVCX * Kmc * (1.+O2/Kmo))/(1. - RatioDarkResVCX);
-    Gamma  = insw(Crop->C3C4, Gamma0/10., Gamma0);
+    Gamma  = insw(Crop->prm.C3C4, Gamma0/10., Gamma0);
 
     // Internal/ambient CO2 ratio, based on data of Morison & Gifford (1983)
     RatioCO2intCO2amb  = 1.-(1.-Gamma/CO2)*(0.14 + Fvpd * VapDeficit);
@@ -180,7 +180,7 @@ void LeafPhotoResp(float APAR, float NP, float *LeafPhoto, float *DarkResp)
     // CO2 concentration at carboxylation site & electron pathways and
     // their stoichiometries
     FPseud = 0.;             //assuming no pseudocyclic e- transport
-    if (Crop->C3C4 == -1)    //C4
+    if (Crop->prm.C3C4 == -1.)   //C4
     {
         CO2_leakage   = 0.2;     //CO2 leakage from bundle-sheath to mesophyll
         CC   = 10. * CO2int;     //to mimic C4 CO2 concentrating mechanism
@@ -231,7 +231,7 @@ void InstantAssimTransp(SUSH S)
     LeafPhotoResp(S->ARAD, S->NP, &S->LeafPhoto, &S->DarkResp);
     
     // Potential conductance for CO2
-    CndCO2 = (S->LeafPhoto - S->DarkResp)*((273.+DTemp)/0.53717)/(CO2 - CO2int); //eq 4 pg11
+    CndCO2 = (S->LeafPhoto - S->DarkResp)*((273.+DTemp)/0.53717)/(CO2 - CO2int); // eq 4 pg11
     
     // Stomatal resistance to water
     S->R_stomata = max(1e-10, 1./CndCO2 - S->RB_Water *1.3 - R_turb)/1.6;       // eq 3 pg 11
@@ -291,11 +291,11 @@ void InstantAssimTransp(SUSH S)
     if (Dif == 0.)
         Delta = 1.;
     else
-        Delta = (SatVap_s - SatVap)/Dif;    //eq 6 pg 12
+        Delta = (SatVap_s - SatVap)/Dif;    // eq 6 pg 12
 
     PenmanMonteith(Ev);
           
-   return max(0., PE);
+    return max(0., PE);
     }
 
  void ActualAssim(SUSH S)
@@ -303,7 +303,7 @@ void InstantAssimTransp(SUSH S)
     float ARS_Water;
     float R_turb;
     
-    R_turb = RT_canopy * S->Frac;
+    R_turb = S->RT * S->Frac;
      
     Dif = limit(-25.,25., S->RnetAbs - LHVAP * S->PotTran) * (R_turb + S->RB_Heat);
    
@@ -373,7 +373,7 @@ float DailyTotalAssimilation()
         Slnt  = Crop->N_st.leaves * KNitro/(1. - exp(-KNitro*Crop->st.LAI));
         Slnnt = (Crop->N_st.leaves + 0.001*Crop->N_st.leaves)*KNitro /(1.-exp(-KNitro*Crop->st.LAI));   
         
-        Fvpd = insw(Crop->C3C4, 0.195127, 0.116214); //Slope for linear effect of VPD on Ci/Ca    (kPa)-1
+        Fvpd = insw(Crop->prm.C3C4, 0.195127, 0.116214); //Slope for linear effect of VPD on Ci/Ca    (kPa)-1
         
         for (i=0;i<5;i++)
         {
@@ -423,11 +423,11 @@ float DailyTotalAssimilation()
             // Photosynthetically active nitrogen for sunlit and shaded leaves
             PhotoAciveN();
             
-            // Turbulence resistance for canopy (RT) and for soil (RTS) 
+            // Turbulence resistance for canopy and for soil
             Su->RT  = 0.74*pow((log((2.-0.7*Crop->st.Height) /
                     (0.1*Crop->st.Height))),2)/ (0.16 * Windspeed[Day][lat][lon]); //pg 71 eq B1
             Sh->RT  = Su->RT;
-            Ev->RT    = 0.74*pow((log(56.)),2)/(0.16 * Windspeed[Day][lat][lon]);
+            Ev->RT  = 0.74*pow((log(56.)),2)/(0.16 * Windspeed[Day][lat][lon]);
 
             /* Canopy boundary layer conductance for sunlit and shaded leaves */
             BndConducH       = 0.01*sqrt(Windspeed[Day][lat][lon]/Crop->prm.LeafWidth);

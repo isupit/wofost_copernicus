@@ -106,6 +106,21 @@ void FillCropVariables(Plant *CROP, float *Variable)
     CROP->prm.TCPT                     = Variable[63];
     CROP->prm.TCKT                     = Variable[64];
     CROP->prm.N_fixation               = Variable[65];
+    
+    /** Farquhar **/
+    CROP->prm.EnAcJmax                 = Variable[66];  
+    CROP->prm.DEJmax                   = Variable[67];    
+    CROP->prm.CFV                      = Variable[68];
+    CROP->prm.SLMIN                    = Variable[69];     
+    CROP->prm.XVN                      = Variable[70];       
+    CROP->prm.XJN                      = Variable[71];       
+    CROP->prm.Theta                    = Variable[72];     
+    CROP->prm.LeafAngle                = Variable[73]; 
+    CROP->prm.LeafWidth                = Variable[74]; 
+    CROP->prm.KMC25                    = Variable[75];
+    CROP->prm.KMO25                    = Variable[76]; 
+    CROP->prm.Height                   = Variable[77];
+    CROP->prm.C3C4                     = Variable[78]; 
 
 
     for (i=0;i<=NR_VARIABLES_CRP;i++) 

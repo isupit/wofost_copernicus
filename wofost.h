@@ -3,7 +3,7 @@
 
 #include <time.h>
 
-#define NR_VARIABLES_CRP	66
+#define NR_VARIABLES_CRP	79
 #define NR_TABLES_CRP   	15
 #define NR_VARIABLES_SITE       12
 #define NR_TABLES_SITE          1
@@ -179,8 +179,6 @@ typedef struct PARAMETERS {
         float TCKT;   
         float N_fixation; 
         
-        float Height;
-        
         /** Farquhar **/
         float EnAcJmax;  // Activation Energy Jmax
         float DEJmax;    // Deactivation Energy Jmax
@@ -190,9 +188,11 @@ typedef struct PARAMETERS {
         float XJN;       // Slope of linearity between Jmax & leaf N   umol/g/s
         float Theta;     // Convexity for light response of e-transport
         float LeafAngle; //leaf angle from horizontal degree
-        float LeafWidth; //m
+        float LeafWidth; //
         float KMC25;
         float KMO25; 
+        float Height;
+        float C3C4;  // 1. = C3, -1. = C4
         } Parameters;
 
 
@@ -334,7 +334,6 @@ typedef struct GREEN {
         
 
 typedef struct PLANT {
-        int C3C4;  // 1 = C3, -1 = C4
         int Emergence;
         int Sowing;
         int GrowthDay;       

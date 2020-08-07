@@ -35,7 +35,7 @@ float Kb, Kw;
 float Kbp, Kdp;
         
 float KNitro, Sln, Slnt, Slnnt;
-float RT_canopy, RT_soil;
+float RT_soil;
 
 typedef struct SUSH {
     float Frac;

@@ -228,35 +228,35 @@ void InstantAssimTransp(SUSH S)
     Svp  = SatVap;
     
     S->ARAD = S->APAR + S->ANIR; 
-    LeafPhotoResp(S->ARAD, S->NP, &S->LeafPhoto, &S->DarkResp_n);
+    LeafPhotoResp(S->ARAD, S->NP, &S->LeafPhoto, &S->DarkResp);
     
     // Potential conductance for CO2
     CndCO2 = (S->LeafPhoto - S->DarkResp)*((273.+DTemp)/0.53717)/(CO2 - CO2int); //eq 4 pg11
     
     // Stomatal resistance to water
-    S->R_stomata = max(1e-10, 1./CndCO2 - S->RB_Water *1.3 - R_turb)/1.6;
+    S->R_stomata = max(1e-10, 1./CndCO2 - S->RB_Water *1.3 - R_turb)/1.6;       // eq 3 pg 11
     
-    CalcPenmanMonteith(S);
+    PenmanMonteith(S);
     
     Dif = limit(-25.,25., S->RnetAbs - LHVAP * S->PotTran) * (R_turb + S->RB_Heat);
  
     // Second round to determine the final photosynthesis and transpiration
     InternalCO2();
     Svp_L = SatVap;
-    LeafPhotoResp(S->ARAD, S->NP, &S->LeafPhoto, &S->DarkResp_n);
+    LeafPhotoResp(S->ARAD, S->NP, &S->LeafPhoto, &S->DarkResp);
        
     //  Conductance for CO2
     CndCO2 = (S->LeafPhoto - S->DarkResp)*((273. + (DTemp +Dif))/0.53717)/(CO2 - CO2int); //eq 4 pg11
     
     // Adapted stomatal resistance to water
-    S->R_stomata = max(1e-10, 1./CndCO2 - S->RB_Water *1.3 - R_turb)/1.6;
+    S->R_stomata = max(1e-10, 1./CndCO2 - S->RB_Water *1.3 - R_turb)/1.6;       // eq 3 pg 11
     
     if (Dif == 0.)
         Delta = 1.;
     else
         Delta = (Svp_L - Svp)/Dif;    //eq 6 pg 12
     
-   CalcPenmanMonteith(S);
+    PenmanMonteith(S);
    
 }
 
@@ -278,7 +278,7 @@ void InstantAssimTransp(SUSH S)
     
     Ev->Frac = 1.;
     Ev->R_stomata =100.;
-    CalcPenmanMonteith(Ev);
+    PenmanMonteith(Ev);
             
     FpeSol = max(0., Ev->PotTran);
     FaeSol = min(FpeSol,FpeSol/(PT1+FpeSol)*WSup1);
@@ -293,7 +293,7 @@ void InstantAssimTransp(SUSH S)
     else
         Delta = (SatVap_s - SatVap)/Dif;    //eq 6 pg 12
 
-    CalcPenmanMonteith(Ev);
+    PenmanMonteith(Ev);
           
    return max(0., PE);
     }
@@ -425,7 +425,7 @@ float DailyTotalAssimilation()
             
             // Turbulence resistance for canopy (RT) and for soil (RTS) 
             Su->RT  = 0.74*pow((log((2.-0.7*Crop->st.Height) /
-                    (0.1*Crop->st.Height))),2)/ (0.16 * Windspeed[Day][lat][lon]);
+                    (0.1*Crop->st.Height))),2)/ (0.16 * Windspeed[Day][lat][lon]); //pg 71 eq B1
             Sh->RT  = Su->RT;
             Ev->RT    = 0.74*pow((log(56.)),2)/(0.16 * Windspeed[Day][lat][lon]);
 
@@ -438,16 +438,16 @@ float DailyTotalAssimilation()
 
             // Canopy boundary layer resistance for sunlit and shaded leaves 
             Su->RB_Heat  = 1./BndConducSunlit;       // boundary layer resistance to heat,sunlit part
-            Su->RB_Water = 0.93 * Su->RB_Heat;        // boundary layer resistance to H2O, sunlit part
+            Su->RB_Water = 0.93 * Su->RB_Heat;       // boundary layer resistance to H2O, sunlit part
             Sh->RB_Heat  = 1./BndConducShaded;       // boundary layer resistance to heat,shaded part
-            Sh->RB_Water = 0.93 * Sh->RB_Heat;        // boundary layer resistance to H2O, shaded part 
+            Sh->RB_Water = 0.93 * Sh->RB_Heat;       // boundary layer resistance to H2O, shaded part 
 
             // Boundary layer resistance for soil
-            Ev->RB_Heat   = 172.*sqrt(0.05/max(0.1,Windspeed[Day][lat][lon]*exp(-Kwind * Crop->st.TLAI)));
+            Ev->RB_Heat   = 172.*sqrt(0.05/max(0.1,Windspeed[Day][lat][lon] * exp(-Kwind * Crop->st.TLAI)));
             Ev->RB_Water  = 0.93*RS_Heat;
                    
             //  Fraction of sunlit leaf area 
-            Su->Frac = (1./(Kb * Crop->st.LAI)) * (1 - exp(-Kb*Crop->st.LAI));
+            Su->Frac = (1./(Kb * Crop->st.LAI)) * (1 - exp(-Kb*Crop->st.LAI));  // pg 15 eq 11b
             Sh->Frac = 1 - Su->Frac;
             
             // Absorbed total radiation (PAR+NIR) by soil

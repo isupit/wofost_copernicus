@@ -99,7 +99,7 @@ void CalcPenman()
     
 }
 
-void CalcPenmanMonteith(SUSH S)
+void PenmanMonteith(SUSH S)
 {
     float Temperature;
     float Rnl_Tmp;

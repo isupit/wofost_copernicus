@@ -25,7 +25,7 @@ extern void IfSowing();
 /* Additional functions */
 extern int Astro();
 extern void CalcPenman();
-extern void CalcPenmanMonteith();
+extern void PenmanMonteith();
 extern void Clean();
 
 /* Crop growth */

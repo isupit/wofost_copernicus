@@ -68,10 +68,10 @@ void PhotoAciveN()
     float NP_tot, NP_tot_n;
     
     // Total photosynthetic nitrogen in canopy
-    NP_tot   = ( Slnt*(1.-exp(-KNitro * Crop->st.LAI))/KNitro - 
-            Crop->prm.SLMIN*Crop->st.LAI); 
-    NP_tot_n = ( Slnnt*(1.-exp(-KNitro * Crop->st.LAI))/KNitro - 
-            Crop->prm.SLMIN*Crop->st.LAI);
+    NP_tot   = Slnt*(1.-exp(-KNitro * Crop->st.LAI))/KNitro - 
+            Crop->prm.SLMIN*Crop->st.LAI; 
+    NP_tot_n = Slnnt*(1.-exp(-KNitro * Crop->st.LAI))/KNitro - 
+            Crop->prm.SLMIN*Crop->st.LAI;
     
    // Photosynthetic nitrogen for sunlit and shaded parts of canopy
     Su->NP   = Slnt*(1.-exp(-(KNitro + Kb) * Crop->st.LAI))/(KNitro + Kb) - 

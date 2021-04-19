@@ -14,6 +14,8 @@ void Growth(float NewPlantMaterial)
 {
     float shoots;
     float Translocation;
+    float Translocation_st;
+    float Translocation_dst;
     float FRTRL;
      
     /* Water stress is more severe as compared to Nitrogen stress and */
@@ -23,16 +25,19 @@ void Growth(float NewPlantMaterial)
     Translocation = 0.;
     if (Crop->st.Development >= 1.)
     {
-        Translocation = (Crop->st.stems + Crop->dst.stems) * Crop->rt.Development * FRTRL;
+        Translocation_st  = Crop->st.stems * Crop->rt.Development * FRTRL;
+        Translocation_dst = Crop->dst.stems * Crop->rt.Development * FRTRL;
+        Translocation = Translocation_st + Translocation_dst;
     }
     
     Crop->drt.roots = Crop->st.roots * Afgen(Crop->prm.DeathRateRoots, &(Crop->st.Development));
     Crop->rt.roots  = NewPlantMaterial * Crop->fac_ro - Crop->drt.roots;
 	
-    shoots         = NewPlantMaterial * (1-Crop->fac_ro);
+    shoots          = NewPlantMaterial * (1-Crop->fac_ro);
 	    
-    Crop->drt.stems = Crop->st.stems * Afgen(Crop->prm.DeathRateStems, &(Crop->st.Development));	
-    Crop->rt.stems  = shoots * Crop->fac_st - Crop->drt.stems - Translocation;
+    Crop->drt.stems = Crop->st.stems * 
+            Afgen(Crop->prm.DeathRateStems, &(Crop->st.Development)) - Translocation_dst;
+    Crop->rt.stems  = shoots * Crop->fac_st - Crop->drt.stems - Translocation_st;
 	
     Crop->rt.storage = shoots * Crop->fac_so + Translocation;
 	
@@ -53,4 +58,4 @@ void Growth(float NewPlantMaterial)
     else
         Crop->rt.RootDepth = min(Crop->prm.MaxRootingDepth - Crop->st.RootDepth,
                 Crop->prm.MaxIncreaseRoot*Step);
-}	
+}

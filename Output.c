@@ -9,10 +9,10 @@ void header(FILE *fp)
     fprintf(fp,"Lat,Lon,Sowing,Length,TSM1,TSM2,Avg,Adev,Stdev,Var,Skew,Curt\n");
 }
 
-void Output(FILE *fp, int Count)
+void Output(FILE *fp, int Count) 
 {
-    float ave, adev, sdev, var, skew, curt;
-    int mnth, dy, dekad;
+    float ave, adev, sdev, var, skew, curt, lngth;
+    int mnth, dy, dekad, i;
     
     sscanf(Grid->start,"%2d-%2d",&mnth,&dy);
     
@@ -28,22 +28,29 @@ void Output(FILE *fp, int Count)
     else
         dekad += 3;             
     
-    Moment(Grid->twso, Count, &ave, &adev, &sdev, &var, &skew, &curt);
-    
-    //fprintf(fp, "%4.2f %4.2f %6s %6d %4.0f %4.0f %6.0f %6.0f %6.0f %9.0f %5.2f %5.2f\n", 
-    fprintf(fp, "%4.2f,%4.2f,%6d,%6d,%4.0f,%4.0f,%6.0f,%6.0f,%6.0f,%9.0f,%5.2f,%5.2f\n", 
-    Latitude[Lat], 
-    Longitude[Lon], 
-    dekad,   //dekad sowing
-    Crop->GrowthDay,
-    Crop->prm.TempSum1,
-    Crop->prm.TempSum2,
-    ave,
-    adev,
-    sdev,
-    var,
-    skew,
-    curt);
+    if (Count > 28) {
+        lngth =0;
+        for (i= 1; i <= Count; i++) {
+            lngth = lngth + Grid->length[i];
+        }
+        lngth = lngth/Count;
+        
+        Moment(Grid->twso, Count, &ave, &adev, &sdev, &var, &skew, &curt);        
+        //fprintf(fp, "%4.2f %4.2f %6s %6d %4.0f %4.0f %6.0f %6.0f %6.0f %9.0f %5.2f %5.2f\n", 
+        fprintf(fp, "%8.6f,%8.6f,%6d,%6.0f,%4.0f,%4.0f,%6.0f,%6.0f,%6.0f,%9.0f,%5.2f,%5.2f\n", 
+        Latitude[Lat], 
+        Longitude[Lon], 
+        dekad,   //dekad sowing
+        lngth,
+        Crop->prm.TempSum1,
+        Crop->prm.TempSum2,
+        ave,
+        adev,
+        sdev,
+        var,
+        skew,
+        curt);
+    }
  }
 
     

@@ -26,5 +26,6 @@ void Moment(float data[], int n, float *ave, float *adev, float *sdev,
 	if (*var) {
 		*skew /= (n*(*var)*(*sdev));
 		*curt=(*curt)/(n*(*var)*(*var))-3.0;
-	} else fprintf(stderr,"No skew/kurtosis when variance = 0 (in moment)");
+	} 
+        //else fprintf(stderr,"No skew/kurtosis when variance = 0 (in moment)");
 }

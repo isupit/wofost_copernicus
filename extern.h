@@ -47,7 +47,7 @@ extern void DevelopmentRate();
 extern void LeaveGrowth();
 extern float DailyTotalAssimilation();
 extern float DyingLeaves();
-extern float InstantAssimilation(float KDiffuse, float EFF, float AssimMax, float SinB, float PARDiffuse, float PARDirect);
+extern float InstantAssimilation(float KDiffuse, float EFF, float SinB, float PARDiffuse, float PARDirect, float CO2AMAX);
 extern float LeaveAreaIndex();
 extern float Correct(float GrossAssimilation);
 extern float RespirationRef(float TotalAssimilation);

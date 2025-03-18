@@ -64,6 +64,10 @@ char *CropParam[]={"TBASEM",
                    "TCPT",   
                    "TCKT",   
                    "NFIX_FR",  
+                   "AMAX_SLP",
+                   "AMAX_LNB",
+                   "AMAX_REF",
+                   "KN",
                    "NULL"
 		   };
 		   
@@ -74,10 +78,8 @@ char *CropParam2[]={
                     "SSATB",
                     "KDIFTB",
 		    "EFFTB",
-                    "AMAXTB",
 		    "TMPFTB",
 		    "TMNFTB",
-                    "CO2AMAXTB",
                     "CO2EFFTB",
                     "CO2TRATB",
                     "RFSETB",

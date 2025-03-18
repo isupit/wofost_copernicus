@@ -28,7 +28,7 @@ int Astro()
     
     float day_fl = MeteoDay[Day];
     
-    if (fabsf(Latitude[Lat]) > 90.) return 0;  
+    if (fabsf((float)Latitude[Lat]) > 90.) return 0;  
 
     /* We start at Day= 1, we do not use Day = 0 */
     Declination    = -asin(sin(23.45*RAD)*cos(2.*PI*(day_fl+10.)/365.));

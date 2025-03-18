@@ -20,8 +20,8 @@ float WGauss[] ={0.2777778, 0.4444444, 0.2777778};
 /*  radiation using the three point Gaussian integration method.               */
 /*-----------------------------------------------------------------------------*/
 
-float InstantAssimilation(float KDiffuse, float EFF, float AssimMax, float SinB, 
-        float PARDiffuse, float PARDirect)
+float InstantAssimilation(float KDiffuse, float EFF, float SinB, 
+        float PARDiffuse, float PARDirect, float CO2AMAX)
 {
     int i;
     float AbsorbedRadiationDiffuse, AbsorbedRadiationTotal, AbsorbedRadiationDirect;
@@ -29,39 +29,52 @@ float InstantAssimilation(float KDiffuse, float EFF, float AssimMax, float SinB,
     float AssimShadedLeaves, AssimSunlitLeaves, AssimTotal;
     float Reflection, KDirectBl, KDirectTl;
     float GrossCO2, FractionSunlitLeaves, LAIC ;
+    float SLN, AssimMax;
 
     /* Extinction coefficients KDIF,KDIRBL,KDIRT */
     Reflection  = (1.-sqrt(1.-ScatCoef))/(1.+sqrt(1.-ScatCoef))*(2/(1+1.6*SinB));
     KDirectBl   = (0.5/SinB)*KDiffuse/(0.8*sqrt(1.-ScatCoef));
     KDirectTl   = KDirectBl*sqrt(1.-ScatCoef);
 
-    /* Three-point Gaussian integration over LAI */
+    // Three-point Gaussian integration over LAI
     GrossCO2  = 0.;
-    for (i=0;i<3;i++)
-    {
+    for (i=0;i<3;i++) {
        LAIC   = Crop->st.LAI*XGauss[i];
+       
+       // Calculate AMAX with gradient in canopy borrowed from ORYZA
+        if(Crop->st.LAI >= 0.01) {
+            SLN = Crop->N_st.leaves * Crop->prm.KN * exp(-Crop->prm.KN * LAIC) / 
+                    (1 - exp(-Crop->prm.KN * Crop->st.LAI));
+        }
+        else {
+            SLN = Crop->N_st.leaves / Crop->st.LAI;
+        }
+       
+       
+       AssimMax =  CO2AMAX * Afgen(Crop->prm.FactorAssimRateTemp, &DayTemp) * 
+               min(Crop->prm.Amax_Ref , max(0, Crop->prm.Amax_SLP * (SLN - Crop->prm.Amax_LNB)));
         
-       /* Absorbed radiation */
+       // Absorbed radiation 
        AbsorbedRadiationDiffuse = (1.-Reflection)*PARDiffuse*KDiffuse * exp(-KDiffuse * LAIC);
        AbsorbedRadiationTotal   = (1.-Reflection)*PARDirect*KDirectTl * exp(-KDirectTl * LAIC);
        AbsorbedRadiationDirect  = (1.-ScatCoef)  *PARDirect*KDirectBl * exp(-KDirectBl * LAIC);
 
-       /* Absorbed flux in W/m2 for shaded leaves and assimilation */
+       // Absorbed flux in W/m2 for shaded leaves and assimilation
        AbsorbedShadedLeaves = AbsorbedRadiationDiffuse  + AbsorbedRadiationTotal - AbsorbedRadiationDirect;
-       AssimShadedLeaves    = AssimMax*(1.-exp (-AbsorbedShadedLeaves*EFF/max(2.0,AssimMax)));
+       AssimShadedLeaves    = AssimMax * (1.-exp(-AbsorbedShadedLeaves*EFF/max(2.0,AssimMax)));
 
-       /* Direct light absorbed by leaves perpendicular on direct */
-       /* beam and assimilation of sunlit leaf area               */
+       // Direct light absorbed by leaves perpendicular on direct 
+       // beam and assimilation of sunlit leaf area               
        AbsorbedDirectLeaves=(1 - ScatCoef)*PARDirect/SinB;
        if (AbsorbedDirectLeaves <= 0) AssimSunlitLeaves = AssimShadedLeaves;
        else AssimSunlitLeaves = AssimMax*(1. - (AssimMax - AssimShadedLeaves)*
               (1 - exp( -AbsorbedDirectLeaves*EFF/max(2.0,AssimMax)))/(EFF*AbsorbedDirectLeaves));
 
-        /*  Fraction of sunlit leaf area and local assimilation rate  */ 
+        //  Fraction of sunlit leaf area and local assimilation rate  
         FractionSunlitLeaves  = exp(-KDirectBl*LAIC);
         AssimTotal = FractionSunlitLeaves*AssimSunlitLeaves + (1. - FractionSunlitLeaves)*AssimShadedLeaves;
 
-        /*  Integration */
+        //  Integration
         GrossCO2 += AssimTotal * WGauss[i];
     }
     
@@ -78,35 +91,30 @@ float DailyTotalAssimilation()
 {
     int i;
     float KDiffuse, EFF, Factor;
-    float Hour, SinB, PAR, PARDiffuse, PARDirect, AssimMax; 
+    float Hour, SinB, PAR, PARDiffuse, PARDirect, CO2AMAX; 
     float DailyTotalAssimilation = 0.;
 
     KDiffuse = Afgen(Crop->prm.KDiffuseTb, &(Crop->st.Development));
 
     EFF      = Afgen(Crop->prm.EFFTb, &DayTemp);
     Factor   = Afgen(Crop->prm.CO2EFFTB, &CO2);
+    CO2AMAX  = Afgen(Crop->prm.CO2AMAXTB, &CO2);
 
-    /* Correction for the atmospheric CO2 concentration */
+    // Correction for the atmospheric CO2 concentration
     EFF      = EFF * Factor ;
 
-    AssimMax = Afgen(Crop->prm.FactorAssimRateTemp, &DayTemp) * 
-               Afgen(Crop->prm.MaxAssimRate, &(Crop->st.Development)) * 
-               Afgen(Crop->prm.CO2AMAXTB, &CO2);
-
-    if (AssimMax > 0. && Crop->st.LAI > 0.)
-    {
-        for (i=0;i<3;i++)
-        {
-            Hour       = 12.0+0.5*Daylength*XGauss[i];
-            SinB       = max (0.,SinLD+CosLD*cos(2.*PI*(Hour+12.)/24.));
+    if (Crop->st.LAI > 0. && Daylength > 0.) {
+        for (i=0;i<3;i++) {
+            Hour       = 12.0 + 0.5*Daylength*XGauss[i];
+            SinB       = max (0.,SinLD + CosLD*cos(2.*PI*(Hour+12.)/24.));
             PAR        = 0.5*Radiation[Lon][Lat][Day]*SinB*(1.+0.4*SinB)/DSinBE;
             PARDiffuse = min (PAR,SinB*DiffRadPP);
             PARDirect  = PAR-PARDiffuse;
-            DailyTotalAssimilation = DailyTotalAssimilation + 
-                InstantAssimilation(KDiffuse,EFF,AssimMax,SinB,PARDiffuse,PARDirect) * WGauss[i];
+            DailyTotalAssimilation += InstantAssimilation(KDiffuse,EFF,
+                    SinB, PARDiffuse, PARDirect, CO2AMAX) * WGauss[i];
         }  
     }
-    return(DailyTotalAssimilation*Daylength);
+    return(DailyTotalAssimilation * Daylength);
 }
 
 
@@ -122,15 +130,13 @@ float Correct(float Assimilation)
     float TminLowAvg = 0.;
     
 
-    if (Crop->GrowthDay < 6)
-    {
+    if (Crop->GrowthDay < 6) {
         number = Crop->GrowthDay;
     }
     
     Counter = 0;
     PreviousDay = Day;
-    while (PreviousDay >= 0 && Counter < number)
-    {
+    while (PreviousDay >= 0 && Counter < number) {
       TminLowAvg += Tmin[Lon][Lat][PreviousDay--]; 
       Counter++;
     }

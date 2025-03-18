@@ -3,8 +3,8 @@
 
 #include <time.h>
 
-#define NR_VARIABLES_CRP	66
-#define NR_TABLES_CRP   	22
+#define NR_VARIABLES_CRP	70
+#define NR_TABLES_CRP   	21
 #define NR_VARIABLES_SITE       12
 #define NR_TABLES_SITE          1
 #define NR_VARIABLES_SOIL       12
@@ -84,7 +84,6 @@ typedef struct PARAMETERS {
         TABLE *DeathRateRoots; 
         
         /** Tables to account for the atmospheric CO2 concentration **/
-        TABLE *CO2AMAXTB;
         TABLE *CO2EFFTB;
         TABLE *CO2TRATB;
 
@@ -179,6 +178,14 @@ typedef struct PARAMETERS {
         float TCPT;   
         float TCKT;   
         float N_fixation; 
+        
+        //new to 8netcdf
+        float Amax_SLP;
+        float Amax_LNB;
+        float Amax_Ref;
+        float KN; // leaf N extinction coefficient 
+        
+        
         } Parameters;
 
 
@@ -445,7 +452,7 @@ int Station, Year;
 int MeteoYear[METEO_LENGTH];
 int MeteoDay[METEO_LENGTH];
 float CO2;
-double Longitude[DOMAIN_LENGTH], Latitude[DOMAIN_LENGTH];
+double Longitude[DOMAIN_LENGTH], Latitude[DOMAIN_LENGTH]; //
 int **Mask;
 float **Altitude;
 float **AngstA;

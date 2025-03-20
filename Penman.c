@@ -54,7 +54,7 @@ void CalcPenman()
     Tdif  = Tmax[Lon][Lat][Day] - Tmin[Lon][Lat][Day];
     BU    = 0.54 + 0.35 * limit(0.,1.,(Tdif-12.)/4.);
 
-    /* Barometric pressure (mbar)             */
+    /* Barometric pressure (mbar = hPa)             */
     /* Psychrometric constant (mbar/Celsius)  */
     Pbar  = 1013.*exp (-0.034*Altitude[Lon][Lat]/(Temp + 273.));
     Gamma = Psycon * Pbar/1013.;
@@ -68,7 +68,8 @@ void CalcPenman()
 
     SaturatedVap  = 6.10588 * exp(17.32491 * Temp/(Temp+238.102));
     delta         = 238.102 * 17.32491 * SaturatedVap/pow((Temp +238.102),2);
-    VapourP       = min(Vapour[Lon][Lat][Day],SaturatedVap);
+    /* NOTE HERE VapourP is in hPa!! */
+    VapourP       = min(10. * Vapour[Lon][Lat][Day],SaturatedVap);
 
     /* The expression n/N (RelLSSD) from the Penman formula is estimated   */
     /* from the Angstrom formula: RI=RA(A+B.n/N) -> n/N=(RI/RA-A)/B,       */
@@ -128,8 +129,7 @@ void CalcPenmanMonteith()
     // mean daily temperature (Celsius)
     //Tmpa  = (Tmin[Lon][Lat][Day] + Tmax[Lon][Lat][Day])/2.;
 
-    // Vapour pressure to kPa
-    Vap = 0.1 * (Vapour[Lon][Lat][Day]);
+    
 
     // atmospheric pressure at standard temperature of 293K (kPa)
     Patm= 101.3 * pow((293.0 - (0.0065*Altitude[Lon][Lat]))/293.0, 5.26);
@@ -148,7 +148,8 @@ void CalcPenmanMonteith()
     Svap = (Svap_Tmax + Svap_Tmin) / 2.;
 
     //measured vapour pressure not to exceed saturated vapour pressure
-    Vap = min(Vap, Svap);
+    // NOTE THAT HERE VAP IS IN kPa!!!
+    Vap = min(Vapour[Lon][Lat][Day], Svap);
 
     // Longwave radiation according at Tmax, Tmin (J/m2/d)
     // and preliminary net outgoing long-wave radiation (J/m2/d)

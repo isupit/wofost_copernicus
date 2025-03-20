@@ -14,13 +14,12 @@ int main(int argc, char **argv)
     
     SimUnit *initial  = NULL;
     Weather *head;
+    Green *wipe;
       
     int CycleLength   = 300;
     int NumberOfFiles;
     int Emergence;
     int Count,i;
-    
-//    float ave, adev, sdev, var, skew, curt;
     
     char list[MAX_STRING];
     char meteolist[MAX_STRING];
@@ -80,11 +79,14 @@ int main(int argc, char **argv)
         
         // allocate memory for the statistical analysis
         //Grid->twso = (float*) malloc((Meteo->EndYear - Meteo->StartYear + 1) * sizeof(float));
-        for (i=0; i <= (Meteo->EndYear - Meteo->StartYear ); i++)
-            Grid->twso[i] =0.0;
+        for (i=0; i <= (Meteo->EndYear - Meteo->StartYear + 1); i++) {
+            Grid->twso[i]   = 0.0;
+            Grid->length[i] = 0.0;
+        }
         
         memset(name_old,'\0',MAX_STRING);
         strncpy(name_old, Grid->output,strlen(Grid->output));
+        
         Grid = Grid->next;
     }
     
@@ -110,7 +112,7 @@ int main(int argc, char **argv)
                 }
                 
                 fprintf(stdout, "Location: %lf N - %lf E\n", Latitude[Lat], Longitude[Lon]);
-                Count = 0;
+                Count  = 1;
                 
                 for (Day = 0; Day < Meteo->ntime; Day++) //assume that the series start January first
                 {                   
@@ -131,7 +133,7 @@ int main(int argc, char **argv)
                         WatBal    = Grid->soil;
                         Mng       = Grid->mng;
                         Site      = Grid->ste;
-                        
+                                                
                         //Start     = Grid->start;
                         Emergence = Grid->emergence; /* Start simulation at sowing or emergence */
 
@@ -193,14 +195,23 @@ int main(int argc, char **argv)
                                 else
                                 {
                                     /* Write to the output files */
-                                    Grid->twso[Count]= Crop->st.storage;
-                                    //printf("%7d %7d %7.0f\n", MeteoYear[Day],Count, Crop->st.storage);
+                                    Grid->twso[Count]   = Crop->st.storage;
+                                    Grid->length[Count] = Crop->GrowthDay;
+                                    //printf("%7d %7d %7.0f %7.0f\n", MeteoYear[Day],Count, Grid->length, Crop->st.storage);
                                     if (MeteoYear[Day] == Meteo->EndYear) {
                                         Output(files[Grid->file], Count);
                                     }
                                     
                                     if (!Grid->next)
                                         Count++;
+                                    
+                                    /* Clean the LeaveProperties */
+                                    while (Crop->LeaveProperties != NULL) {
+                                        wipe = Crop->LeaveProperties; 
+                                        Crop->LeaveProperties = Crop->LeaveProperties->next; 
+                                        free(wipe);
+                                    }
+                                                                       
                                     Emergence = 0;
                                     Crop->TSumEmergence = 0;
                                     Crop->Emergence = 0;

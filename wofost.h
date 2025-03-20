@@ -15,7 +15,7 @@
 #define NUMBER_OF_TABLES        31
 #define MAX_STRING             2048
 #define METEO_LENGTH           36600 //max 100 years 
-#define DOMAIN_LENGTH          720   //max 0.5 degree
+#define DOMAIN_LENGTH          15000   //max cells
 
 struct tm current_date;
 
@@ -416,9 +416,11 @@ typedef struct SIMUNIT {
         char start[MAX_STRING];
         char output[MAX_STRING];
         
-        /* Statistics */
-        float twso[31];
-        
+        /* Statistics    */
+        /* Max 100 years */
+        float twso[101];
+        float length[101];
+                
         struct SIMUNIT *next;
         } SimUnit; 
 SimUnit *Grid;

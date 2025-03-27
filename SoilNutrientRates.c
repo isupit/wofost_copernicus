@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "wofost.h"
 #include "extern.h"
 
@@ -17,9 +18,9 @@ void SoilNutrientRates()
     if (Crop->st.Development > 0. && Crop->st.Development <= Crop->prm.DevelopmentStageNLimit)
     {   /* NPK rates that come available through mineralization, cannot exceed */
         /* the available NPK for mineralization                                */
-        Site->rt_N_mins = min(Mng->N_Mins * Mng->NRecoveryFrac, Site->st_N_mins); 
-        Site->rt_P_mins = min(Mng->P_Mins * Mng->PRecoveryFrac, Site->st_P_mins); 
-        Site->rt_K_mins = min(Mng->K_Mins * Mng->KRecoveryFrac, Site->st_K_mins); 
+        Site->rt_N_mins = fmin(Mng->N_Mins * Mng->NRecoveryFrac, Site->st_N_mins); 
+        Site->rt_P_mins = fmin(Mng->P_Mins * Mng->PRecoveryFrac, Site->st_P_mins); 
+        Site->rt_K_mins = fmin(Mng->K_Mins * Mng->KRecoveryFrac, Site->st_K_mins); 
     }
     else
     {

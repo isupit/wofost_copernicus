@@ -82,6 +82,7 @@ char *CropParam2[]={
 		    "TMNFTB",
                     "CO2EFFTB",
                     "CO2TRATB",
+                    "CO2AMAXTB",
                     "RFSETB",
 		    "FRTB",
                     "FLTB",
@@ -92,6 +93,9 @@ char *CropParam2[]={
                     "NMAXLV_TB",
                     "PMAXLV_TB",
                     "KMAXLV_TB",
+                    "RNUPTAKEMAX", 
+                    "RPUPTAKEMAX", 
+                    "RKUPTAKEMAX", 
                     "NULL"
 		    };
 

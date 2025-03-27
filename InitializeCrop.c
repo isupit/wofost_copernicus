@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
+#include <math.h>
 #include "wofost.h"
 #include "extern.h"
 
@@ -66,7 +67,7 @@ void InitializeCrop()
     Crop->st.storage   = InitialShootWeight * Afgen(Crop->prm.Storage, &(Crop->st.Development));
 
     /* Adapt the maximum rooting depth */
-    Crop->prm.MaxRootingDepth = max(Crop->prm.InitRootingDepth, min(Crop->prm.MaxRootingDepth,
+    Crop->prm.MaxRootingDepth = fmax(Crop->prm.InitRootingDepth, fmin(Crop->prm.MaxRootingDepth,
          Site->SoilLimRootDepth));
     
     /* Calculate the LAI at emergence */

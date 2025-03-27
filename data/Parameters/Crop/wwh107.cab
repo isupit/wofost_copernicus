@@ -61,12 +61,15 @@ TBASE    =   0.0    ! lower threshold temp. for ageing of leaves [cel]
 ** assimilation
 KDIFTB = 0.0, 0.60, ! extinction coefficient for diffuse visible light [-] 
          2.0, 0.60  ! as function of DVS
+
 EFFTB  = 0.0, 0.45, ! light-use effic. single leaf [kg ha-1 hr-1 j-1 m2 s]
         40.0, 0.45  ! as function of daily mean temp.
+
 AMAXTB   =   0.00,   35.83,     
              1.00,   35.83,     
              1.30,   35.83,
              2.00,    4.48
+
 TMPFTB   =   0.00,    0.01,     ! reduction factor of AMAX
             10.00,    0.60,     ! as function of av. temp. [cel; -]
             15.00,    1.00,
@@ -94,6 +97,8 @@ CO2TRATB     =  40., 0.00,		! multiplication factor for maximum transpiration ra
              720.,  0.9, 
             1000.,  0.9,
             2000.,  0.9
+
+
 
 ** conversion of assimilates into biomass
 CVL      =   0.685  ! efficiency of conversion into leaves [kg kg-1]
@@ -217,3 +222,13 @@ KMAXLV_TB =  0.0, 0.12,   ! maximum K concentration in leaves as function of dev
             1.0, 0.04,
             2.0, 0.028,
             2.1, 0.028
+
+AMAX_SLP =  3.24  !  slope of relationship between maximum leaf photosynthesis rate and specific leaf nitrogen [kg CO2 ha-1 h-1 (kg N m-2)-1] 
+AMAX_LNB =  0.0   ! specific leaf nitrogen below which there is no photosynthesis [kg N ha-1] 
+AMAX_REF = 35.83  ! maximum leaf CO2 assimilation rate  [kg ha-1 hr-1]
+KN       =  0.4   ! Extinction coefficient of leaf N concentration with canopy depth
+
+
+RNUPTAKEMAX =  7.2 ! maximum rate of daily nitrogen uptake  [ kg ha-1 d-1']
+RPUPTAKEMAX =  0.8 ! maximum rate of daily phosphorus uptake [kg ha-1 d-1']
+RKUPTAKEMAX =  7.4 ! Maximum rate of daily potassium uptake  [kg ha-1 d-1']

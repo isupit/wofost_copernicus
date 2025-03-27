@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "wofost.h"
 #include "extern.h"
 
@@ -32,9 +33,9 @@ void CropNutrientRates()
     /* Rate of N,P,K uptake in storage organs (kg N,P,K ha-1 d-1) */
     if (Crop->st.Development >  Crop->prm.DevelopmentStageNT)
     {
-        Crop->N_rt.storage = min(Crop->N_rt.Demand_so, Crop->N_rt.Supply);
-        Crop->P_rt.storage = min(Crop->P_rt.Demand_so, Crop->P_rt.Supply);
-        Crop->K_rt.storage = min(Crop->K_rt.Demand_so, Crop->K_rt.Supply); 
+        Crop->N_rt.storage = fmin(Crop->N_rt.Demand_so, Crop->N_rt.Supply);
+        Crop->P_rt.storage = fmin(Crop->P_rt.Demand_so, Crop->P_rt.Supply);
+        Crop->K_rt.storage = fmin(Crop->K_rt.Demand_so, Crop->K_rt.Supply); 
     }
     
         /* Total available nutrients for translocation */

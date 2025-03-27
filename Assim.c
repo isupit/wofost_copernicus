@@ -52,7 +52,7 @@ float InstantAssimilation(float KDiffuse, float EFF, float SinB,
        
        
        AssimMax =  CO2AMAX * Afgen(Crop->prm.FactorAssimRateTemp, &DayTemp) * 
-               min(Crop->prm.Amax_Ref , max(0, Crop->prm.Amax_SLP * (SLN - Crop->prm.Amax_LNB)));
+               fmin(Crop->prm.Amax_Ref , fmax(0, Crop->prm.Amax_SLP * (SLN - Crop->prm.Amax_LNB)));
         
        // Absorbed radiation 
        AbsorbedRadiationDiffuse = (1.-Reflection)*PARDiffuse*KDiffuse * exp(-KDiffuse * LAIC);
@@ -61,14 +61,14 @@ float InstantAssimilation(float KDiffuse, float EFF, float SinB,
 
        // Absorbed flux in W/m2 for shaded leaves and assimilation
        AbsorbedShadedLeaves = AbsorbedRadiationDiffuse  + AbsorbedRadiationTotal - AbsorbedRadiationDirect;
-       AssimShadedLeaves    = AssimMax * (1.-exp(-AbsorbedShadedLeaves*EFF/max(2.0,AssimMax)));
+       AssimShadedLeaves    = AssimMax * (1.-exp(-AbsorbedShadedLeaves*EFF/fmax(2.0,AssimMax)));
 
        // Direct light absorbed by leaves perpendicular on direct 
        // beam and assimilation of sunlit leaf area               
        AbsorbedDirectLeaves=(1 - ScatCoef)*PARDirect/SinB;
        if (AbsorbedDirectLeaves <= 0) AssimSunlitLeaves = AssimShadedLeaves;
        else AssimSunlitLeaves = AssimMax*(1. - (AssimMax - AssimShadedLeaves)*
-              (1 - exp( -AbsorbedDirectLeaves*EFF/max(2.0,AssimMax)))/(EFF*AbsorbedDirectLeaves));
+              (1 - exp( -AbsorbedDirectLeaves*EFF/fmax(2.0,AssimMax)))/(EFF*AbsorbedDirectLeaves));
 
         //  Fraction of sunlit leaf area and local assimilation rate  
         FractionSunlitLeaves  = exp(-KDirectBl*LAIC);
@@ -106,9 +106,9 @@ float DailyTotalAssimilation()
     if (Crop->st.LAI > 0. && Daylength > 0.) {
         for (i=0;i<3;i++) {
             Hour       = 12.0 + 0.5*Daylength*XGauss[i];
-            SinB       = max (0.,SinLD + CosLD*cos(2.*PI*(Hour+12.)/24.));
+            SinB       = fmax (0.,SinLD + CosLD*cos(2.*PI*(Hour+12.)/24.));
             PAR        = 0.5*Radiation[Lon][Lat][Day]*SinB*(1.+0.4*SinB)/DSinBE;
-            PARDiffuse = min (PAR,SinB*DiffRadPP);
+            PARDiffuse = fmin (PAR,SinB*DiffRadPP);
             PARDirect  = PAR-PARDiffuse;
             DailyTotalAssimilation += InstantAssimilation(KDiffuse,EFF,
                     SinB, PARDiffuse, PARDirect, CO2AMAX) * WGauss[i];

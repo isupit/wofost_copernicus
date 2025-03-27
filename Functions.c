@@ -1,3 +1,4 @@
+#include <math.h>
 #include "wofost.h"
 #include "extern.h"
 
@@ -29,15 +30,9 @@ int leap_year(int year)
         return 365;
 }
 
-
-float min(float a, float b)
+float ext_min(float x1, float x2, float x3)
 {
-    return ((a < b) ? a : b);
-}
 
-
-float max(float a, float b)
-{
-    return ((a > b) ? a : b);
+    return(fmin(fmin(x1,x2),x3));
 }
 

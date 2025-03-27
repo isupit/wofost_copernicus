@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "wofost.h"
 #include "extern.h"
 #include "penman.h"
@@ -9,11 +10,16 @@
 /*  Purpose: To compute the partitioning of the total N/P/K uptake rate     */
 /*           (N,P,K UPTR) over leaves, stem, and roots kg  ha-1 d-1         */
 /* -------------------------------------------------------------------------*/
+
+
 void NutrientPartioning()
 {     
     float Total_N_demand;
     float Total_P_demand;
     float Total_K_demand;
+    float N_avail;
+    float P_avail;
+    float K_avail;
     
     float NutrientLimit;
     float N_Fix_rt;
@@ -24,6 +30,11 @@ void NutrientPartioning()
     Total_P_demand = Crop->P_rt.Demand_lv + Crop->P_rt.Demand_st + Crop->P_rt.Demand_ro;
     Total_K_demand = Crop->K_rt.Demand_lv + Crop->K_rt.Demand_st + Crop->K_rt.Demand_ro;
     
+    N_avail = Site->st_N_tot + Site->rt_N_mins;
+    P_avail = Site->st_P_tot + Site->rt_P_mins;
+    K_avail = Site->st_K_tot + Site->rt_K_mins;
+    
+    
     /* No nutrients are absorbed from the soil after development stage DevelopmentStageNLimit or */
     /* when severe water shortage occurs                                           */
     NutrientLimit = 0.;
@@ -31,12 +42,12 @@ void NutrientPartioning()
         NutrientLimit = 1.;
     
     //N_Fix_rt= max(0.,Crop->N_rt.Uptake * Crop->prm.N_fixation / max(0.02, 1.-Crop->prm.N_fixation));
-    N_Fix_rt = (max(0., Crop->prm.N_fixation * Total_N_demand) * NutrientLimit);
+    N_Fix_rt = (fmax(0., Crop->prm.N_fixation * Total_N_demand) * NutrientLimit);
     
     /* Nutrient uptake cannot be larger than the availability and is larger or equal to zero */
-    Crop->N_rt.Uptake = max(0.,min(Total_N_demand - N_Fix_rt, (Site->st_N_tot + Site->rt_N_mins))) * NutrientLimit/Step;
-    Crop->P_rt.Uptake = max(0.,min(Total_P_demand, (Site->st_P_tot + Site->rt_P_mins)))* NutrientLimit/Step;
-    Crop->K_rt.Uptake = max(0.,min(Total_K_demand, (Site->st_K_tot + Site->rt_K_mins)))* NutrientLimit/Step;
+    Crop->N_rt.Uptake = fmax(0., ext_min((Total_N_demand - N_Fix_rt), N_avail, Crop->prm.N_UptakeMax)) * NutrientLimit/Step;
+    Crop->P_rt.Uptake = fmax(0., ext_min(Total_P_demand, P_avail, Crop->prm.P_UptakeMax))* NutrientLimit/Step;
+    Crop->K_rt.Uptake = fmax(0.,ext_min(Total_K_demand, K_avail, Crop->prm.K_UptakeMax))* NutrientLimit/Step;
 
     /* N uptake per crop organ kg ha-1 d-1*/
     if (Total_N_demand > tiny)

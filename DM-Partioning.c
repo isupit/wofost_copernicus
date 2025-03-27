@@ -16,8 +16,8 @@ void Partioning()
        
     if (WatBal->WaterStress < Crop->N_st.Indx)
     {
-        factor = max(1., 1./(WatBal->WaterStress + 0.5));
-        Crop->fac_ro = min(0.6, Afgen(Crop->prm.Roots, &(Crop->st.Development)) * factor);
+        factor = fmax(1., 1./(WatBal->WaterStress + 0.5));
+        Crop->fac_ro = fmin(0.6, Afgen(Crop->prm.Roots, &(Crop->st.Development)) * factor);
         Crop->fac_lv = Afgen(Crop->prm.Leaves, &(Crop->st.Development));
         Crop->fac_st = Afgen(Crop->prm.Stems, &(Crop->st.Development));
         Crop->fac_so = Afgen(Crop->prm.Storage, &(Crop->st.Development));

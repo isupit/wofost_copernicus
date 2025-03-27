@@ -3,8 +3,8 @@
 
 #include <time.h>
 
-#define NR_VARIABLES_CRP	70
-#define NR_TABLES_CRP   	21
+#define NR_VARIABLES_CRP	73
+#define NR_TABLES_CRP   	22
 #define NR_VARIABLES_SITE       12
 #define NR_TABLES_SITE          1
 #define NR_VARIABLES_SOIL       12
@@ -86,6 +86,7 @@ typedef struct PARAMETERS {
         /** Tables to account for the atmospheric CO2 concentration **/
         TABLE *CO2EFFTB;
         TABLE *CO2TRATB;
+        TABLE *CO2AMAXTB; //multiplication factor for AMAX to account for an increasing CO2 concentration
 
         /** Tables for the maximum nutrient content in leaves as a function of DVS **/
         TABLE *N_MaxLeaves;
@@ -183,8 +184,10 @@ typedef struct PARAMETERS {
         float Amax_SLP;
         float Amax_LNB;
         float Amax_Ref;
-        float KN; // leaf N extinction coefficient 
-        
+        float KN;           // Leaf N extinction coefficient
+        float N_UptakeMax;  // Maximum rate of daily nitrogen uptake
+        float P_UptakeMax;  // Maximum rate of daily phosphorus uptake
+        float K_UptakeMax;  // Maximum rate of daily potassium uptake
         
         } Parameters;
 

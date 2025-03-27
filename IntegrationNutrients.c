@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "wofost.h"
 #include "extern.h"
 
@@ -11,14 +12,14 @@
 void IntegrationNutrients()
 {   
     /* Integration of the total of soil N,P,K */
-    Site->st_N_tot = max(0., Site->st_N_tot + Site->rt_N_tot);
-    Site->st_P_tot = max(0., Site->st_P_tot + Site->rt_P_tot);
-    Site->st_K_tot = max(0., Site->st_K_tot + Site->rt_K_tot);
+    Site->st_N_tot = fmax(0., Site->st_N_tot + Site->rt_N_tot);
+    Site->st_P_tot = fmax(0., Site->st_P_tot + Site->rt_P_tot);
+    Site->st_K_tot = fmax(0., Site->st_K_tot + Site->rt_K_tot);
     
     /* Integration of the total N,P,K soil mineralization */
-    Site->st_N_mins  = max(0., Site->st_N_mins - Site->rt_N_mins);
-    Site->st_P_mins  = max(0., Site->st_P_mins - Site->rt_P_mins);
-    Site->st_K_mins  = max(0., Site->st_K_mins - Site->rt_K_mins);
+    Site->st_N_mins  = fmax(0., Site->st_N_mins - Site->rt_N_mins);
+    Site->st_P_mins  = fmax(0., Site->st_P_mins - Site->rt_P_mins);
+    Site->st_K_mins  = fmax(0., Site->st_K_mins - Site->rt_K_mins);
         
     /* Uptake */
     Crop->N_st.Uptake += Crop->N_rt.Uptake;

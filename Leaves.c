@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "extern.h"
 #include "wofost.h"
 #include "penman.h"
@@ -22,7 +23,7 @@ float DyingLeaves()
     Death1      = Crop->st.leaves *(1. - WatBal->rt.Transpiration / 
                   Evtra.MaxTranspiration) * Crop->prm.MaxRelDeathRate ;
     Death2      = Crop->st.leaves * limit(0.,0.03, 0.03*(Crop->st.LAI-CriticalLAI)/CriticalLAI);
-    Death       = max(Death1, Death2);  
+    Death       = fmax(Death1, Death2);  
 
     /* Death rate increase due to nutrient shortage */
     Death += Crop->st.leaves * Crop->prm.DyingLeaves_NPK_Stress * (1. - Crop->NPK_Indx);

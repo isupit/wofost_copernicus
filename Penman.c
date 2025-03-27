@@ -69,7 +69,7 @@ void CalcPenman()
     SaturatedVap  = 6.10588 * exp(17.32491 * Temp/(Temp+238.102));
     delta         = 238.102 * 17.32491 * SaturatedVap/pow((Temp +238.102),2);
     /* NOTE HERE VapourP is in hPa!! */
-    VapourP       = min(10. * Vapour[Lon][Lat][Day],SaturatedVap);
+    VapourP       = fmin(10. * Vapour[Lon][Lat][Day],SaturatedVap);
 
     /* The expression n/N (RelLSSD) from the Penman formula is estimated   */
     /* from the Angstrom formula: RI=RA(A+B.n/N) -> n/N=(RI/RA-A)/B,       */
@@ -89,15 +89,15 @@ void CalcPenman()
     //Rnc = (Radiation[Lon][Lat][Day] * (1.-Refcfc)-RB)/Lhvap;
 
     /* Evaporative demand of the atmosphere (mm/d)  */
-    Ea  = 0.26 * max (0.,(SaturatedVap-VapourP)) * (0.5+BU * Windspeed[Lon][Lat][Day]);
+    Ea  = 0.26 * fmax(0.,(SaturatedVap-VapourP)) * (0.5+BU * Windspeed[Lon][Lat][Day]);
     //Eac = 0.26 * max (0.,(SaturatedVap-VapourP)) * (1.0+BU * Windspeed[Lon][Lat][Day]);
    
     /* Penman formula (1948)                */
     /* Ensure reference evaporation >= 0.   */
     /* Convert to cm/day                    */
-    Penman.E0  = max(0., 0.1 * (delta*Rnw + Gamma*Ea)/(delta + Gamma));
-    Penman.ES0 = max(0., 0.1 * (delta*Rns + Gamma*Ea)/(delta + Gamma));
-    //Penman.ET0 = max(0., 0.1 * (delta*Rnc + Gamma*Eac)/(delta + Gamma));
+    Penman.E0  = fmax(0., 0.1 * (delta*Rnw + Gamma*Ea)/(delta + Gamma));
+    Penman.ES0 = fmax(0., 0.1 * (delta*Rns + Gamma*Ea)/(delta + Gamma));
+    //Penman.ET0 = fmax(0., 0.1 * (delta*Rnc + Gamma*Eac)/(delta + Gamma));
     
 }
 
@@ -149,7 +149,7 @@ void CalcPenmanMonteith()
 
     //measured vapour pressure not to exceed saturated vapour pressure
     // NOTE THAT HERE VAP IS IN kPa!!!
-    Vap = min(Vapour[Lon][Lat][Day], Svap);
+    Vap = fmin(Vapour[Lon][Lat][Day], Svap);
 
     // Longwave radiation according at Tmax, Tmin (J/m2/d)
     // and preliminary net outgoing long-wave radiation (J/m2/d)
@@ -181,7 +181,7 @@ void CalcPenmanMonteith()
         ET0 = (Delta * (Rn - G))/(Delta + MGamma) + (Gamma * EA)/(Delta + MGamma);
         
         // Convert to cm/day;
-        Penman.ET0 = max(0., 0.1 * ET0);
+        Penman.ET0 = fmax(0., 0.1 * ET0);
     }
     else
     {

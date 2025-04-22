@@ -68,6 +68,9 @@ char *CropParam[]={"TBASEM",
                    "AMAX_LNB",
                    "AMAX_REF",
                    "KN",
+                   "RNUPTAKEMAX", 
+                   "RPUPTAKEMAX", 
+                   "RKUPTAKEMAX", 
                    "NULL"
 		   };
 		   
@@ -93,9 +96,6 @@ char *CropParam2[]={
                     "NMAXLV_TB",
                     "PMAXLV_TB",
                     "KMAXLV_TB",
-                    "RNUPTAKEMAX", 
-                    "RPUPTAKEMAX", 
-                    "RKUPTAKEMAX", 
                     "NULL"
 		    };
 

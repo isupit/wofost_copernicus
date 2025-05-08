@@ -315,6 +315,7 @@ typedef struct GREEN {
 typedef struct PLANT {
         int Emergence;
         int Sowing;
+        int Seasons;
         int GrowthDay;       
         float NPK_Indx;
         float NutrientStress;
@@ -435,6 +436,7 @@ typedef struct WEATHER {
         char var[WEATHER_NTYPES][MAX_STRING];
         int StartYear;
         int EndYear;
+        int Seasons;
         size_t nlat;
         size_t nlon;
         size_t ntime;

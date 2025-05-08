@@ -82,6 +82,7 @@ int main(int argc, char **argv)
         for (i=0; i <= (Meteo->EndYear - Meteo->StartYear + 1); i++) {
             Grid->twso[i]   = 0.0;
             Grid->length[i] = 0.0;
+            Grid->crp->Sowing = 1;
         }
         
         memset(name_old,'\0',MAX_STRING);
@@ -141,7 +142,7 @@ int main(int argc, char **argv)
                         DayTemp = 0.5 * (Tmax[Lon][Lat][Day] + Temp);
 
                         /* Only simulate between start and end year */
-                        if ( MeteoYear[Day] >=  Meteo->StartYear && MeteoYear[Day] <= Meteo->EndYear)
+                        if ( MeteoYear[Day] >=  Meteo->StartYear && Meteo->Seasons >= Crop->Seasons)
                         {   
                             /* Determine if the sowing already has occurred */
                             IfSowing(Grid->start);
@@ -198,7 +199,7 @@ int main(int argc, char **argv)
                                     Grid->twso[Count]   = Crop->st.storage;
                                     Grid->length[Count] = Crop->GrowthDay;
                                     //printf("%7d %7d %7.0f %7.0f\n", MeteoYear[Day],Count, Grid->length, Crop->st.storage);
-                                    if (MeteoYear[Day] == Meteo->EndYear) {
+                                    if (Meteo->Seasons == Crop->Seasons) {
                                         Output(files[Grid->file], Count);
                                     }
                                     
@@ -216,6 +217,7 @@ int main(int argc, char **argv)
                                     Crop->TSumEmergence = 0;
                                     Crop->Emergence = 0;
                                     Crop->Sowing    = 0;
+                                    Crop->Seasons++;
                                 }
                             }
                         }    

@@ -50,7 +50,6 @@ void GetCropData(Plant *CROP, char *cropfile)
         i++;
     }
 
-
     if  (count == NR_VARIABLES_CRP  || count == NR_VARIABLES_CRP - 2)
         ;
     else

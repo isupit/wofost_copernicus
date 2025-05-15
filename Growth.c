@@ -21,14 +21,16 @@ void Growth(float NewPlantMaterial)
     /* Water stress is more severe as compared to Nitrogen stress and */
     /* partitioning will follow the original assumptions of LINTUL2   */     
         
-    FRTRL = 0.;
+    FRTRL = 0.0;
     Translocation = 0.;
     if (Crop->st.Development >= 1.)
     {
-        Translocation_st  = Crop->st.stems * Crop->rt.Development * FRTRL;
+        Translocation_st  = Crop->st.stems * Crop->rt_DevPrev * FRTRL;
         Translocation_dst = Crop->dst.stems * Crop->rt.Development * FRTRL;
         Translocation = Translocation_st + Translocation_dst;
+        Crop->rt_DevPrev = 0.;
     }
+   
     
     Crop->drt.roots = Crop->st.roots * Afgen(Crop->prm.DeathRateRoots, &(Crop->st.Development));
     Crop->rt.roots  = NewPlantMaterial * Crop->fac_ro - Crop->drt.roots;
@@ -59,3 +61,5 @@ void Growth(float NewPlantMaterial)
         Crop->rt.RootDepth = fmin(Crop->prm.MaxRootingDepth - Crop->st.RootDepth,
                 Crop->prm.MaxIncreaseRoot*Step);
 }
+
+

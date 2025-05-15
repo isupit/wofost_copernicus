@@ -48,7 +48,7 @@ void NutrientPartioning()
     Crop->N_rt.Uptake = fmax(0., ext_min((Total_N_demand - N_Fix_rt), N_avail, Crop->prm.N_UptakeMax)) * NutrientLimit/Step;
     Crop->P_rt.Uptake = fmax(0., ext_min(Total_P_demand, P_avail, Crop->prm.P_UptakeMax))* NutrientLimit/Step;
     Crop->K_rt.Uptake = fmax(0.,ext_min(Total_K_demand, K_avail, Crop->prm.K_UptakeMax))* NutrientLimit/Step;
-
+    
     /* N uptake per crop organ kg ha-1 d-1*/
     if (Total_N_demand > tiny)
     {

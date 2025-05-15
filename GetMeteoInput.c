@@ -22,6 +22,7 @@ void GetMeteoInput(char *meteolist)
     unsigned int type;
     int StartYear;
     int EndYear;
+    int NrSeasons;
     char path[MAX_STRING];
     char mask[MAX_STRING];
     char filename[MAX_STRING];
@@ -41,7 +42,7 @@ void GetMeteoInput(char *meteolist)
             continue;
         }
         
-        sscanf(line,"%s %d %d %s" , path, &StartYear, &EndYear, mask);
+        sscanf(line,"%s %d %d %d %s" , path, &StartYear, &EndYear, &NrSeasons, mask);
         
         if (initial == NULL) 
         {
@@ -56,7 +57,8 @@ void GetMeteoInput(char *meteolist)
         memset(Meteo->mask,'\0',MAX_STRING);
         strncpy(Meteo->mask, mask, strlen(mask));
         Meteo->StartYear = StartYear;
-        Meteo->EndYear = EndYear;
+        Meteo->EndYear   = EndYear;
+        Meteo->Seasons   = NrSeasons;
         Meteo->next = NULL;
         
         for (i = 0; i < WEATHER_NTYPES; i++) {

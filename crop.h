@@ -81,6 +81,7 @@ char *CropParam2[]={
                     "SSATB",
                     "KDIFTB",
 		    "EFFTB",
+                    "AMAXTB",
 		    "TMPFTB",
 		    "TMNFTB",
                     "CO2EFFTB",

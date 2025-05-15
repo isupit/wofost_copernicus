@@ -113,8 +113,8 @@ void FillCropVariables(Plant *CROP, float *Variable)
     CROP->prm.Amax_Ref                 = Variable[68];
     CROP->prm.KN                       = Variable[69]; // leaf N extinction coefficient
     CROP->prm.N_UptakeMax              = Variable[70];
-    CROP->prm.N_UptakeMax              = Variable[71];
-    CROP->prm.N_UptakeMax              = Variable[72];
+    CROP->prm.P_UptakeMax              = Variable[71];
+    CROP->prm.K_UptakeMax              = Variable[72];
     
     
     

@@ -26,7 +26,7 @@ void Growth(float NewPlantMaterial)
     if (Crop->st.Development >= 1.)
     {
         Translocation_st  = Crop->st.stems * Crop->rt_DevPrev * FRTRL;
-        Translocation_dst = Crop->dst.stems * Crop->rt.Development * FRTRL;
+        Translocation_dst = Crop->dst.stems * Crop->rt_DevPrev * FRTRL;
         Translocation = Translocation_st + Translocation_dst;
         Crop->rt_DevPrev = 0.;
     }

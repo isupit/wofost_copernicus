@@ -70,7 +70,8 @@ char *CropParam[]={"TBASEM",
                    "KN",
                    "RNUPTAKEMAX", 
                    "RPUPTAKEMAX", 
-                   "RKUPTAKEMAX", 
+                   "RKUPTAKEMAX",
+                   "FRTRL",
                    "NULL"
 		   };
 		   

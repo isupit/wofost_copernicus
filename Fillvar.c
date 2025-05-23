@@ -116,6 +116,9 @@ void FillCropVariables(Plant *CROP, float *Variable)
     CROP->prm.P_UptakeMax              = Variable[71];
     CROP->prm.K_UptakeMax              = Variable[72];
     
+    // translocation
+    CROP->prm.Frac_translocation       = Variable[73];
+    
     
     
     for (i=0;i<=NR_VARIABLES_CRP;i++) 

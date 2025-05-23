@@ -3,7 +3,7 @@
 
 #include <time.h>
 
-#define NR_VARIABLES_CRP	73
+#define NR_VARIABLES_CRP	74
 #define NR_TABLES_CRP   	22
 #define NR_VARIABLES_SITE       12
 #define NR_TABLES_SITE          1
@@ -178,7 +178,8 @@ typedef struct PARAMETERS {
         float TCNT;   
         float TCPT;   
         float TCKT;   
-        float N_fixation; 
+        float N_fixation;
+        float Frac_translocation;
         
         //new to 8netcdf
         float Amax_SLP;

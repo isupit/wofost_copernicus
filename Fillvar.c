@@ -106,6 +106,7 @@ void FillCropVariables(Plant *CROP, float *Variable)
     CROP->prm.TCPT                     = Variable[63];
     CROP->prm.TCKT                     = Variable[64];
     CROP->prm.N_fixation               = Variable[65];
+    CROP->prm.Frac_translocation       = Variable[66];
 
 
     for (i=0;i<=NR_VARIABLES_CRP;i++) 

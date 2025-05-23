@@ -11,6 +11,10 @@ void RatesToZero()
     Crop->drt.roots = 0.;
     Crop->drt.leaves = 0.;
     Crop->drt.stems = 0.;
+    
+        /* Set the development rate */
+    if (Crop->st.Development > 1.) //in case of translocation
+        Crop->rt_DevPrev = Crop->rt.Development;
   
     /* Set the development rate */
     Crop->rt.Development = 0.;

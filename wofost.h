@@ -3,7 +3,7 @@
 
 #include <time.h>
 
-#define NR_VARIABLES_CRP	66
+#define NR_VARIABLES_CRP	67
 #define NR_TABLES_CRP   	22
 #define NR_VARIABLES_SITE       12
 #define NR_TABLES_SITE          1
@@ -179,6 +179,7 @@ typedef struct PARAMETERS {
         float TCPT;   
         float TCKT;   
         float N_fixation; 
+        float Frac_translocation;
         } Parameters;
 
 
@@ -325,6 +326,7 @@ typedef struct PLANT {
         float fac_lv;
         float fac_st;
         float fac_so;
+        float rt_DevPrev;
         
         Parameters prm;
         

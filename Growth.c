@@ -16,17 +16,19 @@ void Growth(float NewPlantMaterial)
     float Translocation;
     float Translocation_st;
     float Translocation_dst;
-    float FRTRL;
      
     /* Water stress is more severe as compared to Nitrogen stress and */
     /* partitioning will follow the original assumptions of LINTUL2   */     
         
-    FRTRL = 0.;
+
     Translocation = 0.;
+    Translocation_st = 0.;
+    Translocation_dst = 0.;
+    
     if (Crop->st.Development >= 1.)
     {
-        Translocation_st  = Crop->st.stems * Crop->rt.Development * FRTRL;
-        Translocation_dst = Crop->dst.stems * Crop->rt.Development * FRTRL;
+        Translocation_st  = Crop->st.stems * Crop->rt_DevPrev * Crop->prm.Frac_translocation;
+        Translocation_dst = Crop->dst.stems * Crop->rt_DevPrev * Crop->prm.Frac_translocation;
         Translocation     = Translocation_st + Translocation_dst;
     }
     

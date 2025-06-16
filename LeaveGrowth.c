@@ -39,7 +39,7 @@ void LeaveGrowth()
         }
        
         /* Effective temperature for leave growth */
-        DTeff = max(0.,Temp - Crop->prm.TempBaseLeaves);
+        DTeff = fmax(0.,Temp - Crop->prm.TempBaseLeaves);
         
         /* Correction for nutrient stress */
         GrowthExpLAI = Crop->st.LAIExp * Crop->prm.RelIncreaseLAI * DTeff * Stress;
@@ -48,7 +48,7 @@ void LeaveGrowth()
         GrowthSourceLimited = Crop->rt.leaves * SpecLeafArea;
 
         /* Sink-limited leaf area increase */
-        SpecLeafArea = min(GrowthExpLAI, GrowthSourceLimited)/Crop->rt.leaves;
+        SpecLeafArea = fmin(GrowthExpLAI, GrowthSourceLimited)/Crop->rt.leaves;
     }
     else
     {

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
+#include <math.h>
 #include "wofost.h"
 #include "extern.h"
 
@@ -46,7 +47,7 @@ void IntegrationCrop()
     }
 
     /* Establish the age increase */
-    PhysAgeing = max(0., (Temp - Crop->prm.TempBaseLeaves)/(35.- Crop->prm.TempBaseLeaves));
+    PhysAgeing = fmax(0., (Temp - Crop->prm.TempBaseLeaves)/(35.- Crop->prm.TempBaseLeaves));
     
     /* Store the initial address */
     LeaveProperties = Crop->LeaveProperties;

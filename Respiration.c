@@ -25,5 +25,5 @@ float RespirationRef(float TotalAssimilation)
     respiration  *= pow(Crop->prm.Q10, 0.1 * (Temp-TempRef));
     
     /* respiration can not exceed the assimilation */
-    return (min(respiration, TotalAssimilation));
+    return (fmin(respiration, TotalAssimilation));
 }

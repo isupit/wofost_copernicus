@@ -1,7 +1,0 @@
-/home/iwan/workspace/Forcing/France/ 1987 2016 /home/iwan/workspace/Parameters/Mask/springbarley_area_rh_p.org
-Tmin_daily_WFDEI_1987-2016.nc TMIN Tmin
-Tmax_daily_WFDEI_1987-2016.nc TMAX  Tmax
-SWdown_daily_WFDEI_1987-2016.nc RADIATION SWdown
-Rainf_daily_WFDEI_1987-2016.nc RAIN Rainf
-Wind_daily_WFDEI_1987-2016.nc WINDSPEED Wind
-Vap_daily_WFDEI_1987-2016.nc VAPOUR Vap

@@ -1,0 +1,229 @@
+** Updated april 2025 from https://github.com/ajwdewit/WOFOST_crop_parameters/blob/wofost80(1)
+
+CRPNAM='Sugarcane,(Van Heemst, 1988)'
+
+** emergence
+TBASEM   =    10.0    ! lower threshold temp. for emergence [cel]
+TEFFMX   =    30.0    ! max. eff. temp. for emergence [cel]
+TSUMEM   =   200.     ! temperature sum from sowing to emergence [cel d]
+
+** phenology
+IDSL     =   0      ! indicates whether pre-anthesis development depends
+                    ! on temp., (=0), plus daylength (=1) , plus vernalization (=2)
+DLO      = -99.   	! optimum daylength for development [hr]
+DLC      = -99.    	! critical daylength (lower threshold) [hr]
+VERNSAT  = -99.     ! satured vernalisation requirement [d]
+VERNBASE    = -99.  ! base vernalisation requirement [d]
+VERNDVS		= -99	!Critical DVS for vernalization to switch off	
+VERNRTB     = -10., -99.
+               30., -99.
+               
+TSUM1    = 5681.    ! temperature sum from emergence to anthesis [cel d]
+TSUM2    =  642.    ! temperature sum from anthesis to maturity [cel d]
+
+DTSMTB   =   0.00,    0.00,     ! daily increase in temp. sum 
+            10.00,    0.00,     ! as function of av. temp. [cel; cel d]
+            35.00,   25.00,
+            45.00,   25.00
+
+DVSI     =   0.       ! initial DVS
+DVSEND   =   2.00     ! development stage at harvest (= 2.0 at maturity [-])
+
+** initial
+TDWI     = 600.00    ! initial total crop dry weight [kg ha-1]
+RGRLAI   =   0.0500  ! maximum relative increase in LAI [ha ha-1 d-1]
+
+** green area
+SLATB    =   0.00,    0.0009,   ! specific leaf area  
+             0.21,    0.0019,   ! as a function of DVS [-; ha kg-1]
+             0.29,    0.0012,
+             0.64,    0.0008,
+             1.00,    0.0010,
+             2.00,    0.0010
+
+SPA      =   0.000       ! specific pod area [ha kg-1]
+SSATB    =   0.0, 0.,    ! specific stem area [ha kg-1]
+             2.0, 0.     ! as function of DVS
+
+SPAN     =  75.       ! life span of leaves growing at 35 Celsius [d]
+TBASE    =  10.0      ! lower threshold temp. for ageing of leaves [cel]
+
+** assimilation
+KDIFTB     =   0.0, 0.50,     ! extinction coefficient for diffuse visible light [-]
+               2.0, 0.50      ! as function of DVS
+
+EFFTB      =    0., 0.50,     ! light-use effic. single leaf [kg ha-1 hr-1 J-1 m2 s]
+               40., 0.50      ! as function of daily mean temp.
+
+AMAXTB   =   0.00,   70.00,     ! max. leaf CO2 assim. rate
+             0.14,   70.00,     ! function of DVS [-; kg ha-1 hr-1]
+             0.82,   42.00,
+             2.00,   30.00
+
+TMPFTB   =   0.00,    0.00,     ! reduction factor of AMAX
+             8.00,    0.00,     ! as function of av. temp. [cel; -]
+            20.00,    1.00,
+            35.00,    1.00,
+            45.00,    0.00
+
+TMNFTB   =   5.00,    0.00,     ! red. factor of gross assim. rate
+            12.00,    1.00      ! as function of low min. temp. [cel; -]
+           
+CO2AMAXTB       =  40., 0.00,      ! multiplication factor for AMAX 
+             360.,  1.00,       ! to account for an increasing CO2 concentration
+             720.,  1.00, 
+            1000.,  1.00,
+            2000.,  1.00 
+            
+CO2EFFTB     =  40., 0.00,		! multiplication factor for EFF 
+             360.,  1.00,		! to account for an increasing CO2 concentration
+             720.,  1.00, 
+            1000.,  1.00,
+            2000.,  1.00
+			
+CO2TRATB     =  40., 0.00,		! multiplication factor for maximum transpiration rate TRAMX
+             360.,  1.00,		! to account for an increasing CO2 concentration
+             720.,  0.74, 
+            1000.,  0.74,
+            2000.,  0.74      	
+			
+** conversion of assimilates into biomass
+CVL      =   0.720  ! efficiency of conversion into leaves [kg kg-1]
+CVO      =   0.730  ! efficiency of conversion into storage org. [kg kg-1]
+CVR      =   0.720  ! efficiency of conversion into roots [kg kg-1]
+CVS      =   0.720  ! efficiency of conversion into stems [kg kg-1]
+
+** maintenance respiration
+Q10      =   2.0      ! rel. incr. in resp. rate per 10 Cel temp. incr. [-]
+RML      =   0.0300   ! rel. maint. resp. rate leaves [kg CH2O kg-1 d-1]
+RMO      =   0.0100   ! rel. maint. resp. rate stor.org. [kg CH2O kg-1 d-1]
+RMR      =   0.0100   ! rel. maint. resp. rate roots [kg CH2O kg-1 d-1]
+RMS      =   0.0070   ! rel. maint. resp. rate stems [kg CH2O kg-1 d-1]
+RFSETB   =   0.00,    1.00,     ! red. factor for senescence
+             2.00,    1.00      ! as function of DVS [-; -]
+             
+** partitioning
+FRTB     =   0.00,    0.67,     ! fraction of total dry matter to roots
+             0.03,    0.67,     ! as a function of DVS [-; kg kg-1]
+             0.15,    0.67,
+             0.23,    0.16,
+             0.48,    0.16,
+             1.00,    0.16,
+             1.10,    0.16,
+             2.00,    0.16
+
+FLTB     =   0.00,    1.00,     ! fraction of above-gr. DM to leaves
+             0.03,    1.00,     ! as a function of DVS [-; kg kg-1]
+             0.15,    0.79,
+             0.23,    0.66,
+             0.48,    0.24,
+             1.00,    0.24,
+             1.10,    0.00,
+             2.00,    0.00
+
+FSTB     =   0.00,    0.00,     ! fraction of above-gr. DM to stems
+             0.03,    0.00,     ! as a function of DVS [-; kg kg-1]
+             0.15,    0.21,
+             0.23,    0.34,
+             0.48,    0.76,
+             1.00,    0.76,
+             1.10,    0.00,
+             2.00,    0.00
+
+FOTB     =   0.00,    0.00,     ! fraction of above-gr. DM to stor. org.
+             1.00,    0.00,     ! as a function of DVS [-; kg kg-1]
+             1.10,    1.00,
+             2.00,    1.00
+
+FRTRL    =   0.0                ! biomass fraction [kg] available for translocation
+
+** death rates
+PERDL    =   0.030  ! max. rel. death rate of leaves due to water stress
+
+RDRRTB   =   0.00,    0.000,    ! rel. death rate of roots 
+             1.50,    0.000,    ! as a function of DVS [-; kg kg-1 d-1]
+             1.5001,  0.020,
+             2.00,    0.020
+
+RDRSTB   =   0.00,    0.000,    ! rel. death rate of stems
+             1.50,    0.000,    ! as a function of DVS [-; kg kg-1 d-1]
+             1.5001,  0.020,
+             2.00,    0.020
+
+** water use
+CFET     =   1.00   ! correction factor transpiration rate [-]
+DEPNR    =   5.0    ! crop group number for soil water depletion [-]
+IAIRDU   =   0      ! air ducts in roots present (=1) or not (=0)
+IOX      =   0      ! switch calculation of oxygen stress on (1) or off (0)
+
+** rooting
+RDI      =  10.     ! initial rooting depth [cm]
+RRI      =   1.2    ! maximum daily increase in rooting depth [cm d-1]
+RDMCR    = 200.     ! maximum rooting depth [cm]
+
+** nutrient (N-P-K) use
+RDRLV_NPK          = 0.05     ! max. relative death rate of leaves due to nutrient (N-P-K) stress
+DVS_NPK_STOP       = 1.3      ! development stage above which no crop N-P-K uptake does occur
+DVS_NPK_TRANSL     = 0.8      ! development stage above which N-P-K translocation to storage organs does occur 
+NPK_TRANSLRT_FR    = 0.15     ! N-P-K translocations from roots as a fraction of resp. total N-P-K amounts translocated from leaves and stems
+NCRIT_FR           = 1.00     ! optimal N concentration as fraction of maximum N concentration
+PCRIT_FR           = 1.00     ! optimal P concentration as fraction of maximum P concentration
+KCRIT_FR           = 1.00     ! optimal K concentration as fraction of maximum K concentration
+NMAXRT_FR          = 0.50     ! maximum N concentration in roots as fraction of maximum N concentration in leaves
+NMAXST_FR          = 0.50     ! maximum N concentration in stems as fraction of maximum N concentration in leaves
+PMAXRT_FR          = 0.50     ! maximum P concentration in roots as fraction of maximum P concentration in leaves
+PMAXST_FR          = 0.50     ! maximum P concentration in stems as fraction of maximum P concentration in leaves
+KMAXRT_FR          = 0.50     ! maximum K concentration in roots as fraction of maximum K concentration in leaves
+KMAXST_FR          = 0.50     ! maximum K concentration in stems as fraction of maximum K concentration in leaves
+NLAI_NPK           = 1.0      ! coefficient for the reduction due to nutrient (N-P-K) stress of the LAI increase (during juvenile phase)
+NLUE_NPK           = 1.1      ! coefficient for the reduction of RUE due to nutrient (N-P-K) stress
+NMAXSO             = 0.0035   ! maximum N concentration (= 1.6*min. N conc.) in storage organs [kg N kg-1 dry biomass]
+PMAXSO             = 0.0011   ! maximum P concentration (= 1.6*min. P conc.) in storage organs [kg P kg-1 dry biomass]
+KMAXSO             = 0.0048   ! maximum K concentration (= 1.6*min. K conc.) in storage organs [kg K kg-1 dry biomass]
+NPART              = 1.0      ! coefficient for the effect of N stress on leaf allocation 
+NSLA_NPK           = 0.5      ! coefficient for the effect of nutrient (N-P-K) stress on SLA reduction
+NRESIDLV           = 0.0029   ! residual N fraction in leaves [kg N kg-1 dry biomass]
+NRESIDST           = 0.0015   ! residual N fraction in stems [kg N kg-1 dry biomass]
+NRESIDRT           = 0.0015   ! residual N fraction in roots [kg N kg-1 dry biomass]
+PRESIDLV           = 0.00093  ! residual P fraction in leaves [kg P kg-1 dry biomass]
+PRESIDST           = 0.00047   ! residual P fraction in stems [kg P kg-1 dry biomass]
+PRESIDRT           = 0.00047   ! residual P fraction in roots [kg P kg-1 dry biomass]
+KRESIDLV           = 0.0040   ! residual K fraction in leaves [kg K kg-1 dry biomass]
+KRESIDST           = 0.0020   ! residual K fraction in stems [kg K kg-1 dry biomass]
+KRESIDRT           = 0.0020   ! residual K fraction in roots [kg K kg-1 dry biomass]
+TCNT               = 10.      ! time coefficient for N translocation to storage organs [days]
+TCPT               = 10.      ! time coefficient for N translocation to storage organs [days]
+TCKT               = 10.      ! time coefficient for N translocation to storage organs [days]
+NFIX_FR            = 0.00     ! fraction of crop nitrogen uptake by biological fixation [-]
+
+NMAXLV_TB    =  0.0, 0.06,   ! maximum N concentration in leaves as function of development stage [kg N kg-1 dry biomass]
+            0.4, 0.04,
+            0.7, 0.03,
+            1.0, 0.02,
+            2.0, 0.0147,
+            2.1, 0.0147
+
+PMAXLV_TB    =  0.0, 0.0109,   ! maximum P concentration in leaves as function of development stage [kg P kg-1 dry biomass]
+            0.4, 0.0073,
+            0.7, 0.0055,
+            1.0, 0.0036,
+            2.0, 0.0027,
+            2.1, 0.0027
+
+KMAXLV_TB    =  0.0, 0.104,  ! maximum K concentration in leaves as function of development stage [kg K kg-1 dry biomass]
+            0.4, 0.069,
+            0.7, 0.052,
+            1.0, 0.035,
+            2.0, 0.0253,
+            2.1, 0.0253
+
+** org. wofost_80
+RNUPTAKEMAX =  7.2          ! Maximum rate of daily nitrogen uptake ['kg.ha-1.d-1']
+RPUPTAKEMAX =  0.8          ! Maximum rate of daily phosphorus uptake ['kg.ha-1.d-1']
+RKUPTAKEMAX =  7.4          ! Maximum rate of daily potassium uptake ['kg.ha-1.d-1']  
+
+** org. wofost_81
+AMAX_SLP  =  3.24         ! slope of relationship between maximum leaf photosynthesis rate and specific leaf nitrogen  ['kg CO2 ha-1 h-1 (kg N m-2)-1']
+AMAX_LNB  =  0.0          ! specific leaf nitrogen below which there is no photosynthesis  ['kg N ha-1']
+AMAX_REF  =  70.00        ! maximum leaf CO2 assimilation rate  ['kg.ha-1.hr-1']
+KN        =  0.4          ! Extinction coefficient of leaf N concentration with canopy depth  ['-']

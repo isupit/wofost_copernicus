@@ -100,7 +100,7 @@ float DailyTotalAssimilation()
             Hour       = 12.0+0.5*Daylength*XGauss[i];
             SinB       = fmax (0.,SinLD+CosLD*cos(2.*PI*(Hour+12.)/24.));
             PAR        = 0.5*Radiation[Lon][Lat][Day]*SinB*(1.+0.4*SinB)/DSinBE;
-            PARDiffuse = fmin (PAR,SinB*DiffRadPP);
+            PARDiffuse = fmin(PAR,SinB*DiffRadPP);
             PARDirect  = PAR-PARDiffuse;
             DailyTotalAssimilation = DailyTotalAssimilation + 
                 InstantAssimilation(KDiffuse,EFF,AssimMax,SinB,PARDiffuse,PARDirect) * WGauss[i];

@@ -61,20 +61,20 @@ void NutrientOptimum()
 /* ----------------------------------------------------------------------------*/
 void NutrientDemand()
 {
-    Crop->N_rt.Demand_lv =  max (Crop->N_st.Max_lv *Crop->st.leaves - Crop->N_st.leaves, 0.);
-    Crop->N_rt.Demand_st =  max (Crop->N_st.Max_st *Crop->st.stems  - Crop->N_st.stems, 0.);
-    Crop->N_rt.Demand_ro =  max (Crop->N_st.Max_ro *Crop->st.roots  - Crop->N_st.roots, 0.);
-    Crop->N_rt.Demand_so =  max (Crop->N_st.Max_so *Crop->st.storage- Crop->N_st.storage, 0.)/Crop->prm.TCNT;
+    Crop->N_rt.Demand_lv =  fmax (Crop->N_st.Max_lv *Crop->st.leaves - Crop->N_st.leaves, 0.);
+    Crop->N_rt.Demand_st =  fmax (Crop->N_st.Max_st *Crop->st.stems  - Crop->N_st.stems, 0.);
+    Crop->N_rt.Demand_ro =  fmax (Crop->N_st.Max_ro *Crop->st.roots  - Crop->N_st.roots, 0.);
+    Crop->N_rt.Demand_so =  fmax (Crop->N_st.Max_so *Crop->st.storage- Crop->N_st.storage, 0.)/Crop->prm.TCNT;
  
-    Crop->P_rt.Demand_lv =  max (Crop->P_st.Max_lv *Crop->st.leaves - Crop->P_st.leaves, 0.);
-    Crop->P_rt.Demand_st =  max (Crop->P_st.Max_st *Crop->st.stems  - Crop->P_st.stems, 0.);
-    Crop->P_rt.Demand_ro =  max (Crop->P_st.Max_ro *Crop->st.roots  - Crop->P_st.roots, 0.);
-    Crop->P_rt.Demand_so =  max (Crop->P_st.Max_so *Crop->st.storage- Crop->P_st.storage, 0.)/Crop->prm.TCPT;
+    Crop->P_rt.Demand_lv =  fmax (Crop->P_st.Max_lv *Crop->st.leaves - Crop->P_st.leaves, 0.);
+    Crop->P_rt.Demand_st =  fmax (Crop->P_st.Max_st *Crop->st.stems  - Crop->P_st.stems, 0.);
+    Crop->P_rt.Demand_ro =  fmax (Crop->P_st.Max_ro *Crop->st.roots  - Crop->P_st.roots, 0.);
+    Crop->P_rt.Demand_so =  fmax (Crop->P_st.Max_so *Crop->st.storage- Crop->P_st.storage, 0.)/Crop->prm.TCPT;
     
-    Crop->K_rt.Demand_lv =  max (Crop->K_st.Max_lv *Crop->st.leaves - Crop->K_st.leaves, 0.);
-    Crop->K_rt.Demand_st =  max (Crop->K_st.Max_st *Crop->st.stems  - Crop->K_st.stems, 0.);
-    Crop->K_rt.Demand_ro =  max (Crop->K_st.Max_ro *Crop->st.roots  - Crop->K_st.roots, 0.);
-    Crop->K_rt.Demand_so =  max (Crop->K_st.Max_so *Crop->st.storage- Crop->K_st.storage, 0.)/Crop->prm.TCKT;
+    Crop->K_rt.Demand_lv =  fmax (Crop->K_st.Max_lv *Crop->st.leaves - Crop->K_st.leaves, 0.);
+    Crop->K_rt.Demand_st =  fmax (Crop->K_st.Max_st *Crop->st.stems  - Crop->K_st.stems, 0.);
+    Crop->K_rt.Demand_ro =  fmax (Crop->K_st.Max_ro *Crop->st.roots  - Crop->K_st.roots, 0.);
+    Crop->K_rt.Demand_so =  fmax (Crop->K_st.Max_so *Crop->st.storage- Crop->K_st.storage, 0.)/Crop->prm.TCKT;
 } 
     
                

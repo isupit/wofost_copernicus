@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "wofost.h"
 #include "extern.h"
 
@@ -11,23 +12,23 @@
 void NutrientTranslocation()                                                                                                       
 {                                                                                                                  
     /* N amount available for translocation */                                                                                                              
-    Crop->N_st.Avail_lv = max(0.,Crop->N_st.leaves - Crop->st.leaves * Crop->prm.N_ResidualFrac_lv);
-    Crop->N_st.Avail_st = max(0.,Crop->N_st.stems  - Crop->st.stems  * Crop->prm.N_ResidualFrac_st);
-    Crop->N_st.Avail_ro = max((Crop->N_st.Avail_lv + Crop->N_st.Avail_st) 
+    Crop->N_st.Avail_lv = fmax(0.,Crop->N_st.leaves - Crop->st.leaves * Crop->prm.N_ResidualFrac_lv);
+    Crop->N_st.Avail_st = fmax(0.,Crop->N_st.stems  - Crop->st.stems  * Crop->prm.N_ResidualFrac_st);
+    Crop->N_st.Avail_ro = fmax((Crop->N_st.Avail_lv + Crop->N_st.Avail_st) 
             * Crop->prm.FracTranslocRoots, Crop->N_st.roots - Crop->st.roots * Crop->prm.N_ResidualFrac_ro);
     
    
     /* P amount available for translocation */ 
-    Crop->P_st.Avail_lv = max (0.,Crop->P_st.leaves - Crop->st.leaves * Crop->prm.P_ResidualFrac_lv);
-    Crop->P_st.Avail_st = max (0.,Crop->P_st.stems  - Crop->st.stems  * Crop->prm.P_ResidualFrac_st);
-    Crop->P_st.Avail_ro = max ((Crop->P_st.Avail_lv + Crop->P_st.Avail_st) * Crop->prm.FracTranslocRoots, 
+    Crop->P_st.Avail_lv = fmax (0.,Crop->P_st.leaves - Crop->st.leaves * Crop->prm.P_ResidualFrac_lv);
+    Crop->P_st.Avail_st = fmax (0.,Crop->P_st.stems  - Crop->st.stems  * Crop->prm.P_ResidualFrac_st);
+    Crop->P_st.Avail_ro = fmax ((Crop->P_st.Avail_lv + Crop->P_st.Avail_st) * Crop->prm.FracTranslocRoots, 
             Crop->P_st.roots - Crop->st.roots * Crop->prm.P_ResidualFrac_ro);
     
     
     /* K amount available for translocation */ 
-    Crop->K_st.Avail_lv = max(0.,Crop->K_st.leaves - Crop->st.leaves * Crop->prm.K_ResidualFrac_lv);
-    Crop->K_st.Avail_st = max(0.,Crop->K_st.stems  - Crop->st.stems  * Crop->prm.K_ResidualFrac_st);
-    Crop->K_st.Avail_ro = max((Crop->K_st.Avail_lv + Crop->K_st.Avail_st) * Crop->prm.FracTranslocRoots, 
+    Crop->K_st.Avail_lv = fmax(0.,Crop->K_st.leaves - Crop->st.leaves * Crop->prm.K_ResidualFrac_lv);
+    Crop->K_st.Avail_st = fmax(0.,Crop->K_st.stems  - Crop->st.stems  * Crop->prm.K_ResidualFrac_st);
+    Crop->K_st.Avail_ro = fmax((Crop->K_st.Avail_lv + Crop->K_st.Avail_st) * Crop->prm.FracTranslocRoots, 
             Crop->K_st.roots - Crop->st.roots * Crop->prm.K_ResidualFrac_ro);
     
     /* Total available amount of nutrients */

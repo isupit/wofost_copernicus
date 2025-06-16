@@ -25,7 +25,7 @@ void RateCalculationCrop()
     GrossAssimilation = DailyTotalAssimilation();
     
     /* Stress: either nutrient shortage or water shortage */
-    Stress = min(Crop->NutrientStress, WatBal->WaterStress);
+    Stress = fmin(Crop->NutrientStress, WatBal->WaterStress);
 
     /* Correction for low minimum temperatures and stress factors */
     TotalAssimilation = Stress * Correct(GrossAssimilation);       

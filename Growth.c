@@ -58,6 +58,6 @@ void Growth(float NewPlantMaterial)
     if (Crop->fac_ro <= 0.0 || (!Crop->prm.Airducts && Site->GroundwaterDepth - Crop->st.RootDepth < 10.))
         Crop->rt.RootDepth = 0.;
     else
-        Crop->rt.RootDepth = min(Crop->prm.MaxRootingDepth - Crop->st.RootDepth,
+        Crop->rt.RootDepth = fmin(Crop->prm.MaxRootingDepth - Crop->st.RootDepth,
                 Crop->prm.MaxIncreaseRoot*Step);
 }

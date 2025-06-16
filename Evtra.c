@@ -53,8 +53,8 @@ void EvapTra() {
     
     KDiffuse = Afgen(Crop->prm.KDiffuseTb, &(Crop->st.Development));      
     Evtra.MaxEvapWater = Penman.E0 * exp(-0.75 * KDiffuse * Crop->st.LAI);
-    Evtra.MaxEvapSoil  = max(0., Penman.ES0 * exp(-0.75 * KDiffuse * Crop->st.LAI));
-    Evtra.MaxTranspiration = max(0.0001,  
+    Evtra.MaxEvapSoil  = fmax(0., Penman.ES0 * exp(-0.75 * KDiffuse * Crop->st.LAI));
+    Evtra.MaxTranspiration = fmax(0.0001,  
                              Penman.ET0 * Afgen(Crop->prm.CO2TRATB, &CO2) *
                              (1.-exp(-0.75 * KDiffuse * Crop->st.LAI)));
        
@@ -73,7 +73,7 @@ void EvapTra() {
         
         /* Count days since start oxygen shortage (up to 4 days) */
         if (WatBal->st.Moisture >= SoilMoistureAeration) {
-            Crop->DaysOxygenStress = min(Crop->DaysOxygenStress++, 4.);
+            Crop->DaysOxygenStress = fmin(Crop->DaysOxygenStress++, 4.);
         }
         else 
         {

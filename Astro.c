@@ -39,10 +39,10 @@ int Astro()
     AOB   = SinLD/CosLD;
     
    /* Astronomical day length */
-    Daylength = max(0,min(24.,12.0*(1.+2.*asin(AOB)/PI)));
+    Daylength = fmax(0,fmin(24.,12.0*(1.+2.*asin(AOB)/PI)));
     
     /* Photoactive day length */
-    PARDaylength = max(0,min(24.,12.0*(1.+2.*asin((-sin(ANGLE*RAD)+SinLD)/CosLD)/PI)));
+    PARDaylength = fmax(0,fmin(24.,12.0*(1.+2.*asin((-sin(ANGLE*RAD)+SinLD)/CosLD)/PI)));
     
     /* Integrals of sine of solar height */
     if (AOB <= 1.0)

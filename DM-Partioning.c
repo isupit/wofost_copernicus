@@ -4,6 +4,9 @@
 #include "wofost.h"
 #include "extern.h"
 
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+
 /* -----------------------------------------------------------------------------------------*/
 /*  function Partioning()                                                                   */
 /*  Purpose: Calculate the partioning factors and correct them for nutrient or water stress */ 

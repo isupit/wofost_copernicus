@@ -443,6 +443,9 @@ typedef struct WEATHER {
         size_t nlat;
         size_t nlon;
         size_t ntime;
+        float **tsum1_grid; /* <<< ADDED: To store gridded TSM1 data */
+        float **tsum2_grid; /* <<< ADDED: To store gridded TSM2 data */
+        float **sowing_date_grid; 
         struct WEATHER *next;
         } Weather;
 Weather *Meteo; /* Place holder for the meteo filenames and lat/lon */

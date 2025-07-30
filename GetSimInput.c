@@ -45,8 +45,8 @@ int GetSimInput(char *list)
             continue;
         }
         
-        sscanf(line,"%s %s %s %s %s %s %d %s" ,
-            path, cf, sf, mf, site, start, &Emergence, output);
+        sscanf(line,"%s %s %s %s %s %d %s" ,
+            path, cf, sf, mf, site, &Emergence, output);
         
         memset(cropfile,'\0',MAX_STRING);
         memset(sitefile,'\0',MAX_STRING);

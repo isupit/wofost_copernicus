@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> // +++ ADDED for strdup
+#include <string.h>
 #include <netcdf.h>
 #include "wofost.h"
 #include "extern.h"
-#include "input_griddata.h" // <<< MODIFIED: Header name changed
+#include "input_griddata.h" 
 
 /* A simple error handling function for NetCDF calls. */
 void handle_grid_nc_error(int status) { // <<< MODIFIED: Renamed for clarity
@@ -20,10 +20,10 @@ void handle_grid_nc_error(int status) { // <<< MODIFIED: Renamed for clarity
  */
 void GetGridData(Weather *meteo, char *grid_nc_file, char *tsum1_var, char *tsum2_var, char *sow_var)
 {
-    int ncid, tsum1_id, tsum2_id, sow_date_id; // +++ MODIFIED: sow_date_id (float, not string)
+    int ncid, tsum1_id, tsum2_id, sow_date_id; 
     size_t lat_len, lon_len;
     double *temp_tsum1, *temp_tsum2;
-    double *temp_sow_dates; // +++ MODIFIED: Changed to double* for float data
+    double *temp_sow_dates; 
     size_t i, j;
 
     printf("Reading gridded data from %s...\n", grid_nc_file);
@@ -39,17 +39,14 @@ void GetGridData(Weather *meteo, char *grid_nc_file, char *tsum1_var, char *tsum
     handle_grid_nc_error(nc_inq_varid(ncid, tsum2_var, &tsum2_id));
     handle_grid_nc_error(nc_inq_varid(ncid, sow_var, &sow_date_id));
 
-    /* Allocate memory for 2D arrays in the Meteo struct */
-    // Tsum allocation remains the same...
+    /* Allocate memory for 2D crop arrays in the Meteo struct */
     meteo->tsum1_grid = malloc(meteo->nlat * sizeof(float *));
     meteo->tsum2_grid = malloc(meteo->nlat * sizeof(float *));
-    // +++ MODIFIED: Allocate for sowing_date_grid as float**
     meteo->sowing_date_grid = malloc(meteo->nlat * sizeof(float *));
 
     for (i = 0; i < meteo->nlat; i++) {
         meteo->tsum1_grid[i] = malloc(meteo->nlon * sizeof(float));
         meteo->tsum2_grid[i] = malloc(meteo->nlon * sizeof(float));
-        // +++ MODIFIED
         meteo->sowing_date_grid[i] = malloc(meteo->nlon * sizeof(float));
     }
     
@@ -62,14 +59,13 @@ void GetGridData(Weather *meteo, char *grid_nc_file, char *tsum1_var, char *tsum
     /* Read the data */
     handle_grid_nc_error(nc_get_var_double(ncid, tsum1_id, temp_tsum1));
     handle_grid_nc_error(nc_get_var_double(ncid, tsum2_id, temp_tsum2));
-    handle_grid_nc_error(nc_get_var_double(ncid, sow_date_id, temp_sow_dates)); // +++ MODIFIED: nc_get_var_double
+    handle_grid_nc_error(nc_get_var_double(ncid, sow_date_id, temp_sow_dates)); 
 
     /* Copy data from flat temp arrays to 2D arrays */
     for (i = 0; i < meteo->nlat; i++) {
         for (j = 0; j < meteo->nlon; j++) {
             meteo->tsum1_grid[i][j] = (float)temp_tsum1[i * meteo->nlon + j];
             meteo->tsum2_grid[i][j] = (float)temp_tsum2[i * meteo->nlon + j];
-            // +++ MODIFIED: Cast to float (no string handling)
             meteo->sowing_date_grid[i][j] = (float)temp_sow_dates[i * meteo->nlon + j];
         }
     }
@@ -77,20 +73,17 @@ void GetGridData(Weather *meteo, char *grid_nc_file, char *tsum1_var, char *tsum
     /* Clean up temporary arrays */
     free(temp_tsum1);
     free(temp_tsum2);
-    // +++ MODIFIED: Simple free (no nc_free_string)
     free(temp_sow_dates);
     
     handle_grid_nc_error(nc_close(ncid));
     printf("Spatially-variable grid data loaded successfully.\n");
 }
 
-/*
- * CLEANGRIDDATA: Frees the memory allocated for all grid data.
- */
-void CleanGridData(Weather *meteo) // <<< MODIFIED: Renamed function
+
+void CleanGridData(Weather *meteo) 
 {
     size_t i;
-    // Tsum cleanup remains the same...
+    // Tsum cleanup
     if (meteo->tsum1_grid != NULL) { 
         for (i = 0; i < meteo->nlat; i++) {
             free(meteo->tsum1_grid[i]);
@@ -106,7 +99,7 @@ void CleanGridData(Weather *meteo) // <<< MODIFIED: Renamed function
         meteo->tsum2_grid = NULL;
     }
 
-    // +++ MODIFIED: Free the sowing date grid (no inner string frees)
+    // Free the sowing date grid 
     if (meteo->sowing_date_grid != NULL) {
         for (i = 0; i < meteo->nlat; i++) {
             free(meteo->sowing_date_grid[i]);

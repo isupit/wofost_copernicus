@@ -2,13 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <netcdf.h>
-#include "extern.h"      // Assuming this contains Latitude, Longitude etc.
-#include "wofost.h"      // Assuming this contains Crop, Grid, Moment() etc.
+#include "extern.h"      
+#include "wofost.h"      
 #include "output_netcdf.h"
 
-/*
- * A simple error handling function for NetCDF calls.
- */
+/* Error handling function for NetCDF calls */
 void handle_nc_error(int status) {
     if (status != NC_NOERR) {
         fprintf(stderr, "%s\n", nc_strerror(status));
@@ -16,9 +14,7 @@ void handle_nc_error(int status) {
     }
 }
 
-/*
- * SETUPNETCDF: Creates and defines the structure of the output NetCDF file.
- */
+/* SetupNetCDF: Creates and defines the structure of the output NetCDF file */
 int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, char *tsum1_var, char *tsum2_var, char *sow_var)
 {
     int dimids[2]; // To hold dimension IDs [lat, lon]
@@ -87,30 +83,27 @@ int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, char *tsum1_var,
     /* End define mode */
     handle_nc_error(nc_enddef(nc->ncid));
 
-    /* --- Write coordinate data (since they don't change) --- */
+    /* --- Write coordinate data --- */
     handle_nc_error(nc_put_var_double(nc->ncid, nc->lat_id, Latitude));
     handle_nc_error(nc_put_var_double(nc->ncid, nc->lon_id, Longitude));
 
     return NC_NOERR;
 }
 
-/*
- * WRITEOUTPUTTONETCDF: Calculates values and writes them for the current grid cell.
- */
+
 void WriteOutputToNetCDF(NcFile *nc)
 {
     float ave, adev, sdev, var, skew, curt, lngth;
     int i;
     
-    /* start defines the [lat, lon] coordinate where we want to write */
+    /* Start defines the [lat, lon] coordinate where we want to write */
     size_t start[2];
     start[0] = Lat;
     start[1] = Lon;
     
     /* Only write data if the simulation was successful */
     if (Crop->Seasons > 2) {
-        /* --- Perform Calculations --- */
-        
+
         lngth = 0;
         for (i = 1; i <= Crop->Seasons; i++) {
             lngth += Grid->length[i];
@@ -119,17 +112,14 @@ void WriteOutputToNetCDF(NcFile *nc)
         
         Moment(Grid->twso, Crop->Seasons, &ave, &adev, &sdev, &var, &skew, &curt);
 
-        /* --- Write each variable to its place in the NetCDF file --- */
-        
-        // Convert "MM-DD" from Grid->start back to dekad (float)
+        /* --- Write each variable to the NetCDF file --- */
         float sowing_dekad;
         int month, day;
         if (sscanf(Grid->start, "%d-%d", &month, &day) == 2) {
-            // Approximate dekad: (month-1)*3 + ceil(day/10)
             int subdek = (day <= 10) ? 1 : (day <= 20) ? 2 : 3;
             sowing_dekad = (float)((month - 1) * 3 + subdek);
         } else {
-            sowing_dekad = -9999.f; // Use _FillValue for invalid format
+            sowing_dekad = -9999.f; 
         }
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->sowing_id, start, &sowing_dekad));
         
@@ -146,9 +136,6 @@ void WriteOutputToNetCDF(NcFile *nc)
     }
 }
 
-/*
- * CLOSENETCDF: Closes the NetCDF file.
- */
 void CloseNetCDF(NcFile *nc)
 {
     handle_nc_error(nc_close(nc->ncid));

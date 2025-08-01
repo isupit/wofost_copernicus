@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <netcdf.h>
 
-/* * This struct will hold the NetCDF IDs for the file and all variables.
- * This makes it easy to pass them between functions.
- */
+/* This struct will hold the NetCDF IDs for the file and all variables. */
 typedef struct {
     int ncid;
     int lat_id, lon_id;
@@ -15,13 +13,11 @@ typedef struct {
     int skew_id, curt_id, seasons_id;
 } NcFile;
 
-/* Function Prototypes */
-
+/* --- Function Prototypes --- */
 /* Initializes the NetCDF file, defines dimensions and variables. */
 int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, char *tsum1_var, char *tsum2_var, char *sow_var);
 
 /* Writes the output for a single grid cell to the NetCDF file. */
-/* MODIFIED: Signature simplified. No longer needs TSumData. */
 void WriteOutputToNetCDF(NcFile *nc);
 
 /* Closes the NetCDF file. */

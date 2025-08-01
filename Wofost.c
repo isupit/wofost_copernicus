@@ -5,7 +5,7 @@
 #include "wofost.h"
 #include "extern.h"
 #include "output_netcdf.h"
-#include "input_griddata.h"   /* <<< ADDED: Include for TSM input functions */
+#include "input_griddata.h"
 
 int main(int argc, char **argv)
 {
@@ -25,11 +25,14 @@ int main(int argc, char **argv)
     char meteolist[MAX_STRING]; 
     char name[MAX_STRING];      
     char name_old[MAX_STRING]; 
-    char grid_data_file[MAX_STRING]; // +++ ADD THIS LINE TO DECLARE THE VARIABLE
-    char tsum1_var[MAX_STRING]; // +++ ADDED: For dynamic tsum1 variable name
-    char tsum2_var[MAX_STRING]; // +++ ADDED: For dynamic tsum2 variable name
-    char sow_var[MAX_STRING];   // +++ ADDED: For dynamic sowing variable name
-    char output_file[MAX_STRING]; // +++ ADDED: For dynamic output filename
+
+    /* --- Variable names for gridded crop data input --- */
+    char grid_data_file[MAX_STRING];
+    char tsum1_var[MAX_STRING]; 
+    char tsum2_var[MAX_STRING]; 
+    char sow_var[MAX_STRING];  
+
+    char output_file[MAX_STRING]; /* Dynamic output filename */
 
     Step = 1.; 
 
@@ -41,26 +44,27 @@ int main(int argc, char **argv)
     }
     if (strlen(argv[1]) >= MAX_STRING) exit(0);
     if (strlen(argv[2]) >= MAX_STRING) exit(0);
-    if (strlen(argv[3]) >= MAX_STRING) exit(0); // <<< ADDED: Check for new argument
-    if (strlen(argv[4]) >= MAX_STRING) exit(0); // <<< ADDED: Check for tsum1_var
-    if (strlen(argv[5]) >= MAX_STRING) exit(0); // <<< ADDED: Check for tsum2_var
-    if (strlen(argv[6]) >= MAX_STRING) exit(0); // <<< ADDED: Check for sow_var
+    if (strlen(argv[3]) >= MAX_STRING) exit(0); // Check for input .nc file containing tsum1, tsum2 and sow date
+    if (strlen(argv[4]) >= MAX_STRING) exit(0); // Check for tsum1 variable name
+    if (strlen(argv[5]) >= MAX_STRING) exit(0); // Check for tsum2 variable name
+    if (strlen(argv[6]) >= MAX_STRING) exit(0); // Check for sowing date variable name
 
     memset(list, '\0', MAX_STRING);
     memset(meteolist, '\0', MAX_STRING); // empty the memory string
-    memset(grid_data_file, '\0', MAX_STRING); // <<< ADDED: Clear tsum_file string
-    memset(tsum1_var, '\0', MAX_STRING); // <<< ADDED
-    memset(tsum2_var, '\0', MAX_STRING); // <<< ADDED
-    memset(sow_var, '\0', MAX_STRING);   // <<< ADDED
+    memset(grid_data_file, '\0', MAX_STRING); 
+    memset(tsum1_var, '\0', MAX_STRING); 
+    memset(tsum2_var, '\0', MAX_STRING); 
+    memset(sow_var, '\0', MAX_STRING);   
 
     strncpy(list, argv[1], strlen(argv[1]));
     strncpy(meteolist, argv[2], strlen(argv[2]));
-    strncpy(grid_data_file, argv[3], strlen(argv[3])); // +++ ADDED: Copy the filename
-    strncpy(tsum1_var, argv[4], strlen(argv[4])); // <<< ADDED
-    strncpy(tsum2_var, argv[5], strlen(argv[5])); // <<< ADDED
-    strncpy(sow_var, argv[6], strlen(argv[6]));   // <<< ADDED
+    strncpy(grid_data_file, argv[3], strlen(argv[3])); 
+    strncpy(tsum1_var, argv[4], strlen(argv[4])); 
+    strncpy(tsum2_var, argv[5], strlen(argv[5])); 
+    strncpy(sow_var, argv[6], strlen(argv[6]));  
 
-    /* Construct dynamic output filename */
+    /* --- Construct dynamic output filename --- */
+    /* e.g. for the pair tsum1_e1a1, tsum2_e1a1 and sow_e1, the output filename becomes: wofost_results_e1a1_sow_e1.nc */
     char *tsum_suffix = strrchr(tsum1_var, '_');
     if (tsum_suffix && strlen(tsum_suffix) > 1) {
         tsum_suffix++; // Skip the '_'
@@ -135,7 +139,7 @@ int main(int argc, char **argv)
     // Go back to the beginning of the list
     Grid = initial;
 
-    /* <<< 1. SETUP NETCDF FILE >>> */
+    /* --- Setup NetCDF file --- */
     NcFile nc_output;
     printf("Setting up NetCDF output file '%s'...\n", output_file);
     SetupNetCDF(output_file, &nc_output, Meteo->nlat, Meteo->nlon, tsum1_var, tsum2_var, sow_var);
@@ -149,7 +153,7 @@ int main(int argc, char **argv)
             exit(0);
         }
 
-        /* <<< MODIFIED: Load ALL grid data AFTER meteo dimensions are known >>> */
+        /* Load crop grid data after meteo/weather dimensions are known */
         GetGridData(Meteo, grid_data_file, tsum1_var, tsum2_var, sow_var);
 
         printf("running %d - %d\n", Meteo->StartYear, Meteo->EndYear);
@@ -162,31 +166,40 @@ int main(int argc, char **argv)
                 {
                     continue;
                 }
-
-                /* <<< ADDED: Update TSM values for this grid cell >>> */
+                
+                /* Update Tsum values for this grid cell */
                 Grid = initial;
-                while(Grid) {
-                    // This part updates Tsum (existing logic)
+                while (Grid) {
+                    /* Update Tsum based on grid position */
                     Grid->crp->prm.TempSum1 = Meteo->tsum1_grid[Lat][Lon];
                     Grid->crp->prm.TempSum2 = Meteo->tsum2_grid[Lat][Lon];
                     
-                    // +++ MODIFIED: Convert dekad (float) to "MM-DD" string and set emergence flag
+                    /* Convert dekad (float) to "MM-DD" string and set emergence flag */
                     int dekad = (int)Meteo->sowing_date_grid[Lat][Lon];
                     if (dekad < 1 || dekad > 36) {
                         // Default or error handling; using Jan 1 as fallback
                         strncpy(Grid->start, "01-01", 5);
                         Grid->start[5] = '\0';
                     } else {
-                        int month = ((dekad - 1) / 3) + 1;
+                        int year = MeteoYear[0]; // Use first year of simulation as base
+                        int is_leap = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
+                        int month = ((dekad - 1) / 3) + 1; // Revert to 3 dekads per month
                         int subdek = ((dekad - 1) % 3) + 1;
-                        int day = (subdek == 1) ? 1 : (subdek == 2) ? 11 : 21;
+                        int days_in_month[12] = {31, is_leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+                        int day = 1 + (subdek - 1) * 10; // Start day of dekad (1, 11, 21)
+                
+                        // Cap day to valid month length
+                        if (day > days_in_month[month - 1]) {
+                            day = days_in_month[month - 1]; // Set to last day
+                            fprintf(stderr, "Warning: Adjusted day to %d for dekad %d in month %d (year %d)\n", day, dekad, month, year);
+                        }
+                
                         char date_str[6];
                         sprintf(date_str, "%02d-%02d", month, day);
                         strncpy(Grid->start, date_str, 5);
                         Grid->start[5] = '\0';
                     }
-                    Grid->emergence = 1; // Hardcoded based on original list.txt example
-                
+                    
                     Grid = Grid->next;
                 }
 
@@ -287,10 +300,9 @@ int main(int argc, char **argv)
                                     Grid->length[Crop->Seasons] = Crop->GrowthDay;
                                     if (Meteo->Seasons == Crop->Seasons)
                                     {
-                                        /* ORIGINAL OUTPUT TO TEXT FILE */
+                                        /* Original output to text file */
                                         Output(files[Grid->file]);
 
-                                        /* <<< 2. WRITE TO NETCDF FILE (SIMPLIFIED CALL) >>> */
                                         WriteOutputToNetCDF(&nc_output);
                                     }
 

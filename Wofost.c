@@ -174,26 +174,16 @@ int main(int argc, char **argv)
                     Grid->crp->prm.TempSum1 = Meteo->tsum1_grid[Lat][Lon];
                     Grid->crp->prm.TempSum2 = Meteo->tsum2_grid[Lat][Lon];
                     
-                    /* Convert dekad (float) to "MM-DD" string and set emergence flag */
+                    /* Convert dekad (float) to "MM-DD" string  */
                     int dekad = (int)Meteo->sowing_date_grid[Lat][Lon];
                     if (dekad < 1 || dekad > 36) {
                         // Default or error handling; using Jan 1 as fallback
                         strncpy(Grid->start, "01-01", 5);
                         Grid->start[5] = '\0';
                     } else {
-                        int year = MeteoYear[0]; // Use first year of simulation as base
-                        int is_leap = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
-                        int month = ((dekad - 1) / 3) + 1; // Revert to 3 dekads per month
+                        int month = ((dekad - 1) / 3) + 1;
                         int subdek = ((dekad - 1) % 3) + 1;
-                        int days_in_month[12] = {31, is_leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-                        int day = 1 + (subdek - 1) * 10; // Start day of dekad (1, 11, 21)
-                
-                        // Cap day to valid month length
-                        if (day > days_in_month[month - 1]) {
-                            day = days_in_month[month - 1]; // Set to last day
-                            fprintf(stderr, "Warning: Adjusted day to %d for dekad %d in month %d (year %d)\n", day, dekad, month, year);
-                        }
-                
+                        int day = (subdek == 1) ? 1 : (subdek == 2) ? 11 : 21;
                         char date_str[6];
                         sprintf(date_str, "%02d-%02d", month, day);
                         strncpy(Grid->start, date_str, 5);

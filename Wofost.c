@@ -7,6 +7,12 @@
 #include "output_netcdf.h"
 #include "input_griddata.h"
 
+
+// --- Global variables for optional flags ---
+// Initialize them to their default state (0 = off/false)
+int use_potential_nutrients = 0;
+int use_potential_evtra = 0;
+
 int main(int argc, char **argv)
 {
     FILE **files; 
@@ -36,32 +42,58 @@ int main(int argc, char **argv)
 
     Step = 1.; 
 
-    // MODIFIED: Check for 7 arguments now
-    if (argc != 7) {
-        fprintf(stderr, "Usage: %s <sim_list> <meteo_list> <grid_data_netcdf_file> <tsum1_var> <tsum2_var> <sow_var>\n", argv[0]);
-        fprintf(stderr, "Example: %s list.txt meteolist.txt all_griddata_cropped.nc avg_tsum1_e1e1 avg_tsum2_e1e1 sow_e1\n", argv[0]);
+    // We need at least 7 (program name + 6 mandatory args).
+    // We allow up to 9 (program name + 6 mandatory + 2 optional).
+    if (argc < 7 || argc > 9) {
+        // --- MODIFIED: Updated Usage message ---
+        fprintf(stderr, "Usage: %s <sim_list> <meteo_list> <grid_data> <tsum1_var> <tsum2_var> <sow_var> [--use-potential-nutrients] [--use-potential-evtra]\n", argv[0]);
+        fprintf(stderr, "Example: %s list.txt meteolist.txt all_griddata.nc avg_tsum1_e1e1 avg_tsum2_e1e1 sow_e1 --use-potential-nutrients\n", argv[0]);
         exit(0);
     }
+
+    // These checks can remain the same
     if (strlen(argv[1]) >= MAX_STRING) exit(0);
     if (strlen(argv[2]) >= MAX_STRING) exit(0);
-    if (strlen(argv[3]) >= MAX_STRING) exit(0); // Check for input .nc file containing tsum1, tsum2 and sow date
-    if (strlen(argv[4]) >= MAX_STRING) exit(0); // Check for tsum1 variable name
-    if (strlen(argv[5]) >= MAX_STRING) exit(0); // Check for tsum2 variable name
-    if (strlen(argv[6]) >= MAX_STRING) exit(0); // Check for sowing date variable name
+    if (strlen(argv[3]) >= MAX_STRING) exit(0);
+    if (strlen(argv[4]) >= MAX_STRING) exit(0);
+    if (strlen(argv[5]) >= MAX_STRING) exit(0);
+    if (strlen(argv[6]) >= MAX_STRING) exit(0);
 
     memset(list, '\0', MAX_STRING);
-    memset(meteolist, '\0', MAX_STRING); // empty the memory string
+    memset(meteolist, '\0', MAX_STRING);
     memset(grid_data_file, '\0', MAX_STRING); 
     memset(tsum1_var, '\0', MAX_STRING); 
     memset(tsum2_var, '\0', MAX_STRING); 
-    memset(sow_var, '\0', MAX_STRING);   
+    memset(sow_var, '\0', MAX_STRING);
 
+    // --- UNCHANGED: Parse the 6 mandatory arguments first ---
     strncpy(list, argv[1], strlen(argv[1]));
     strncpy(meteolist, argv[2], strlen(argv[2]));
     strncpy(grid_data_file, argv[3], strlen(argv[3])); 
     strncpy(tsum1_var, argv[4], strlen(argv[4])); 
     strncpy(tsum2_var, argv[5], strlen(argv[5])); 
-    strncpy(sow_var, argv[6], strlen(argv[6]));  
+    strncpy(sow_var, argv[6], strlen(argv[6]));
+
+    // --- MODIFIED: Loop through the OPTIONAL arguments and check for your specific flags ---
+    for (int i = 7; i < argc; i++) {
+        if (strcmp(argv[i], "--use-potential-nutrients") == 0) {
+            use_potential_nutrients = 1; // Set flag to true
+        } else if (strcmp(argv[i], "--use-potential-evtra") == 0) {
+            use_potential_evtra = 1; // Set flag to true
+        } else {
+            // If the argument is unknown, print an error and exit
+            fprintf(stderr, "Error: Unknown optional argument '%s'\n", argv[i]);
+            fprintf(stderr, "Usage: %s <sim_list> <meteo_list> <grid_data> <tsum1_var> <tsum2_var> <sow_var> [--use-potential-nutrients] [--use-potential-evtra]\n", argv[0]);
+            exit(1);
+        }
+    }
+
+    // --- MODIFIED: You can now check the flags later in your code ---
+    printf("\n--- Configuration Summary ---\n");
+    printf("Mandatory arguments loaded successfully.\n");
+    printf("Optional flag --use-potential-nutrients set: %s\n", use_potential_nutrients ? "Yes" : "No");
+    printf("Optional flag --use-potential-evtra set: %s\n", use_potential_evtra ? "Yes" : "No");
+    printf("---------------------------\n\n");
 
     /* --- Construct dynamic output filename --- */
     /* e.g. for the pair tsum1_e1a1, tsum2_e1a1 and sow_e1, the output filename becomes: wofost_results_e1a1_sow_e1.nc */

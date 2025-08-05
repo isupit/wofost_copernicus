@@ -38,7 +38,9 @@ float sweaf(){
 /* -----------------------------------------------------------------*/
 /*  function EvapTra()                                              */
 /*  Purpose: Calculates the water stress and the transpiration rate */
-/* -----------------------------------------------------------------*/     
+/* -----------------------------------------------------------------*/   
+extern int use_potential_evtra;
+
 void EvapTra() {   
     float CriticalSoilMoisture;
     float KDiffuse;
@@ -93,8 +95,11 @@ void EvapTra() {
     }
     
     WatBal->WaterStress = MoistureStress * OxygenStress;
-    //WatBal->WaterStress = 1.;
-     
+    
+    if(use_potential_evtra) {
+        WatBal->WaterStress = 1.;
+    }
+
     WatBal->rt.Transpiration = WatBal->WaterStress * Evtra.MaxTranspiration;
     }
 

@@ -8,6 +8,8 @@
 /*  function NutritionINDX()                                           */
 /*  Purpose: To compute N,P,K Nutrition Index (-)                      */
 /* --------------------------------------------------------------------*/
+extern int use_potential_nutrients;
+
 void NutritionINDX()
 {    
     float VegetativeMass;
@@ -75,10 +77,11 @@ void NutritionINDX()
         Crop->K_st.Indx = tiny;
     }
 
-   //Crop->N_st.Indx = 1.0;
-   //Crop->P_st.Indx = 1.0;
-   //Crop->K_st.Indx = 1.0;
-   
+    if(use_potential_nutrients) {
+        Crop->N_st.Indx = 1.0;
+        Crop->P_st.Indx = 1.0;
+        Crop->K_st.Indx = 1.0;
+    }
    
     Crop->NPK_Indx = (Crop->N_st.Indx < Crop->P_st.Indx) ? Crop->N_st.Indx : Crop->P_st.Indx;
     Crop->NPK_Indx = (Crop->NPK_Indx < Crop->K_st.Indx) ? Crop->NPK_Indx : Crop->K_st.Indx;

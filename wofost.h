@@ -3,8 +3,7 @@
 
 #include <time.h>
 
-#define NR_VARIABLES_CRP        66
-//#define NR_VARIABLES_CRP	67
+#define NR_VARIABLES_CRP	67
 #define NR_TABLES_CRP   	22
 #define NR_VARIABLES_SITE       12
 #define NR_TABLES_SITE          1

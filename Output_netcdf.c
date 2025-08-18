@@ -15,9 +15,9 @@ void handle_nc_error(int status) {
 }
 
 /* SetupNetCDF: Creates and defines the structure of the output NetCDF file */
-int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, char *tsum1_var, char *tsum2_var, char *sow_var)
+int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, int nseasons, char *tsum1_var, char *tsum2_var, char *sow_var)
 {
-    int dimids[2]; // To hold dimension IDs [lat, lon]
+    int dimids[3]; // To hold dimension IDs [lat, lon, year]
 
     /* Create the NetCDF file, overwriting if it exists */
     handle_nc_error(nc_create(filename, NC_CLOBBER | NC_NETCDF4, &nc->ncid));
@@ -30,9 +30,15 @@ int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, char *tsum1_var,
     /* --- Define Dimensions --- */
     handle_nc_error(nc_def_dim(nc->ncid, "lat", nlat, &nc->lat_id));
     handle_nc_error(nc_def_dim(nc->ncid, "lon", nlon, &nc->lon_id));
-    
-    dimids[0] = nc->lat_id;
-    dimids[1] = nc->lon_id;
+    handle_nc_error(nc_def_dim(nc->ncid, "time", nseasons, &nc->time_id));    
+
+    dimids[0] = nc->time_id;
+    dimids[1] = nc->lat_id;
+    dimids[2] = nc->lon_id;
+
+    handle_nc_error(nc_def_var(nc->ncid, "Applied_N_Yearly", NC_FLOAT, 3, dimids, &nc->applied_n_yearly_id));
+    handle_nc_error(nc_put_att_text(nc->ncid, nc->applied_n_yearly_id, "long_name", strlen("Yearly N fertilizer application"), "Yearly N fertilizer application"));
+    handle_nc_error(nc_put_att_text(nc->ncid, nc->applied_n_yearly_id, "units", strlen("kg N/ha"), "kg N/ha"));
 
     /* --- Define Coordinate Variables (lat, lon) --- */
     handle_nc_error(nc_def_var(nc->ncid, "lat", NC_DOUBLE, 1, &nc->lat_id, &nc->lat_id));
@@ -112,6 +118,17 @@ void WriteOutputToNetCDF(NcFile *nc)
         
         Moment(Grid->twso, Crop->Seasons, &ave, &adev, &sdev, &var, &skew, &curt);
 
+        size_t start3d[3];
+        size_t count3d[3];
+
+        start3d[0] = 0;                   /* Start at the beginning of the time dimension */
+        start3d[1] = Lat;                 /* Current latitude index */
+        start3d[2] = Lon;                 /* Current longitude index */
+
+        count3d[0] = Crop->Seasons;       /* Write a block of N seasons long */
+        count3d[1] = 1;                   /* Write a block 1 latitude wide */
+        count3d[2] = 1;                   /* Write a block 1 longitude wide */
+
         /* --- Write each variable to the NetCDF file --- */
         float sowing_dekad;
         int month, day;
@@ -123,6 +140,8 @@ void WriteOutputToNetCDF(NcFile *nc)
         }
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->sowing_id, start, &sowing_dekad));
         
+        handle_nc_error(nc_put_vara_float(nc->ncid, nc->applied_n_yearly_id, start3d, count3d, &Grid->applied_n[1]));
+
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->length_id, start, &lngth));
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->tsm1_id, start, &Crop->prm.TempSum1));
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->tsm2_id, start, &Crop->prm.TempSum2));

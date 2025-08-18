@@ -6,7 +6,7 @@
 #include "extern.h"
 #include "output_netcdf.h"
 #include "input_griddata.h"
-
+#include "input_fertilizer.h"
 
 // --- Global variables for optional flags ---
 // Initialize them to their default state (0 = off/false)
@@ -37,17 +37,18 @@ int main(int argc, char **argv)
     char tsum1_var[MAX_STRING]; 
     char tsum2_var[MAX_STRING]; 
     char sow_var[MAX_STRING];  
+    
+    char n_fert_file[MAX_STRING];
 
     char output_file[MAX_STRING]; /* Dynamic output filename */
 
     Step = 1.; 
 
     // We need at least 7 (program name + 6 mandatory args).
-    // We allow up to 9 (program name + 6 mandatory + 2 optional).
-    if (argc < 7 || argc > 9) {
-        // --- MODIFIED: Updated Usage message ---
-        fprintf(stderr, "Usage: %s <sim_list> <meteo_list> <grid_data> <tsum1_var> <tsum2_var> <sow_var> [--use-potential-nutrients] [--use-potential-evtra]\n", argv[0]);
-        fprintf(stderr, "Example: %s list.txt meteolist.txt all_griddata.nc avg_tsum1_e1e1 avg_tsum2_e1e1 sow_e1 --use-potential-nutrients\n", argv[0]);
+    // Allow up to 11 now.
+    if (argc < 7 || argc > 11) {
+        fprintf(stderr, "Usage: %s <sim_list> <meteo_list> <grid_data> <tsum1_var> <tsum2_var> <sow_var> [--use-potential-nutrients] [--use-potential-evtra] [--n-fertilizer-nc <file.nc>]\n", argv[0]);
+        fprintf(stderr, "Example: %s list.txt meteolist.txt all_griddata.nc avg_tsum1_e1e1 avg_tsum2_e1e1 sow_e1 --n-fertilizer-nc fertilizer.nc\n", argv[0]);
         exit(0);
     }
 
@@ -65,8 +66,10 @@ int main(int argc, char **argv)
     memset(tsum1_var, '\0', MAX_STRING); 
     memset(tsum2_var, '\0', MAX_STRING); 
     memset(sow_var, '\0', MAX_STRING);
+    memset(n_fert_file, '\0', MAX_STRING);
 
-    // --- UNCHANGED: Parse the 6 mandatory arguments first ---
+
+    // --- Parse the 6 mandatory arguments first ---
     strncpy(list, argv[1], strlen(argv[1]));
     strncpy(meteolist, argv[2], strlen(argv[2]));
     strncpy(grid_data_file, argv[3], strlen(argv[3])); 
@@ -74,16 +77,24 @@ int main(int argc, char **argv)
     strncpy(tsum2_var, argv[5], strlen(argv[5])); 
     strncpy(sow_var, argv[6], strlen(argv[6]));
 
-    // --- MODIFIED: Loop through the OPTIONAL arguments and check for your specific flags ---
+    // --- Loop through the OPTIONAL arguments and check for your specific flags ---
     for (int i = 7; i < argc; i++) {
         if (strcmp(argv[i], "--use-potential-nutrients") == 0) {
             use_potential_nutrients = 1; // Set flag to true
         } else if (strcmp(argv[i], "--use-potential-evtra") == 0) {
             use_potential_evtra = 1; // Set flag to true
+        } else if (strcmp(argv[i], "--n-fertilizer-nc") == 0) {
+            if (i + 1 < argc) { // Make sure a filename is provided
+                strncpy(n_fert_file, argv[i + 1], MAX_STRING - 1);
+                i++; // Increment i to skip the filename in the next iteration
+            } else {
+                fprintf(stderr, "Error: --n-fertilizer-nc flag requires a filename.\n");
+                exit(1);
+            }
         } else {
             // If the argument is unknown, print an error and exit
             fprintf(stderr, "Error: Unknown optional argument '%s'\n", argv[i]);
-            fprintf(stderr, "Usage: %s <sim_list> <meteo_list> <grid_data> <tsum1_var> <tsum2_var> <sow_var> [--use-potential-nutrients] [--use-potential-evtra]\n", argv[0]);
+            fprintf(stderr, "Usage: %s <sim_list> <meteo_list> <grid_data> <tsum1_var> <tsum2_var> <sow_var> [--use-potential-nutrients] [--use-potential-evtra] [--n-fertilizer-nc <file.nc>]\n", argv[0]);
             exit(1);
         }
     }
@@ -93,6 +104,7 @@ int main(int argc, char **argv)
     printf("Mandatory arguments loaded successfully.\n");
     printf("Optional flag --use-potential-nutrients set: %s\n", use_potential_nutrients ? "Yes" : "No");
     printf("Optional flag --use-potential-evtra set: %s\n", use_potential_evtra ? "Yes" : "No");
+    printf("Optional N Fertilizer NetCDF provided: %s\n", strlen(n_fert_file) > 0 ? n_fert_file : "No");
     printf("---------------------------\n\n");
 
     /* --- Construct dynamic output filename --- */
@@ -174,7 +186,7 @@ int main(int argc, char **argv)
     /* --- Setup NetCDF file --- */
     NcFile nc_output;
     printf("Setting up NetCDF output file '%s'...\n", output_file);
-    SetupNetCDF(output_file, &nc_output, Meteo->nlat, Meteo->nlon, tsum1_var, tsum2_var, sow_var);
+    SetupNetCDF(output_file, &nc_output, Meteo->nlat, Meteo->nlon, Meteo->Seasons, tsum1_var, tsum2_var, sow_var);
 
     while (Meteo)
     {
@@ -183,6 +195,15 @@ int main(int argc, char **argv)
         {
             fprintf(stderr, "Cannot get meteo data.\n");
             exit(0);
+        }
+
+        /* ---  Load fertilizer data if provided --- */
+        if (strlen(n_fert_file) > 0) {
+
+            if (GetFertilizerData(Meteo, n_fert_file, "Total_inorg_N_application_rate") != 1) {
+                fprintf(stderr, "Could not load N fertilizer data.\n");
+                exit(1);
+            }
         }
 
         /* Load crop grid data after meteo/weather dimensions are known */
@@ -240,6 +261,48 @@ int main(int argc, char **argv)
                 for (Day = 0; Day < Meteo->ntime; Day++)
                 // assume that the series start January first 
                 {
+
+                    /* --- Check for new year to update fertilizer for this grid cell --- */
+                    if (strlen(n_fert_file) > 0 && MeteoDay[Day] == 1) {
+                        int current_year = MeteoYear[Day];
+                        int year_index = current_year - Meteo->n_fert_start_year;
+                    
+                        if (year_index >= 0 && year_index < Meteo->n_fert_time_len) {
+                            // Get the annual fertilizer amount for the current year and grid cell
+                            float annual_n_amount = Meteo->n_fertilizer_grid[year_index][Lat][Lon];
+                    
+                            // Get the sowing date (month and day) for the current grid cell
+                            int dekad = (int)Meteo->sowing_date_grid[Lat][Lon];
+                            int sow_month = 1, sow_day = 1; // Default fallback
+                            if (dekad >= 1 && dekad <= 36) {
+                                sow_month = ((dekad - 1) / 3) + 1;
+                                int subdek = ((dekad - 1) % 3) + 1;
+                                sow_day = (subdek == 1) ? 1 : (subdek == 2) ? 11 : 21;
+                            }
+                    
+                            // Loop through all SimUnits and update their management data
+                            SimUnit *tempGrid = initial;
+                            while (tempGrid) {
+                                if (tempGrid->mng->N_Fert_table != NULL) {
+                                    // --- Reprogram the FIRST application event ---
+                                    // Set the date to the sowing date
+                                    tempGrid->mng->N_Fert_table->month = sow_month;
+                                    tempGrid->mng->N_Fert_table->day = sow_day;
+                                    // Set the amount to the FULL annual total
+                                    tempGrid->mng->N_Fert_table->amount = annual_n_amount;
+                    
+                                    // --- Disable all SUBSEQUENT application events ---
+                                    TABLE_D *next_app = tempGrid->mng->N_Fert_table->next;
+                                    while (next_app != NULL) {
+                                        next_app->amount = 0.0;
+                                        next_app = next_app->next;
+                                    }
+                                }
+                                tempGrid = tempGrid->next;
+                            }
+                        }
+                    }
+
                     Grid = initial;
 
                     /* Set the date struct */ 
@@ -358,7 +421,11 @@ int main(int argc, char **argv)
 
         head = Meteo;
         Meteo = Meteo->next;
-        CleanGridData(head); // <<< MODIFIED: Replaces CleanTSumGrids
+        CleanGridData(head); 
+        /* --- Clean up fertilizer data --- */
+        if (strlen(n_fert_file) > 0) {
+            CleanFertilizerData(head);
+        }
         CleanMeteo(head); 
         free(head);
     }

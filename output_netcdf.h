@@ -7,16 +7,16 @@
 /* This struct will hold the NetCDF IDs for the file and all variables. */
 typedef struct {
     int ncid;
-    int lat_id, lon_id;
+    int lat_id, lon_id, time_id;
     int sowing_id, length_id, tsm1_id, tsm2_id;
     int avg_id, adev_id, sdev_id, var_id;
     int skew_id, curt_id, seasons_id;
+    int applied_n_yearly_id; 
 } NcFile;
 
 /* --- Function Prototypes --- */
 /* Initializes the NetCDF file, defines dimensions and variables. */
-int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, char *tsum1_var, char *tsum2_var, char *sow_var);
-
+int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, int nseasons, char *tsum1_var, char *tsum2_var, char *sow_var);
 /* Writes the output for a single grid cell to the NetCDF file. */
 void WriteOutputToNetCDF(NcFile *nc);
 

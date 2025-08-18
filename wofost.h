@@ -416,7 +416,8 @@ typedef struct SIMUNIT {
         /* Max 100 years */
         float twso[101];
         float length[101];
-                
+        float applied_n[101];
+
         struct SIMUNIT *next;
         } SimUnit; 
 SimUnit *Grid;
@@ -448,6 +449,11 @@ typedef struct WEATHER {
         float **tsum1_grid; 
         float **tsum2_grid; 
         float **sowing_date_grid; 
+
+        float ***n_fertilizer_grid; // Pointer for [time][lat][lon] fertilizer data
+        int n_fert_start_year;      // Start year of the fertilizer data
+        size_t n_fert_time_len;     // Length of the fertilizer time dimension for cleanup
+
 
         struct WEATHER *next;
         } Weather;

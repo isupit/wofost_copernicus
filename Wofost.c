@@ -197,6 +197,9 @@ int main(int argc, char **argv)
             exit(0);
         }
 
+        /* Load crop grid data after meteo/weather dimensions are known */
+        GetGridData(Meteo, grid_data_file, tsum1_var, tsum2_var, sow_var);
+
         /* ---  Load fertilizer data if provided --- */
         if (strlen(n_fert_file) > 0) {
 
@@ -205,9 +208,6 @@ int main(int argc, char **argv)
                 exit(1);
             }
         }
-
-        /* Load crop grid data after meteo/weather dimensions are known */
-        GetGridData(Meteo, grid_data_file, tsum1_var, tsum2_var, sow_var);
 
         printf("running %d - %d\n", Meteo->StartYear, Meteo->EndYear);
 

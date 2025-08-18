@@ -16,13 +16,9 @@ void handle_nc_fert_error(int status) {
 
 
 int GetFertilizerData(Weather *meteo, char *filename, char *varname) {
-    int retval, ncid, varid;
+    int ncid, varid;
     int lat_dimid, lon_dimid, time_dimid;
     size_t lat_len, lon_len;
-    
-    // Assumes time units are "days since YYYY-01-01 00:00:00" or similar
-    char time_units[MAX_STRING];
-    int start_year;
 
     handle_nc_fert_error(nc_open(filename, NC_NOWRITE, &ncid));
 
@@ -41,10 +37,11 @@ int GetFertilizerData(Weather *meteo, char *filename, char *varname) {
         exit(1);
     }
 
+    // --- Set the start year ---
     meteo->n_fert_start_year = 1961;
     printf("Set fertilizer data start year to %d (hardcoded).\n", meteo->n_fert_start_year);
 
-    // --- Allocate memory for the fertilizer grid [time][lat][lon] ---
+    // --- Allocate memory for the final 3D fertilizer grid ---
     meteo->n_fertilizer_grid = malloc(meteo->n_fert_time_len * sizeof(*meteo->n_fertilizer_grid));
     for (size_t t = 0; t < meteo->n_fert_time_len; t++) {
         meteo->n_fertilizer_grid[t] = malloc(lat_len * sizeof(*meteo->n_fertilizer_grid[t]));
@@ -52,26 +49,31 @@ int GetFertilizerData(Weather *meteo, char *filename, char *varname) {
             meteo->n_fertilizer_grid[t][j] = malloc(lon_len * sizeof(*meteo->n_fertilizer_grid[t][j]));
         }
     }
-
-    // --- Read the data ---
+    
+    // --- Read the data one year (slice) at a time ---
+    printf("Reading N fertilizer variable '%s' from %s\n", varname, filename);
     handle_nc_fert_error(nc_inq_varid(ncid, varname, &varid));
 
-    printf("Reading N fertilizer variable '%s' from %s\n", varname, filename);
-    
-    // Read all data at once for efficiency
-    float *temp_data = malloc(meteo->n_fert_time_len * lat_len * lon_len * sizeof(float));
-    handle_nc_fert_error(nc_get_var_float(ncid, varid, temp_data));
+    size_t start[3] = {0, 0, 0};
+    size_t count[3] = {1, lat_len, lon_len};
+    float *temp_slice = malloc(lat_len * lon_len * sizeof(float));
 
-    // Distribute the flat array into the 3D pointer structure
     for (size_t t = 0; t < meteo->n_fert_time_len; t++) {
+        start[0] = t; // Set the time index for the current year
+
+    printf("DEBUG: Attempting to read fertilizer data for year index %zu\n", t); // <-- ADD THIS
+    handle_nc_fert_error(nc_get_vara_float(ncid, varid, start, count, temp_slice));
+    printf("DEBUG: Successfully read fertilizer data for year index %zu\n", t); // <-- ADD THIS
+
+        // Copy the 2D slice into the final 3D array
         for (size_t j = 0; j < lat_len; j++) {
             for (size_t k = 0; k < lon_len; k++) {
-                meteo->n_fertilizer_grid[t][j][k] = temp_data[t * (lat_len * lon_len) + j * lon_len + k];
+                meteo->n_fertilizer_grid[t][j][k] = temp_slice[j * lon_len + k];
             }
         }
     }
     
-    free(temp_data);
+    free(temp_slice);
     handle_nc_fert_error(nc_close(ncid));
 
     return 1;

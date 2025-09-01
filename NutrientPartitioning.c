@@ -35,10 +35,9 @@ void NutrientPartioning()
     K_avail = Site->st_K_tot + Site->rt_K_mins;
     
     
-    /* No nutrients are absorbed from the soil after development stage DevelopmentStageNLimit or */
-    /* when severe water shortage occurs                                           */
+    // No nutrients are absorbed when severe water shortage occurs                                           */
     NutrientLimit = 0.;
-    if (Crop->st.Development < Crop->prm.DevelopmentStageNLimit && WatBal->rt.Transpiration/Evtra.MaxTranspiration > 0.01)
+    if (WatBal->rt.Transpiration/Evtra.MaxTranspiration > 0.01)
         NutrientLimit = 1.;
     
     //N_Fix_rt= max(0.,Crop->N_rt.Uptake * Crop->prm.N_fixation / max(0.02, 1.-Crop->prm.N_fixation));

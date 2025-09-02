@@ -37,7 +37,7 @@ void NutrientPartioning()
     
     // No nutrients are absorbed when severe water shortage occurs                                           */
     NutrientLimit = 0.;
-    if (WatBal->rt.Transpiration/Evtra.MaxTranspiration > 0.01)
+    if (Crop->st.Development < Crop->prm.DevelopmentStageNLimit && WatBal->rt.Transpiration/Evtra.MaxTranspiration > 0.01)
         NutrientLimit = 1.;
     
     //N_Fix_rt= max(0.,Crop->N_rt.Uptake * Crop->prm.N_fixation / max(0.02, 1.-Crop->prm.N_fixation));
@@ -46,7 +46,7 @@ void NutrientPartioning()
     /* Nutrient uptake cannot be larger than the availability and is larger or equal to zero */
     Crop->N_rt.Uptake = fmax(0., ext_min((Total_N_demand - N_Fix_rt), N_avail, Crop->prm.N_UptakeMax)) * NutrientLimit/Step;
     Crop->P_rt.Uptake = fmax(0., ext_min(Total_P_demand, P_avail, Crop->prm.P_UptakeMax))* NutrientLimit/Step;
-    Crop->K_rt.Uptake = fmax(0.,ext_min(Total_K_demand, K_avail, Crop->prm.K_UptakeMax))* NutrientLimit/Step;
+    Crop->K_rt.Uptake = fmax(0., ext_min(Total_K_demand, K_avail, Crop->prm.K_UptakeMax))* NutrientLimit/Step;
     
     /* N uptake per crop organ kg ha-1 d-1*/
     if (Total_N_demand > tiny)

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <float.h>
+#include <math.h>
 #include "wofost.h"
 #include "extern.h"
 #include "output_netcdf.h"
@@ -172,6 +173,8 @@ int main(int argc, char **argv)
         {
             Grid->twso[i] = 0.0;
             Grid->length[i] = 0.0;
+            Grid->applied_n[i]= 0.0f;
+            Grid->cold_days[i] = 0;   /* NEW */
         }
 
         memset(name_old, '\0', MAX_STRING);                    
@@ -253,6 +256,8 @@ int main(int argc, char **argv)
                     {
                         Grid->twso[i] = 0.0;
                         Grid->length[i] = 0.0;
+                        Grid->applied_n[i] = 0.0f;
+                        Grid->cold_days[i] = 0;   // reset per grid cell
                         Grid->crp->Seasons = 1;
                     }
                     Grid = Grid->next;
@@ -288,7 +293,6 @@ int main(int argc, char **argv)
                                     // Set the date to the sowing date
                                     tempGrid->mng->N_Fert_table->month = sow_month;
                                     tempGrid->mng->N_Fert_table->day = sow_day;
-                                    // Set the amount to the FULL annual total
                                     tempGrid->mng->N_Fert_table->amount = annual_n_amount;
                     
                                     // --- Disable all SUBSEQUENT application events ---
@@ -297,6 +301,17 @@ int main(int argc, char **argv)
                                         next_app->amount = 0.0;
                                         next_app = next_app->next;
                                     }
+
+                                    int season_idx = (current_year - Meteo->StartYear) + 1;
+                                    if (season_idx >= 1 && season_idx <= Meteo->Seasons) {
+                                        /* store the *actual* annual N for this grid cell & season */
+                                        SimUnit *g = initial;
+                                        while (g) {
+                                            g->applied_n[season_idx] = annual_n_amount;
+                                            g = g->next;
+                                        }
+                                    }
+
                                 }
                                 tempGrid = tempGrid->next;
                             }
@@ -372,6 +387,16 @@ int main(int argc, char **argv)
 
                                     /* State calculations */ 
                                     IntegrationCrop();
+
+                                    /* Calendar-year counting of cold days while crop is juvenile */
+                                    if (Temp >= 0.0f && Temp <= 7.0f && Crop->st.Development <= 0.3f) {
+                                        /* 1-based year index like other outputs (StartYear -> index 1) */
+                                        int year_idx = MeteoYear[Day] - Meteo->StartYear + 1;
+                                        if (year_idx >= 1 && year_idx <= Meteo->Seasons) {
+                                            Grid->cold_days[year_idx] += 1;
+                                        }
+                                    }
+
                                     IntegrationWatBal();
                                     IntegrationNutrients();
 

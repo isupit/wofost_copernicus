@@ -12,6 +12,7 @@ typedef struct {
     int avg_id, adev_id, sdev_id, var_id;
     int skew_id, curt_id, seasons_id;
     int applied_n_yearly_id; 
+    int cold_days_yearly_id;   /* NEW */
 } NcFile;
 
 /* --- Function Prototypes --- */

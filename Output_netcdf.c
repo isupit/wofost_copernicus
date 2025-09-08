@@ -57,6 +57,16 @@ int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, int nseasons,
                                     strlen("Yearly N fertilizer application"), "Yearly N fertilizer application"));
     handle_nc_error(nc_put_att_text(nc->ncid, nc->applied_n_yearly_id, "units", strlen("kg N/ha"), "kg N/ha"));
 
+    handle_nc_error(nc_put_att_float(nc->ncid, nc->applied_n_yearly_id, "_FillValue", NC_FLOAT, 1, &(float){-9999.f}));
+
+    handle_nc_error(nc_def_var(nc->ncid, "ColdDays_Yearly", NC_INT, 3, dims_timelatlon, &nc->cold_days_yearly_id));
+    handle_nc_error(nc_put_att_text(nc->ncid, nc->cold_days_yearly_id, "long_name",
+    strlen("Days with 0<=T<=7 and DVS<=0.3 (per calendar year)"),
+    "Days with 0<=T<=7 and DVS<=0.3 (per calendar year)"));
+    handle_nc_error(nc_put_att_text(nc->ncid, nc->cold_days_yearly_id, "units",
+    strlen("days"), "days"));
+
+
     /* 2-D: lat,lon  (IMPORTANT: use dims_latlon, not the 3-D array) */
     handle_nc_error(nc_def_var(nc->ncid, "SowingDate", NC_FLOAT, 2, dims_latlon, &nc->sowing_id));
     handle_nc_error(nc_put_att_text(nc->ncid, nc->sowing_id, "long_name", strlen("Sowing date"), "Sowing date"));
@@ -93,7 +103,25 @@ void WriteOutputToNetCDF(NcFile *nc)
     start[0] = Lat;
     start[1] = Lon;
     
-    /* Only write data if the simulation was successful */
+    /* --- Always write sowing date and fertilizer series --- */
+    float sowing_dekad;
+    int month, day;
+    if (sscanf(Grid->start, "%d-%d", &month, &day) == 2) {
+        int subdek = (day <= 10) ? 1 : (day <= 20) ? 2 : 3;
+        sowing_dekad = (float)((month - 1) * 3 + subdek);
+    } else {
+        sowing_dekad = -9999.f;
+    }
+    handle_nc_error(nc_put_var1_float(nc->ncid, nc->sowing_id, start, &sowing_dekad));
+
+    /* Write the whole per-season series for this cell.
+       We stored seasons as 1-based; write [1..Meteo->Seasons] into [0..Meteo->Seasons-1]. */
+    size_t start3d[3] = {0, Lat, Lon};
+    size_t count3d[3] = { (size_t) Meteo->Seasons, 1, 1 };
+    handle_nc_error(nc_put_vara_float(nc->ncid, nc->applied_n_yearly_id, start3d, count3d, &Grid->applied_n[1]));
+    handle_nc_error(nc_put_vara_int(nc->ncid, nc->cold_days_yearly_id, start3d, count3d, &Grid->cold_days[1]));
+
+    /* Only write statistical yield outputs when enough seasons were simulated */
     if (Crop->Seasons > 2) {
 
         lngth = 0;
@@ -103,30 +131,6 @@ void WriteOutputToNetCDF(NcFile *nc)
         lngth /= Crop->Seasons;
         
         Moment(Grid->twso, Crop->Seasons, &ave, &adev, &sdev, &var, &skew, &curt);
-
-        size_t start3d[3];
-        size_t count3d[3];
-
-        start3d[0] = 0;                   /* Start at the beginning of the time dimension */
-        start3d[1] = Lat;                 /* Current latitude index */
-        start3d[2] = Lon;                 /* Current longitude index */
-
-        count3d[0] = Crop->Seasons;       /* Write a block of N seasons long */
-        count3d[1] = 1;                   /* Write a block 1 latitude wide */
-        count3d[2] = 1;                   /* Write a block 1 longitude wide */
-
-        /* --- Write each variable to the NetCDF file --- */
-        float sowing_dekad;
-        int month, day;
-        if (sscanf(Grid->start, "%d-%d", &month, &day) == 2) {
-            int subdek = (day <= 10) ? 1 : (day <= 20) ? 2 : 3;
-            sowing_dekad = (float)((month - 1) * 3 + subdek);
-        } else {
-            sowing_dekad = -9999.f; 
-        }
-        handle_nc_error(nc_put_var1_float(nc->ncid, nc->sowing_id, start, &sowing_dekad));
-        
-        handle_nc_error(nc_put_vara_float(nc->ncid, nc->applied_n_yearly_id, start3d, count3d, &Grid->applied_n[1]));
 
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->length_id, start, &lngth));
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->tsm1_id, start, &Crop->prm.TempSum1));

@@ -417,6 +417,7 @@ typedef struct SIMUNIT {
         float twso[101];
         float length[101];
         float applied_n[101];
+        int cold_days[101];
 
         struct SIMUNIT *next;
         } SimUnit; 

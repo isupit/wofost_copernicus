@@ -48,8 +48,7 @@ int main(int argc, char **argv)
 
     Step = 1.; 
 
-// FIXED: Initialize all variables to safe defaults
-    use_gridded_tsum = 0;
+    // Initialize all strings to empty
     memset(list, '\0', MAX_STRING);
     memset(meteolist, '\0', MAX_STRING);
     memset(grid_data_file, '\0', MAX_STRING); 
@@ -57,12 +56,12 @@ int main(int argc, char **argv)
     memset(tsum2_var, '\0', MAX_STRING); 
     memset(sow_var, '\0', MAX_STRING);
     memset(n_fert_file, '\0', MAX_STRING);
-
-    // FIXED: Improved argument parsing that handles flags in BOTH modes
+    
+    // IMPROVED: Flexible argument parsing that handles all modes
     if (argc < 3) {
         goto usage_error;
     }
-
+    
     // Always get the first two mandatory arguments
     if (strlen(argv[1]) >= MAX_STRING || strlen(argv[2]) >= MAX_STRING) {
         fprintf(stderr, "Error: Argument too long\n");
@@ -70,48 +69,73 @@ int main(int argc, char **argv)
     }
     strncpy(list, argv[1], strlen(argv[1]));
     strncpy(meteolist, argv[2], strlen(argv[2]));
-
-int arg_index = 3;  // Start parsing from argv[3]
-
-    // FIXED: Check if we have gridded TSUM mode (exactly 6 positional args before flags)
+    
+    // Parse remaining arguments based on content
+    int arg_idx = 3;
+    int tsum_provided = 0;
+    int sow_provided = 0;
+    int grid_file_provided = 0;
+    
     use_gridded_tsum = 0;
-    if (argc >= 7) {  // 2 mandatory + 4 gridded = 6 positional args minimum
-        // Check if argv[3] looks like a filename (not a flag)
-        if (strncmp(argv[3], "--", 2) != 0) {
-            // Check we have all 4 gridded arguments
-            if (argc < 7) {
-                fprintf(stderr, "Error: Gridded mode requires 6 positional arguments\n");
-                goto usage_error;
+    
+    // Parse positional arguments until we hit flags
+    while (arg_idx < argc && argv[arg_idx][0] != '-') {
+        if (!grid_file_provided) {
+            // First extra argument is the grid data file (if it looks like a filename)
+            if (strstr(argv[arg_idx], ".nc") != NULL || strstr(argv[arg_idx], ".nc4") != NULL) {
+                strncpy(grid_data_file, argv[arg_idx], strlen(argv[arg_idx]));
+                grid_file_provided = 1;
+            } else {
+                // Not a grid file, treat as sowing variable (mixed mode)
+                strncpy(sow_var, argv[arg_idx], strlen(argv[arg_idx]));
+                sow_provided = 1;
             }
-            
-            // Check string lengths for gridded arguments
-            if (strlen(argv[3]) >= MAX_STRING || strlen(argv[4]) >= MAX_STRING ||
-                strlen(argv[5]) >= MAX_STRING || strlen(argv[6]) >= MAX_STRING) {
-                fprintf(stderr, "Error: One of the gridded arguments is too long\n");
-                exit(1);
+        } else if (strstr(argv[arg_idx], "tsum") != NULL) {
+            // Arguments containing "tsum" are TSUM variables
+            if (tsum_provided == 0) {
+                strncpy(tsum1_var, argv[arg_idx], strlen(argv[arg_idx]));
+                tsum_provided++;
+            } else if (tsum_provided == 1) {
+                strncpy(tsum2_var, argv[arg_idx], strlen(argv[arg_idx]));
+                tsum_provided++;
             }
-            
-            // Parse the 4 gridded arguments
-            strncpy(grid_data_file, argv[3], strlen(argv[3])); 
-            strncpy(tsum1_var, argv[4], strlen(argv[4])); 
-            strncpy(tsum2_var, argv[5], strlen(argv[5])); 
-            strncpy(sow_var, argv[6], strlen(argv[6]));
-            use_gridded_tsum = 1;
-            
-            arg_index = 7;  // Next args are optional flags
+        } else if (strstr(argv[arg_idx], "sow") != NULL) {
+            // Arguments containing "sow" are sowing variables
+            strncpy(sow_var, argv[arg_idx], strlen(argv[arg_idx]));
+            sow_provided = 1;
         } else {
-            // argv[3] starts with "--", so it's a flag, use default mode
-            use_gridded_tsum = 0;
-            arg_index = 3;
+            // Unknown positional argument
+            fprintf(stderr, "Error: Unrecognized positional argument '%s'\n", argv[arg_idx]);
+            goto usage_error;
         }
-    } else {
-        // Less than 7 arguments, definitely default mode
-        use_gridded_tsum = 0;
-        arg_index = 3;  // Start parsing flags from argv[3]
+        arg_idx++;
     }
-
-    // FIXED: Parse optional flags from arg_index onwards (works for BOTH modes)
-    for (int i = arg_index; i < argc; i++) {
+    
+    // Determine mode based on what we found
+    if (tsum_provided == 2 && strlen(sow_var) > 0 && grid_file_provided) {
+        // Full gridded TSUM mode
+        use_gridded_tsum = 1;
+        printf("Full gridded mode: TSUM1=%s, TSUM2=%s, SOW=%s from %s\n", tsum1_var, tsum2_var, sow_var, grid_data_file);
+    } else if (strlen(sow_var) > 0 && grid_file_provided) {
+        // Mixed mode: default TSUM + gridded sowing
+        use_gridded_tsum = 0;
+        printf("Mixed mode: default TSUM + gridded sowing (%s) from %s\n", sow_var, grid_data_file);
+    } else if (strlen(sow_var) > 0) {
+        // Sowing variable name only (no grid file) - use default sowing dates
+        use_gridded_tsum = 0;
+        printf("Default TSUM mode: sowing variable '%s' specified but no grid file - using default sowing dates\n", sow_var);
+    } else if (grid_file_provided) {
+        // Only grid file provided - error
+        fprintf(stderr, "Error: Grid file '%s' provided but no TSUM or sowing variables specified\n", grid_data_file);
+        goto usage_error;
+    } else {
+        // No grid components - pure default mode
+        use_gridded_tsum = 0;
+        printf("Default mode: using crop parameter defaults for TSUM and sowing\n");
+    }
+    
+    // Parse remaining arguments as flags (starting from current arg_idx)
+    for (int i = arg_idx; i < argc; i++) {
         if (strcmp(argv[i], "--use-potential-nutrients") == 0) {
             use_potential_nutrients = 1;
         } else if (strcmp(argv[i], "--use-potential-evtra") == 0) {
@@ -141,10 +165,10 @@ int arg_index = 3;  // Start parsing from argv[3]
                 exit(1);
             }
         } else {
-            fprintf(stderr, "Error: Unknown optional argument '%s'\n", argv[i]);
+            fprintf(stderr, "Error: Unknown flag '%s'\n", argv[i]);
             goto usage_error;
         }
-    } 
+    }
 
     // Configuration summary
     printf("\n--- Configuration Summary ---\n");
@@ -169,8 +193,29 @@ int arg_index = 3;  // Start parsing from argv[3]
     printf("---------------------------\n\n");
 
     /* --- Construct dynamic output filename --- */
+    char offset_suffix[128] = "";
+    char base_suffix[128] = "";
+    
+    // Build the offset suffix with clear labels
+    if (fabs(tsum1_offset) > 0.001f) {
+        char tsum1_str[16];
+        snprintf(tsum1_str, sizeof(tsum1_str), "%.0f", tsum1_offset);
+        snprintf(offset_suffix, sizeof(offset_suffix), "_t1%s%s", (tsum1_offset >= 0 ? "+" : ""), tsum1_str);
+    }
+    if (fabs(tsum2_offset) > 0.001f) {
+        char tsum2_str[16];
+        snprintf(tsum2_str, sizeof(tsum2_str), "%.0f", tsum2_offset);
+        char t2_part[64];
+        snprintf(t2_part, sizeof(t2_part), "_t2%s%s", (tsum2_offset >= 0 ? "+" : ""), tsum2_str);
+        if (strlen(offset_suffix) > 0) {
+            strcat(offset_suffix, t2_part);
+        } else {
+            snprintf(offset_suffix, sizeof(offset_suffix), "%s", t2_part);
+        }
+    }
+    
     if (use_gridded_tsum) {
-        /* For gridded TSUM: e.g. for the pair tsum1_e1a1, tsum2_e1a1 and sow_e1, the output filename becomes: wofost_results_e1a1_sow_e1_t1+50_t2-25.nc */
+        /* Full gridded TSUM mode */
         if (strlen(tsum1_var) == 0) {
             fprintf(stderr, "Error: tsum1_var is empty when using gridded TSUM\n");
             exit(1);
@@ -188,45 +233,23 @@ int arg_index = 3;  // Start parsing from argv[3]
             fprintf(stderr, "Warning: Could not extract tsum suffix from %s, using default\n", tsum1_var);
         }
         
-        // Build the offset suffix with clear labels
-        char offset_suffix[128] = "";
-        if (fabs(tsum1_offset) > 0.001f) {
-            char tsum1_str[16];
-            snprintf(tsum1_str, sizeof(tsum1_str), "%.0f", tsum1_offset);
-            snprintf(offset_suffix, sizeof(offset_suffix), "_t1%s%s", (tsum1_offset >= 0 ? "+" : ""), tsum1_str);
-        }
-        if (fabs(tsum2_offset) > 0.001f) {
-            char tsum2_str[16];
-            snprintf(tsum2_str, sizeof(tsum2_str), "%.0f", tsum2_offset);
-            char t2_part[64];
-            snprintf(t2_part, sizeof(t2_part), "_t2%s%s", (tsum2_offset >= 0 ? "+" : ""), tsum2_str);
-            if (strlen(offset_suffix) > 0) {
-                strcat(offset_suffix, t2_part);
-            } else {
-                snprintf(offset_suffix, sizeof(offset_suffix), "%s", t2_part);
-            }
+        snprintf(base_suffix, sizeof(base_suffix), "%s_%s", tsum_suffix, sow_var);
+        snprintf(output_file, MAX_STRING, "wofost_results_%s%s.nc", base_suffix, offset_suffix);
+        
+    } else if (strlen(sow_var) > 0 && strlen(grid_data_file) > 0) {
+        /* Mixed mode: default TSUM + gridded sowing */
+        char *sow_suffix = strrchr(sow_var, '_');
+        if (sow_suffix && strlen(sow_suffix) > 1) {
+            sow_suffix++; // Skip the '_'
+        } else {
+            sow_suffix = sow_var; // Use full variable name if no suffix
         }
         
-        snprintf(output_file, MAX_STRING, "wofost_results_%s_%s%s.nc", tsum_suffix, sow_var, offset_suffix);
+        snprintf(base_suffix, sizeof(base_suffix), "default_tsum_sow_%s", sow_suffix);
+        snprintf(output_file, MAX_STRING, "wofost_results_%s%s.nc", base_suffix, offset_suffix);
+        
     } else {
-        /* For default TSUM: simple filename with offset if present */
-        char offset_suffix[128] = "";
-        if (fabs(tsum1_offset) > 0.001f) {
-            char tsum1_str[16];
-            snprintf(tsum1_str, sizeof(tsum1_str), "%.0f", tsum1_offset);
-            snprintf(offset_suffix, sizeof(offset_suffix), "_t1%s%s", (tsum1_offset >= 0 ? "+" : ""), tsum1_str);
-        }
-        if (fabs(tsum2_offset) > 0.001f) {
-            char tsum2_str[16];
-            snprintf(tsum2_str, sizeof(tsum2_str), "%.0f", tsum2_offset);
-            char t2_part[64];
-            snprintf(t2_part, sizeof(t2_part), "_t2%s%s", (tsum2_offset >= 0 ? "+" : ""), tsum2_str);
-            if (strlen(offset_suffix) > 0) {
-                strcat(offset_suffix, t2_part);
-            } else {
-                snprintf(offset_suffix, sizeof(offset_suffix), "%s", t2_part);
-            }
-        }
+        /* Pure default mode */
         snprintf(output_file, MAX_STRING, "wofost_results_default%s.nc", offset_suffix);
     }
     
@@ -296,7 +319,14 @@ int arg_index = 3;  // Start parsing from argv[3]
     /* --- Setup NetCDF file --- */
     NcFile nc_output;
     printf("Setting up NetCDF output file '%s'...\n", output_file);
-    SetupNetCDF(output_file, &nc_output, Meteo->nlat, Meteo->nlon, Meteo->Seasons, tsum1_var, tsum2_var, sow_var);
+    // Use sow_var even in mixed mode, or empty string in pure default mode
+    char sow_for_nc[MAX_STRING];
+    if (strlen(sow_var) > 0) {
+        strncpy(sow_for_nc, sow_var, MAX_STRING - 1);
+    } else {
+        strcpy(sow_for_nc, "default");
+    }
+    SetupNetCDF(output_file, &nc_output, Meteo->nlat, Meteo->nlon, Meteo->Seasons, tsum1_var, tsum2_var, sow_for_nc);
 
     while (Meteo)
     {
@@ -314,8 +344,27 @@ int arg_index = 3;  // Start parsing from argv[3]
         } else {
             printf("Using default TSUM1/TSUM2 values from crop parameter file\n");
             SetDefaultTSUM(Meteo);
-            if (strlen(sow_var) > 0) {
+            
+            // Load sowing dates ONLY if we have both a grid file AND sowing variable
+            if (strlen(sow_var) > 0 && strlen(grid_data_file) > 0) {
+                printf("Loading gridded sowing dates from %s (%s variable)\n", grid_data_file, sow_var);
                 LoadSowingDateOnly(Meteo, grid_data_file, sow_var);
+            } else if (strlen(sow_var) > 0) {
+                // Just sowing variable name provided, no grid file - use default sowing
+                printf("Sowing variable '%s' provided but no grid file - using default sowing date (April 1st)\n", sow_var);
+                for (size_t i = 0; i < Meteo->nlat; i++) {
+                    for (size_t j = 0; j < Meteo->nlon; j++) {
+                        Meteo->sowing_date_grid[i][j] = 10.0f;  // April 1st (dekad 10)
+                    }
+                }
+            } else {
+                // No sowing info - use default
+                printf("No sowing information provided - using default sowing date (April 1st)\n");
+                for (size_t i = 0; i < Meteo->nlat; i++) {
+                    for (size_t j = 0; j < Meteo->nlon; j++) {
+                        Meteo->sowing_date_grid[i][j] = 10.0f;  // April 1st (dekad 10)
+                    }
+                }
             }
         }
     
@@ -574,8 +623,10 @@ int arg_index = 3;  // Start parsing from argv[3]
 
 usage_error:
     fprintf(stderr, "Usage:\n");
-    fprintf(stderr, "  %s <sim_list> <meteolist> [optional flags]                           # Default TSUM values\n", argv[0]);
-    fprintf(stderr, "  %s <sim_list> <meteolist> <grid_data> <t1> <t2> <sow> [optional flags]  # Gridded TSUM\n", argv[0]);
+    fprintf(stderr, "  %s <sim_list> <meteolist>                          # Default TSUM and sowing\n", argv[0]);
+    fprintf(stderr, "  %s <sim_list> <meteolist> <grid_data> <t1> <t2> <sow> [flags]  # Full gridded TSUM\n", argv[0]);
+    fprintf(stderr, "  %s <sim_list> <meteolist> <grid_data> <sow> [flags]             # Default TSUM + gridded sowing\n", argv[0]);
+    fprintf(stderr, "  %s <sim_list> <meteolist> <sow> [flags]                        # Default TSUM + sowing var name\n", argv[0]);
     fprintf(stderr, "\nOptional flags:\n");
     fprintf(stderr, "  --use-potential-nutrients\n");
     fprintf(stderr, "  --use-potential-evtra\n");
@@ -583,11 +634,11 @@ usage_error:
     fprintf(stderr, "  --tsum1-offset <float>\n");
     fprintf(stderr, "  --tsum2-offset <float>\n");
     fprintf(stderr, "\nExamples:\n");
-    fprintf(stderr, "  %s list.txt meteolist.txt --tsum1-offset 50 --tsum2-offset -20          # Default TSUM + offsets\n", argv[0]);
-    fprintf(stderr, "  %s list.txt meteolist.txt all_griddata.nc tsum1 tsum2 sow --tsum1-offset 50  # Gridded TSUM + offset\n", argv[0]);
+    fprintf(stderr, "  %s list.txt meteolist.txt                          # All defaults\n", argv[0]);
+    fprintf(stderr, "  %s list.txt meteolist.txt all_griddata.nc tsum1 tsum2 sow_e1  # Full gridded\n", argv[0]);
+    fprintf(stderr, "  %s list.txt meteolist.txt all_griddata.nc sow_e1 --tsum1-offset 50  # Default TSUM + gridded sowing\n", argv[0]);
+    fprintf(stderr, "  %s list.txt meteolist.txt sow_e1 --tsum1-offset 50              # Default TSUM + sowing var name\n", argv[0]);
     exit(1);
-
-
 
     return 1;
 }

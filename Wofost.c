@@ -196,31 +196,40 @@ int main(int argc, char **argv)
     char offset_suffix[128] = "";
     char base_suffix[128] = "";
     
-    // Build the offset suffix with clear labels
-    if (fabs(tsum1_offset) > 0.001f) {
+    // Build the offset suffix with clear labels - ALWAYS INCLUDE VALUES
+    char t1_part[64] = "";
+    char t2_part[64] = "";
+    
+    // Build t1 part (ALWAYS include, even if zero)
+    {
         char tsum1_str[16];
-        snprintf(tsum1_str, sizeof(tsum1_str), "%d", (int)tsum1_offset);  // Use %d for integers
-        char t1_part[64];
+        snprintf(tsum1_str, sizeof(tsum1_str), "%d", (int)tsum1_offset);
         if (tsum1_offset > 0) {
             snprintf(t1_part, sizeof(t1_part), "_t1+%s", tsum1_str);
         } else if (tsum1_offset < 0) {
-            snprintf(t1_part, sizeof(t1_part), "_t1%s", tsum1_str);  // Negative sign is already in the number
+            snprintf(t1_part, sizeof(t1_part), "_t1%s", tsum1_str);  // Negative sign already in number
         } else {
             snprintf(t1_part, sizeof(t1_part), "_t1+0");
         }
     }
-    if (fabs(tsum2_offset) > 0.001f) {
+    
+    // Build t2 part (ALWAYS include, even if zero)  
+    {
         char tsum2_str[16];
-        snprintf(tsum2_str, sizeof(tsum2_str), "%.0f", tsum2_offset);
-        char t2_part[64];
-        snprintf(t2_part, sizeof(t2_part), "_t2%s%s", (tsum2_offset >= 0 ? "+" : ""), tsum2_str);
-        if (strlen(offset_suffix) > 0) {
-            strcat(offset_suffix, t2_part);
+        snprintf(tsum2_str, sizeof(tsum2_str), "%d", (int)tsum2_offset);
+        if (tsum2_offset > 0) {
+            snprintf(t2_part, sizeof(t2_part), "_t2+%s", tsum2_str);
+        } else if (tsum2_offset < 0) {
+            snprintf(t2_part, sizeof(t2_part), "_t2%s", tsum2_str);  // Negative sign already in number
         } else {
-            snprintf(offset_suffix, sizeof(offset_suffix), "%s", t2_part);
+            snprintf(t2_part, sizeof(t2_part), "_t2+0");
         }
     }
     
+    // ALWAYS combine t1 and t2 parts into offset_suffix
+    snprintf(offset_suffix, sizeof(offset_suffix), "%s%s", t1_part, t2_part);
+    
+    // Now build the base filename
     if (use_gridded_tsum) {
         /* Full gridded TSUM mode */
         if (strlen(tsum1_var) == 0) {
@@ -235,31 +244,29 @@ int main(int argc, char **argv)
         char *tsum_suffix = strrchr(tsum1_var, '_');
         if (tsum_suffix && strlen(tsum_suffix) > 1) {
             tsum_suffix++; // Skip the '_'
+            snprintf(base_suffix, sizeof(base_suffix), "%s_%s", tsum_suffix, sow_var);
         } else {
-            tsum_suffix = "default";
-            fprintf(stderr, "Warning: Could not extract tsum suffix from %s, using default\n", tsum1_var);
+            snprintf(base_suffix, sizeof(base_suffix), "default_%s", sow_var);
         }
-        
-        snprintf(base_suffix, sizeof(base_suffix), "%s_%s", tsum_suffix, sow_var);
-        snprintf(output_file, MAX_STRING, "wofost_results_%s%s.nc", base_suffix, offset_suffix);
         
     } else if (strlen(sow_var) > 0 && strlen(grid_data_file) > 0) {
         /* Mixed mode: default TSUM + gridded sowing */
         char *sow_suffix = strrchr(sow_var, '_');
         if (sow_suffix && strlen(sow_suffix) > 1) {
             sow_suffix++; // Skip the '_'
+            snprintf(base_suffix, sizeof(base_suffix), "default_tsum_sow_%s", sow_suffix);
         } else {
-            sow_suffix = sow_var; // Use full variable name if no suffix
+            snprintf(base_suffix, sizeof(base_suffix), "default_tsum_sow_%s", sow_var);
         }
-        
-        snprintf(base_suffix, sizeof(base_suffix), "default_tsum_sow_%s", sow_suffix);
-        snprintf(output_file, MAX_STRING, "wofost_results_%s%s.nc", base_suffix, offset_suffix);
         
     } else {
         /* Pure default mode */
-        snprintf(output_file, MAX_STRING, "wofost_results_default%s.nc", offset_suffix);
+        snprintf(base_suffix, sizeof(base_suffix), "default");
     }
     
+    snprintf(output_file, MAX_STRING, "wofost_results_%s%s.nc", base_suffix, offset_suffix);
+    
+
     printf("Constructed output file: %s\n", output_file);
 
     /* Fill the crop, soil, site and management place holders*/ 

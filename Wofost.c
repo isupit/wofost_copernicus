@@ -170,7 +170,7 @@ int arg_index = 3;  // Start parsing from argv[3]
 
     /* --- Construct dynamic output filename --- */
     if (use_gridded_tsum) {
-        /* For gridded TSUM: e.g. for the pair tsum1_e1a1, tsum2_e1a1 and sow_e1, the output filename becomes: wofost_results_e1a1_sow_e1.nc */
+        /* For gridded TSUM: e.g. for the pair tsum1_e1a1, tsum2_e1a1 and sow_e1, the output filename becomes: wofost_results_e1a1_sow_e1_t1+50_t2-25.nc */
         if (strlen(tsum1_var) == 0) {
             fprintf(stderr, "Error: tsum1_var is empty when using gridded TSUM\n");
             exit(1);
@@ -188,24 +188,44 @@ int arg_index = 3;  // Start parsing from argv[3]
             fprintf(stderr, "Warning: Could not extract tsum suffix from %s, using default\n", tsum1_var);
         }
         
-        // Build the offset suffix
-        char offset_suffix[64] = "";
-        if (fabs(tsum1_offset) > 0.001f || fabs(tsum2_offset) > 0.001f) {
-            char tsum1_str[16], tsum2_str[16];
+        // Build the offset suffix with clear labels
+        char offset_suffix[128] = "";
+        if (fabs(tsum1_offset) > 0.001f) {
+            char tsum1_str[16];
             snprintf(tsum1_str, sizeof(tsum1_str), "%.0f", tsum1_offset);
+            snprintf(offset_suffix, sizeof(offset_suffix), "_t1%s%s", (tsum1_offset >= 0 ? "+" : ""), tsum1_str);
+        }
+        if (fabs(tsum2_offset) > 0.001f) {
+            char tsum2_str[16];
             snprintf(tsum2_str, sizeof(tsum2_str), "%.0f", tsum2_offset);
-            snprintf(offset_suffix, sizeof(offset_suffix), "_delta%s%s", tsum1_str, tsum2_str);
+            char t2_part[64];
+            snprintf(t2_part, sizeof(t2_part), "_t2%s%s", (tsum2_offset >= 0 ? "+" : ""), tsum2_str);
+            if (strlen(offset_suffix) > 0) {
+                strcat(offset_suffix, t2_part);
+            } else {
+                snprintf(offset_suffix, sizeof(offset_suffix), "%s", t2_part);
+            }
         }
         
         snprintf(output_file, MAX_STRING, "wofost_results_%s_%s%s.nc", tsum_suffix, sow_var, offset_suffix);
     } else {
         /* For default TSUM: simple filename with offset if present */
-        char offset_suffix[64] = "";
-        if (fabs(tsum1_offset) > 0.001f || fabs(tsum2_offset) > 0.001f) {
-            char tsum1_str[16], tsum2_str[16];
+        char offset_suffix[128] = "";
+        if (fabs(tsum1_offset) > 0.001f) {
+            char tsum1_str[16];
             snprintf(tsum1_str, sizeof(tsum1_str), "%.0f", tsum1_offset);
+            snprintf(offset_suffix, sizeof(offset_suffix), "_t1%s%s", (tsum1_offset >= 0 ? "+" : ""), tsum1_str);
+        }
+        if (fabs(tsum2_offset) > 0.001f) {
+            char tsum2_str[16];
             snprintf(tsum2_str, sizeof(tsum2_str), "%.0f", tsum2_offset);
-            snprintf(offset_suffix, sizeof(offset_suffix), "_delta%s%s", tsum1_str, tsum2_str);
+            char t2_part[64];
+            snprintf(t2_part, sizeof(t2_part), "_t2%s%s", (tsum2_offset >= 0 ? "+" : ""), tsum2_str);
+            if (strlen(offset_suffix) > 0) {
+                strcat(offset_suffix, t2_part);
+            } else {
+                snprintf(offset_suffix, sizeof(offset_suffix), "%s", t2_part);
+            }
         }
         snprintf(output_file, MAX_STRING, "wofost_results_default%s.nc", offset_suffix);
     }
@@ -480,7 +500,11 @@ int arg_index = 3;  // Start parsing from argv[3]
                                 else
                                 {
                                     Grid->twso[Crop->Seasons] = Crop->st.storage;
+                                    Grid->n_storage[Crop->Seasons] = Crop->N_st.storage;    // Final N storage at harvest
+                                    Grid->p_storage[Crop->Seasons] = Crop->P_st.storage;    // Final P storage at harvest  
+                                    Grid->k_storage[Crop->Seasons] = Crop->K_rt.storage;    // Final K storage at harvest
                                     Grid->length[Crop->Seasons] = Crop->GrowthDay;
+
                                     if (Meteo->Seasons == Crop->Seasons)
                                     {
                                         Output(files[Grid->file]);

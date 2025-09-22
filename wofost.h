@@ -419,6 +419,12 @@ typedef struct SIMUNIT {
         float applied_n[101];
         int cold_days[101];
 
+        /* Nutrient storage statistics per season */
+        float n_storage[101];   // Nitrogen storage at harvest per season
+        float p_storage[101];   // Phosphorus storage at harvest per season
+        float k_storage[101];   // Potassium storage at harvest per season
+
+
         struct SIMUNIT *next;
         } SimUnit; 
 SimUnit *Grid;

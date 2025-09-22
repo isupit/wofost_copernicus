@@ -65,9 +65,9 @@ int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, int nseasons,
     "Days with 0<=T<=7 and DVS<=0.3 (per calendar year)"));
     handle_nc_error(nc_put_att_text(nc->ncid, nc->cold_days_yearly_id, "units",
     strlen("days"), "days"));
+    handle_nc_error(nc_put_att_int(nc->ncid, nc->cold_days_yearly_id, "_FillValue", NC_INT, 1, &(int){-9999}));
 
-
-    /* 2-D: lat,lon  (IMPORTANT: use dims_latlon, not the 3-D array) */
+    /* 2-D: lat,lon */
     handle_nc_error(nc_def_var(nc->ncid, "SowingDate", NC_FLOAT, 2, dims_latlon, &nc->sowing_id));
     handle_nc_error(nc_put_att_text(nc->ncid, nc->sowing_id, "long_name", strlen("Sowing date"), "Sowing date"));
     handle_nc_error(nc_put_att_text(nc->ncid, nc->sowing_id, "units", strlen("dekad"), "dekad"));
@@ -84,6 +84,27 @@ int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, int nseasons,
     handle_nc_error(nc_def_var(nc->ncid, "Yield_Kurtosis",      NC_FLOAT, 2, dims_latlon, &nc->curt_id));
     handle_nc_error(nc_def_var(nc->ncid, "Simulated_Seasons",   NC_INT,   2, dims_latlon, &nc->seasons_id));
 
+    handle_nc_error(nc_def_var(nc->ncid, "N_storage", NC_FLOAT, 2, dims_latlon, &nc->n_storage_id));
+    handle_nc_error(nc_put_att_text(nc->ncid, nc->n_storage_id, "long_name", 
+                                    strlen("Average Nitrogen storage at harvest across all seasons"), 
+                                    "Average Nitrogen storage at harvest across all seasons"));
+    handle_nc_error(nc_put_att_text(nc->ncid, nc->n_storage_id, "units", strlen("kg N/ha"), "kg N/ha"));
+    handle_nc_error(nc_put_att_float(nc->ncid, nc->n_storage_id, "_FillValue", NC_FLOAT, 1, &(float){-9999.f}));
+
+    handle_nc_error(nc_def_var(nc->ncid, "P_storage", NC_FLOAT, 2, dims_latlon, &nc->p_storage_id));
+    handle_nc_error(nc_put_att_text(nc->ncid, nc->p_storage_id, "long_name", 
+                                    strlen("Average Phosphorus storage at harvest across all seasons"), 
+                                    "Average Phosphorus storage at harvest across all seasons"));
+    handle_nc_error(nc_put_att_text(nc->ncid, nc->p_storage_id, "units", strlen("kg P/ha"), "kg P/ha"));
+    handle_nc_error(nc_put_att_float(nc->ncid, nc->p_storage_id, "_FillValue", NC_FLOAT, 1, &(float){-9999.f}));
+
+    handle_nc_error(nc_def_var(nc->ncid, "K_storage", NC_FLOAT, 2, dims_latlon, &nc->k_storage_id));
+    handle_nc_error(nc_put_att_text(nc->ncid, nc->k_storage_id, "long_name", 
+                                    strlen("Average Potassium storage at harvest across all seasons"), 
+                                    "Average Potassium storage at harvest across all seasons"));
+    handle_nc_error(nc_put_att_text(nc->ncid, nc->k_storage_id, "units", strlen("kg K/ha"), "kg K/ha"));
+    handle_nc_error(nc_put_att_float(nc->ncid, nc->k_storage_id, "_FillValue", NC_FLOAT, 1, &(float){-9999.f}));
+
     /* End define mode and write coords */
     handle_nc_error(nc_enddef(nc->ncid));
     handle_nc_error(nc_put_var_double(nc->ncid, nc->lat_id, Latitude));
@@ -96,6 +117,7 @@ int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, int nseasons,
 void WriteOutputToNetCDF(NcFile *nc)
 {
     float ave, adev, sdev, var, skew, curt, lngth;
+    float n_storage = 0.0f, p_storage = 0.0f, k_storage = 0.0f;
     int i;
     
     /* Start defines the [lat, lon] coordinate where we want to write */
@@ -123,15 +145,26 @@ void WriteOutputToNetCDF(NcFile *nc)
 
     /* Only write statistical yield outputs when enough seasons were simulated */
     if (Crop->Seasons > 2) {
-
+    
         lngth = 0;
+        n_storage = 0;    // This will be the AVERAGE N storage across all seasons
+        p_storage = 0;    // This will be the AVERAGE P storage across all seasons  
+        k_storage = 0;    // This will be the AVERAGE K storage across all seasons
+        
         for (i = 1; i <= Crop->Seasons; i++) {
-            lngth += Grid->length[i];
+            lngth += Grid->length[i];           // Sum lengths to get average length
+            n_storage += Grid->n_storage[i];    // Sum N storage values
+            p_storage += Grid->p_storage[i];    // Sum P storage values
+            k_storage += Grid->k_storage[i];    // Sum K storage values
         }
-        lngth /= Crop->Seasons;
+        lngth /= Crop->Seasons;                 // Average length
+        n_storage /= Crop->Seasons;             // Average N storage
+        p_storage /= Crop->Seasons;             // Average P storage
+        k_storage /= Crop->Seasons;             // Average K storage
         
         Moment(Grid->twso, Crop->Seasons, &ave, &adev, &sdev, &var, &skew, &curt);
-
+    
+        /* Write the averaged values */
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->length_id, start, &lngth));
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->tsm1_id, start, &Crop->prm.TempSum1));
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->tsm2_id, start, &Crop->prm.TempSum2));
@@ -142,6 +175,11 @@ void WriteOutputToNetCDF(NcFile *nc)
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->skew_id, start, &skew));
         handle_nc_error(nc_put_var1_float(nc->ncid, nc->curt_id, start, &curt));
         handle_nc_error(nc_put_var1_int(nc->ncid, nc->seasons_id, start, &Crop->Seasons));
+    
+        /* Write the averaged nutrient storage values */
+        handle_nc_error(nc_put_var1_float(nc->ncid, nc->n_storage_id, start, &n_storage));
+        handle_nc_error(nc_put_var1_float(nc->ncid, nc->p_storage_id, start, &p_storage));
+        handle_nc_error(nc_put_var1_float(nc->ncid, nc->k_storage_id, start, &k_storage));
     }
 }
 

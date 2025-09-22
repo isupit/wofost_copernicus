@@ -120,7 +120,7 @@ void SetDefaultTSUM(Weather *meteo)
     float default_tsum1 = tempGrid->crp->prm.TempSum1;
     float default_tsum2 = tempGrid->crp->prm.TempSum2;
     
-    printf("Setting default TSUM1=%.1f, TSUM2=%.1f for all %dx%d grid cells\n", 
+    printf("Setting default TSUM1=%.1f, TSUM2=%.1f for all %zux%zu grid cells\n", 
            default_tsum1, default_tsum2, meteo->nlat, meteo->nlon);
     
     // Allocate memory for 2D crop arrays in the Meteo struct if not already allocated

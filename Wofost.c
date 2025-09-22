@@ -168,8 +168,9 @@ int arg_index = 3;  // Start parsing from argv[3]
     printf("TSUM2 offset: %.1f\n", tsum2_offset);
     printf("---------------------------\n\n");
 
-/* --- Construct dynamic output filename --- */
+    /* --- Construct dynamic output filename --- */
     if (use_gridded_tsum) {
+        /* For gridded TSUM: e.g. for the pair tsum1_e1a1, tsum2_e1a1 and sow_e1, the output filename becomes: wofost_results_e1a1_sow_e1.nc */
         if (strlen(tsum1_var) == 0) {
             fprintf(stderr, "Error: tsum1_var is empty when using gridded TSUM\n");
             exit(1);
@@ -187,18 +188,26 @@ int arg_index = 3;  // Start parsing from argv[3]
             fprintf(stderr, "Warning: Could not extract tsum suffix from %s, using default\n", tsum1_var);
         }
         
-        // FIXED: Safer string construction
-        char suffix_part[MAX_STRING/2];
-        snprintf(suffix_part, sizeof(suffix_part), "%s_%s", tsum_suffix, sow_var);
-        snprintf(output_file, MAX_STRING, "wofost_results_%s.nc", suffix_part);
-    } else {
-        // FIXED: Include offset info in default mode filename
-        if (tsum1_offset != 0.0f || tsum2_offset != 0.0f) {
-            snprintf(output_file, MAX_STRING, "wofost_results_default_t1+%.0f_t2+%.0f.nc", 
-                     tsum1_offset, tsum2_offset);
-        } else {
-            snprintf(output_file, MAX_STRING, "wofost_results_default.nc");
+        // Build the offset suffix
+        char offset_suffix[64] = "";
+        if (fabs(tsum1_offset) > 0.001f || fabs(tsum2_offset) > 0.001f) {
+            char tsum1_str[16], tsum2_str[16];
+            snprintf(tsum1_str, sizeof(tsum1_str), "%.0f", tsum1_offset);
+            snprintf(tsum2_str, sizeof(tsum2_str), "%.0f", tsum2_offset);
+            snprintf(offset_suffix, sizeof(offset_suffix), "_delta%s%s", tsum1_str, tsum2_str);
         }
+        
+        snprintf(output_file, MAX_STRING, "wofost_results_%s_%s%s.nc", tsum_suffix, sow_var, offset_suffix);
+    } else {
+        /* For default TSUM: simple filename with offset if present */
+        char offset_suffix[64] = "";
+        if (fabs(tsum1_offset) > 0.001f || fabs(tsum2_offset) > 0.001f) {
+            char tsum1_str[16], tsum2_str[16];
+            snprintf(tsum1_str, sizeof(tsum1_str), "%.0f", tsum1_offset);
+            snprintf(tsum2_str, sizeof(tsum2_str), "%.0f", tsum2_offset);
+            snprintf(offset_suffix, sizeof(offset_suffix), "_delta%s%s", tsum1_str, tsum2_str);
+        }
+        snprintf(output_file, MAX_STRING, "wofost_results_default%s.nc", offset_suffix);
     }
     
     printf("Constructed output file: %s\n", output_file);

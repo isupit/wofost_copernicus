@@ -199,8 +199,15 @@ int main(int argc, char **argv)
     // Build the offset suffix with clear labels
     if (fabs(tsum1_offset) > 0.001f) {
         char tsum1_str[16];
-        snprintf(tsum1_str, sizeof(tsum1_str), "%.0f", tsum1_offset);
-        snprintf(offset_suffix, sizeof(offset_suffix), "_t1%s%s", (tsum1_offset >= 0 ? "+" : ""), tsum1_str);
+        snprintf(tsum1_str, sizeof(tsum1_str), "%d", (int)tsum1_offset);  // Use %d for integers
+        char t1_part[64];
+        if (tsum1_offset > 0) {
+            snprintf(t1_part, sizeof(t1_part), "_t1+%s", tsum1_str);
+        } else if (tsum1_offset < 0) {
+            snprintf(t1_part, sizeof(t1_part), "_t1%s", tsum1_str);  // Negative sign is already in the number
+        } else {
+            snprintf(t1_part, sizeof(t1_part), "_t1+0");
+        }
     }
     if (fabs(tsum2_offset) > 0.001f) {
         char tsum2_str[16];

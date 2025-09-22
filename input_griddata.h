@@ -11,4 +11,10 @@ void GetGridData(Weather *meteo, char *grid_nc_file, char *tsum1_var, char *tsum
 /* Frees the memory allocated for all gridded input data */ 
 void CleanGridData(Weather *meteo); 
 
+/* Function declarations for default TSUM handling */
+void SetDefaultTSUM(Weather *meteo);
+void LoadSowingDateOnly(Weather *meteo, char *grid_nc_file, char *sow_var);
+
+void ApplyTSUMOffsets(Weather *meteo);
+
 #endif /* INPUT_GRIDDATA_H */ 

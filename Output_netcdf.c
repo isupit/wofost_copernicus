@@ -31,6 +31,9 @@ int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, int nseasons,
     handle_nc_error(nc_def_dim(nc->ncid, "lon",  nlon,     &dim_lon_id));
     handle_nc_error(nc_def_dim(nc->ncid, "time", nseasons, &dim_time_id));
 
+    printf("DEBUG: Created dimensions lat=%d, lon=%d, time=%d\n", nlat, nlon, nseasons);
+    fflush(stdout);
+
     /* Keep separate dim arrays */
     int dims_latlon[2]      = { dim_lat_id, dim_lon_id };
     int dims_timelatlon[3]  = { dim_time_id, dim_lat_id, dim_lon_id };
@@ -107,8 +110,11 @@ int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, int nseasons,
 
     /* End define mode and write coords */
     handle_nc_error(nc_enddef(nc->ncid));
+    printf("DEBUG: Writing lat[0]=%.2f, lat[359]=%.2f\n", Latitude[0], Latitude[359]);
+    printf("DEBUG: Writing lon[0]=%.2f, lon[719]=%.2f\n", Longitude[0], Longitude[719]);
     handle_nc_error(nc_put_var_double(nc->ncid, nc->lat_id, Latitude));
     handle_nc_error(nc_put_var_double(nc->ncid, nc->lon_id, Longitude));
+
     return NC_NOERR;
 }
 

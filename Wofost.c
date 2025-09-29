@@ -340,7 +340,6 @@ int main(int argc, char **argv)
     } else {
         strcpy(sow_for_nc, "default");
     }
-    SetupNetCDF(output_file, &nc_output, Meteo->nlat, Meteo->nlon, Meteo->Seasons, tsum1_var, tsum2_var, sow_for_nc);
 
     while (Meteo)
     {
@@ -350,7 +349,9 @@ int main(int argc, char **argv)
             fprintf(stderr, "Cannot get meteo data.\n");
             exit(0);
         }
-    
+        
+        SetupNetCDF(output_file, &nc_output, Meteo->nlat, Meteo->nlon, Meteo->Seasons, tsum1_var, tsum2_var, sow_for_nc);
+
         /* Load crop grid data conditionally */
         if (use_gridded_tsum) {
             printf("Using gridded TSUM1/TSUM2 data from %s\n", grid_data_file);
@@ -382,6 +383,7 @@ int main(int argc, char **argv)
             }
         }
     
+
         /* --- Apply TSUM offsets to all grid cells --- */
         if (tsum1_offset != 0.0f || tsum2_offset != 0.0f) {
             printf("Applying TSUM offsets: TSUM1 +%.1f, TSUM2 +%.1f\n", tsum1_offset, tsum2_offset);

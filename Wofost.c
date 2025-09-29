@@ -349,7 +349,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "Cannot get meteo data.\n");
             exit(0);
         }
-        
+
         SetupNetCDF(output_file, &nc_output, Meteo->nlat, Meteo->nlon, Meteo->Seasons, tsum1_var, tsum2_var, sow_for_nc);
 
         /* Load crop grid data conditionally */
@@ -416,15 +416,22 @@ int main(int argc, char **argv)
                     Grid->crp->prm.TempSum1 = Meteo->tsum1_grid[Lat][Lon];
                     Grid->crp->prm.TempSum2 = Meteo->tsum2_grid[Lat][Lon];
                     
-                    /* Convert dekad (float) to "MM-DD" string  */
-                    int dekad = (int)Meteo->sowing_date_grid[Lat][Lon];
-                    if (dekad < 1 || dekad > 36) {
+                    /* Convert day of year to "MM-DD" string */
+                    int day_of_year = (int)Meteo->sowing_date_grid[Lat][Lon];
+                    if (day_of_year < 1 || day_of_year > 365) {
                         strncpy(Grid->start, "01-01", 5);
                         Grid->start[5] = '\0';
                     } else {
-                        int month = ((dekad - 1) / 3) + 1;
-                        int subdek = ((dekad - 1) % 3) + 1;
-                        int day = (subdek == 1) ? 1 : (subdek == 2) ? 11 : 21;
+                        int days_in_months[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+                        int month = 1;
+                        int day = day_of_year;
+                        for (int m = 0; m < 12; m++) {
+                            if (day <= days_in_months[m]) {
+                                month = m + 1;
+                                break;
+                            }
+                            day -= days_in_months[m];
+                        }
                         char date_str[6];
                         sprintf(date_str, "%02d-%02d", month, day);
                         strncpy(Grid->start, date_str, 5);

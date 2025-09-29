@@ -17,4 +17,6 @@ void LoadSowingDateOnly(Weather *meteo, char *grid_nc_file, char *sow_var);
 
 void ApplyTSUMOffsets(Weather *meteo);
 
+int ConvertDekadToDayOfYear(int dekad);
+
 #endif /* INPUT_GRIDDATA_H */ 

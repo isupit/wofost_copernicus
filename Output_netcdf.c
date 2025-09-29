@@ -73,7 +73,7 @@ int SetupNetCDF(char *filename, NcFile *nc, int nlat, int nlon, int nseasons,
     /* 2-D: lat,lon */
     handle_nc_error(nc_def_var(nc->ncid, "SowingDate", NC_FLOAT, 2, dims_latlon, &nc->sowing_id));
     handle_nc_error(nc_put_att_text(nc->ncid, nc->sowing_id, "long_name", strlen("Sowing date"), "Sowing date"));
-    handle_nc_error(nc_put_att_text(nc->ncid, nc->sowing_id, "units", strlen("dekad"), "dekad"));
+    handle_nc_error(nc_put_att_text(nc->ncid, nc->sowing_id, "units", strlen("day of year"), "day of year"));
     handle_nc_error(nc_put_att_float(nc->ncid, nc->sowing_id, "_FillValue", NC_FLOAT, 1, &(float){-9999.f}));
 
     handle_nc_error(nc_def_var(nc->ncid, "Length",          NC_FLOAT, 2, dims_latlon, &nc->length_id));
@@ -132,15 +132,18 @@ void WriteOutputToNetCDF(NcFile *nc)
     start[1] = Lon;
     
     /* --- Always write sowing date and fertilizer series --- */
-    float sowing_dekad;
+    float sowing_day_of_year;
     int month, day;
     if (sscanf(Grid->start, "%d-%d", &month, &day) == 2) {
-        int subdek = (day <= 10) ? 1 : (day <= 20) ? 2 : 3;
-        sowing_dekad = (float)((month - 1) * 3 + subdek);
+        int days_in_months[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        sowing_day_of_year = (float)day;
+        for (int m = 0; m < month - 1; m++) {
+            sowing_day_of_year += days_in_months[m];
+        }
     } else {
-        sowing_dekad = -9999.f;
+        sowing_day_of_year = -9999.f;
     }
-    handle_nc_error(nc_put_var1_float(nc->ncid, nc->sowing_id, start, &sowing_dekad));
+    handle_nc_error(nc_put_var1_float(nc->ncid, nc->sowing_id, start, &sowing_day_of_year));
 
     /* Write the whole per-season series for this cell.
        We stored seasons as 1-based; write [1..Meteo->Seasons] into [0..Meteo->Seasons-1]. */

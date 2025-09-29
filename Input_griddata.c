@@ -156,21 +156,60 @@ void SetDefaultTSUM(Weather *meteo)
     }
 }
 
+/* Convert dekad (1-36) to day of year (1-365) */
+int ConvertDekadToDayOfYear(int dekad) {
+    if (dekad < 1 || dekad > 36) return -9999;
+    
+    int month = ((dekad - 1) / 3) + 1;
+    int subdekad = ((dekad - 1) % 3) + 1;
+    int day = (subdekad == 1) ? 1 : (subdekad == 2) ? 11 : 21;
+    
+    int days_in_months[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    int day_of_year = day;
+    for (int m = 0; m < month - 1; m++) {
+        day_of_year += days_in_months[m];
+    }
+    
+    return day_of_year;
+}
+
 void LoadSowingDateOnly(Weather *meteo, char *grid_nc_file, char *sow_var)
 {
     int ncid, sow_date_id; 
     size_t i, j;
-    double *temp_sow_dates; 
+    double *temp_sow_dates;
+    char units[256];
     
     printf("Loading only sowing date data from %s (%s variable)...\n", grid_nc_file, sow_var);
     
-    /* Open the NetCDF file */
     handle_grid_nc_error(nc_open(grid_nc_file, NC_NOWRITE, &ncid));
-    
-    /* Get variable ID for sowing date */
     handle_grid_nc_error(nc_inq_varid(ncid, sow_var, &sow_date_id));
     
-    /* Allocate memory for sowing date grid if not already allocated */
+    /* Check if variable has time dimension */
+    int ndims;
+    handle_grid_nc_error(nc_inq_varndims(ncid, sow_date_id, &ndims));
+    
+    /* Check units attribute */
+    int status = nc_get_att_text(ncid, sow_date_id, "units", units);
+    int needs_conversion = 0;
+    if (status == NC_NOERR) {
+        units[255] = '\0';
+        if (strstr(units, "dekad") != NULL) {
+            needs_conversion = 1;
+            printf("  Detected 'dekad' units - will convert to day of year\n");
+            fflush(stdout);
+        } else if (strstr(units, "day of year") != NULL || strstr(units, "day_of_year") != NULL) {
+            printf("  Detected 'day of year' units - no conversion needed\n");
+            fflush(stdout);
+        } else {
+            printf("  Warning: Unknown units '%s' - assuming day of year\n", units);
+            fflush(stdout);
+        }
+    } else {
+        printf("  Warning: Could not read units attribute - assuming day of year\n");
+        fflush(stdout);
+    }
+    
     if (meteo->sowing_date_grid == NULL) {
         meteo->sowing_date_grid = malloc(meteo->nlat * sizeof(float *));
         for (i = 0; i < meteo->nlat; i++) {
@@ -178,22 +217,33 @@ void LoadSowingDateOnly(Weather *meteo, char *grid_nc_file, char *sow_var)
         }
     }
     
-    /* Allocate memory for temporary flat array */
     temp_sow_dates = malloc(meteo->nlat * meteo->nlon * sizeof(double));
     
-    /* Read the sowing date data */
-    handle_grid_nc_error(nc_get_var_double(ncid, sow_date_id, temp_sow_dates)); 
+    /* Read data - handle both 2D (lat,lon) and 3D (time,lat,lon) */
+    if (ndims == 3) {
+        printf("  Variable has time dimension - reading first time slice\n");
+        fflush(stdout);
+        size_t start[3] = {0, 0, 0};
+        size_t count[3] = {1, meteo->nlat, meteo->nlon};
+        handle_grid_nc_error(nc_get_vara_double(ncid, sow_date_id, start, count, temp_sow_dates));
+    } else {
+        handle_grid_nc_error(nc_get_var_double(ncid, sow_date_id, temp_sow_dates)); 
+    }
     
-    /* Copy data from flat temp array to 2D array */
+    /* Copy and optionally convert */
     for (i = 0; i < meteo->nlat; i++) {
         for (j = 0; j < meteo->nlon; j++) {
-            meteo->sowing_date_grid[i][j] = (float)temp_sow_dates[i * meteo->nlon + j];
+            float value = (float)temp_sow_dates[i * meteo->nlon + j];
+            
+            if (needs_conversion && value >= 1 && value <= 36) {
+                meteo->sowing_date_grid[i][j] = (float)ConvertDekadToDayOfYear((int)value);
+            } else {
+                meteo->sowing_date_grid[i][j] = value;
+            }
         }
     }
     
-    /* Clean up temporary array */
     free(temp_sow_dates);
-    
     handle_grid_nc_error(nc_close(ncid));
     printf("Sowing date data loaded successfully.\n");
 }

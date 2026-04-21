@@ -1,29 +1,31 @@
 ** Updated april 2025 from https://github.com/ajwdewit/WOFOST_crop_parameters/blob/wofost80(1)
+** original var. Bermude Central to Northern France
 
-CRPNAM='Winter wheat (generic) CSA practical'
+CRPNAM='Winter wheat 108'
 
 ** emergence
-TBASEM   = -10.0    ! lower threshold temp. for emergence [cel]
+TBASEM   =   0.0    ! lower threshold temp. for emergence [cel]
 TEFFMX   =  30.0    ! max. eff. temp. for emergence [cel]
-TSUMEM   =   60.    ! temperature sum from sowing to emergence [cel d]
+TSUMEM   = 120.0    ! temperature sum from sowing to emergence [cel d]
 
 ** phenology
-IDSL     =   1      ! indicates whether pre-anthesis development depends
+IDSL     =   2      ! indicates whether pre-anthesis development depends
                     ! on temp., (=0), plus daylength (=1) , plus vernalization (=2)
-DLO      = 8.0    	! optimum daylength for development [hr]
-DLC      = 0.0    	! critical daylength (lower threshold) [hr]
-VERNSAT   = 70.      ! satured vernalisation requirement [d]
-VERNBASE    = 14.   ! base vernalisation requirement [d]
+DLO      = 15.8   	! optimum daylength for development [hr]
+DLC      =  8.0    	! critical daylength (lower threshold) [hr]
+
+VERNSAT     = 41.   ! satured vernalisation requirement [d]
+VERNBASE    =  8.   ! base vernalisation requirement [d]
 VERNDVS		= 0.3	!Critical DVS for vernalization to switch off	
-VERNRTB     = -10., 0.,
+VERNRTB     =  -8., 0.,
                -4., 0.,
                 3., 1.,
                10., 1., 
                17., 0.,
-               30., 0. 
+               20., 0. 
 			   
-TSUM1    = 850.     ! temperature sum from emergence to anthesis [cel d]
-TSUM2    = 850.     ! temperature sum from anthesis to maturity [cel d]
+TSUM1    = 899.     ! temperature sum from emergence to anthesis [cel d]
+TSUM2    = 950.    ! temperature sum from anthesis to maturity [cel d]
 
 DTSMTB   =   0.00,    0.00,     ! daily increase in temp. sum 
             30.00,   30.00,     ! as function of av. temp. [cel; cel d]
@@ -33,9 +35,9 @@ DVSI = 0.           ! initial DVS
 DVSEND   =   2.00   ! development stage at harvest (= 2.0 at maturity [-])
 
 ** initial
-TDWI     = 210.   ! initial total crop dry weight [kg ha-1]
+TDWI     =  50.   ! initial total crop dry weight [kg ha-1]
 LAIEM    =   0.1365 ! leaf area index at emergence [ha ha-1]
-RGRLAI   =   0.00817 ! maximum relative increase in LAI [ha ha-1 d-1] 
+RGRLAI   =   0.0082 ! maximum relative increase in LAI [ha ha-1 d-1] 
 
 ** green area
 SLATB    =   0.00,    0.00212,   ! specific leaf area  
@@ -162,7 +164,7 @@ RDMCR    = 125.     ! maximum rooting depth [cm]
 RDRLV_NPK        = 0.05     ! max. relative death rate of leaves due to nutrient (N-P-K) stress
 DVS_NPK_STOP     = 1.3      ! development stage above which no crop N-P-K uptake does occur
 DVS_NPK_TRANSL   = 0.8      ! development stage above which N-P-K translocation to storage organs does occur
-NPK_TRANSLRT_FR  = 0.15     ! N-P-K translocations from roots as a fraction of resp. total N-P-K amounts translocated from leaves and stems
+NPK_TRANSLRT_FR  = 0.5      ! N-P-K translocations from roots as a fraction of resp. total N-P-K amounts translocated from leaves and stems
 NCRIT_FR         = 1.00     ! optimal N concentration as fraction of maximum N concentration
 PCRIT_FR         = 1.00     ! optimal P concentration as fraction of maximum P concentration
 KCRIT_FR         = 1.00     ! optimal K concentration as fraction of maximum K concentration
@@ -217,10 +219,11 @@ KMAXLV_TB =  0.0, 0.12,   ! maximum K concentration in leaves as function of dev
 ** org. wofost_80
 RNUPTAKEMAX =  7.2          ! Maximum rate of daily nitrogen uptake ['kg.ha-1.d-1']
 RPUPTAKEMAX =  0.8          ! Maximum rate of daily phosphorus uptake ['kg..ha-1.d-1']
-RKUPTAKEMAX =  7.4          ! Maximum rate of daily potassium uptake ['kg.ha-1.d-1']              
+RKUPTAKEMAX =  7.4          ! Maximum rate of daily potassium uptake ['kg.ha-1.d-1']             
 
 ** org. wofost_81
 AMAX_SLP  =  3.24         ! slope of relationship between maximum leaf photosynthesis rate and specific leaf nitrogen  ['kg CO2 ha-1 h-1 (kg N m-2)-1']
 AMAX_LNB  =  0.0          ! specific leaf nitrogen below which there is no photosynthesis  ['kg N ha-1']
 AMAX_REF  =  35.83        ! maximum leaf CO2 assimilation rate  ['kg.ha-1.hr-1']
 KN        =  0.4          ! Extinction coefficient of leaf N concentration with canopy depth  ['-']
+REFCO2L   =  360          ! CO2 level at which AMAX and EFF were measured

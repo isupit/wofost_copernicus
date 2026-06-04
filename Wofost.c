@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>
+#include <time.h>
+#include <sys/stat.h>
 #include "wofost.h"
 #include "extern.h"
 #include "output_netcdf.h"
@@ -264,10 +266,107 @@ int main(int argc, char **argv)
         snprintf(base_suffix, sizeof(base_suffix), "default");
     }
     
-    snprintf(output_file, MAX_STRING, "wofost_results_%s%s.nc", base_suffix, offset_suffix);
-    
+    /* --- Create per-run output directory: output/YYYYMMDD_HHMMSS_<suffix>/ --- */
+    time_t now = time(NULL);
+    struct tm *lt = localtime(&now);
+    char run_timestamp[32];
+    strftime(run_timestamp, sizeof(run_timestamp), "%Y%m%d_%H%M%S", lt);
+
+    char run_dir[MAX_STRING];
+    snprintf(run_dir, MAX_STRING, "output/%s_%s%s", run_timestamp, base_suffix, offset_suffix);
+
+    /* Create output/ then the run subdir (ignore errors if they already exist) */
+    mkdir("output", 0755);
+    if (mkdir(run_dir, 0755) != 0) {
+        fprintf(stderr, "Warning: could not create run directory '%s'\n", run_dir);
+    }
+
+    /* Full path for the NetCDF output file */
+    snprintf(output_file, MAX_STRING, "%s/wofost_results_%s%s.nc", run_dir, base_suffix, offset_suffix);
 
     printf("Constructed output file: %s\n", output_file);
+
+    /* --- Write run.log with all inputs for reproducibility --- */
+    {
+        char logpath[MAX_STRING];
+        snprintf(logpath, MAX_STRING, "%s/run.log", run_dir);
+        FILE *logfp = fopen(logpath, "w");
+        if (logfp == NULL) {
+            fprintf(stderr, "Warning: could not create run log '%s'\n", logpath);
+        } else {
+            /* Timestamp */
+            char timebuf[64];
+            strftime(timebuf, sizeof(timebuf), "%Y-%m-%d %H:%M:%S", lt);
+            fprintf(logfp, "=== WOFOST Run Log ===\n");
+            fprintf(logfp, "Timestamp       : %s\n", timebuf);
+#ifdef GIT_HASH
+            fprintf(logfp, "Git commit      : %s\n", GIT_HASH);
+#else
+            fprintf(logfp, "Git commit      : (unknown - not compiled with git hash)\n");
+#endif
+            fprintf(logfp, "\n");
+
+            /* Reconstruct command line */
+            fprintf(logfp, "=== Command Line ===\n");
+            for (int ci = 0; ci < argc; ci++) {
+                fprintf(logfp, "%s%s", argv[ci], ci < argc - 1 ? " " : "\n");
+            }
+            fprintf(logfp, "\n");
+
+            /* Configuration summary */
+            fprintf(logfp, "=== Configuration ===\n");
+            fprintf(logfp, "Simulation list         : %s\n", list);
+            fprintf(logfp, "Meteo list              : %s\n", meteolist);
+            if (use_gridded_tsum) {
+                fprintf(logfp, "Mode                    : Full gridded TSUM\n");
+                fprintf(logfp, "Grid data file          : %s\n", grid_data_file);
+                fprintf(logfp, "TSUM1 variable          : %s\n", tsum1_var);
+                fprintf(logfp, "TSUM2 variable          : %s\n", tsum2_var);
+                fprintf(logfp, "Sowing variable         : %s\n", sow_var);
+            } else if (strlen(sow_var) > 0 && strlen(grid_data_file) > 0) {
+                fprintf(logfp, "Mode                    : Default TSUM + gridded sowing\n");
+                fprintf(logfp, "Grid data file          : %s\n", grid_data_file);
+                fprintf(logfp, "Sowing variable         : %s\n", sow_var);
+            } else {
+                fprintf(logfp, "Mode                    : Default TSUM + default sowing\n");
+            }
+            fprintf(logfp, "TSUM1 offset            : %.1f\n", tsum1_offset);
+            fprintf(logfp, "TSUM2 offset            : %.1f\n", tsum2_offset);
+            fprintf(logfp, "Use potential nutrients  : %s\n", use_potential_nutrients ? "Yes" : "No");
+            fprintf(logfp, "Use potential evtra     : %s\n", use_potential_evtra ? "Yes" : "No");
+            fprintf(logfp, "N fertilizer file       : %s\n", strlen(n_fert_file) > 0 ? n_fert_file : "(none)");
+            fprintf(logfp, "Output directory        : %s\n", run_dir);
+            fprintf(logfp, "Output NetCDF           : %s\n", output_file);
+            fprintf(logfp, "\n");
+
+            /* Dump list.txt */
+            fprintf(logfp, "=== Simulation List (%s) ===\n", list);
+            FILE *lf = fopen(list, "r");
+            if (lf) {
+                char lbuf[MAX_STRING];
+                while (fgets(lbuf, MAX_STRING, lf)) fprintf(logfp, "%s", lbuf);
+                fclose(lf);
+            } else {
+                fprintf(logfp, "(could not open)\n");
+            }
+            fprintf(logfp, "\n");
+
+            /* Dump meteolist.txt */
+            fprintf(logfp, "=== Meteo List (%s) ===\n", meteolist);
+            FILE *mf = fopen(meteolist, "r");
+            if (mf) {
+                char mbuf[MAX_STRING];
+                while (fgets(mbuf, MAX_STRING, mf)) fprintf(logfp, "%s", mbuf);
+                fclose(mf);
+            } else {
+                fprintf(logfp, "(could not open)\n");
+            }
+            fprintf(logfp, "\n");
+
+            fclose(logfp);
+            printf("Run log written to: %s\n", logpath);
+        }
+    }
 
     /* Fill the crop, soil, site and management place holders*/ 
     NumberOfFiles = GetSimInput(list);

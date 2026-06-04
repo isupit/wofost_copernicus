@@ -109,7 +109,7 @@ void FillCropVariables(Plant *CROP, float *Variable)
     CROP->prm.Frac_translocation       = Variable[66];
 
 
-    for (i=0;i<=NR_VARIABLES_CRP;i++) 
+    for (i=0;i<NR_VARIABLES_CRP;i++) 
     {
         Variable[i] = 0.;
     }
